@@ -40,80 +40,6 @@
   }
 }
 
-/* ---------- hero ---------- */
-.hero {
-  position: relative;
-  display: grid;
-  align-content: end;
-  min-height: 100svh;
-  padding: calc(var(--topbar-height) + var(--space-8)) var(--gutter) var(--space-9);
-  max-width: var(--max-width);
-  width: 100%;
-  margin-inline: auto;
-}
-
-.heroInner {
-  display: grid;
-  gap: var(--space-4);
-}
-
-.heroName {
-  font-size: var(--font-size-hero);
-  line-height: 0.95;
-  padding-bottom: 0.1em;
-  outline: none;
-}
-
-.heroTagline {
-  font-size: var(--font-size-xl);
-  color: var(--color-fg-muted);
-  max-width: 32ch;
-}
-
-.scrollCue {
-  position: absolute;
-  right: var(--gutter);
-  bottom: var(--space-9);
-  display: grid;
-  justify-items: center;
-  gap: var(--space-3);
-  color: var(--color-fg-muted);
-  writing-mode: vertical-rl;
-}
-
-.scrollLine {
-  width: 1px;
-  height: var(--space-8);
-  background: linear-gradient(var(--color-accent), transparent);
-  animation: cue 2.2s var(--ease-in-out) infinite;
-  transform-origin: top;
-}
-
-@keyframes cue {
-  0% {
-    transform: scaleY(0);
-  }
-  50% {
-    transform: scaleY(1);
-  }
-  100% {
-    transform: scaleY(1);
-    opacity: 0;
-  }
-}
-
-.hero > .pending {
-  position: absolute;
-  left: var(--gutter);
-  bottom: var(--space-5);
-}
-
-@media (max-width: 640px) {
-  .scrollCue {
-    display: none;
-  }
-}
-
 /* ---------- about ---------- */
 .about {
   display: grid;
@@ -328,15 +254,4 @@
   font-style: italic;
   font-size: var(--font-size-2xl);
   overflow-wrap: anywhere;
-}
-
-/* leave room for the floating Fast Lane on phones */
-@media (max-width: 899px) {
-  .hero {
-    padding-bottom: calc(var(--space-9) + var(--space-8));
-  }
-
-  .hero > .pending {
-    bottom: calc(var(--space-5) + var(--space-8));
-  }
 }

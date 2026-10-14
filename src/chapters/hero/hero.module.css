@@ -1,0 +1,464 @@
+/* Opening Scene (spec 04 §2.2). `--hero-p` is the scroll progress, 0 → 1. */
+
+.hero {
+  --bar-max: 11svh;
+  /* the settled frame, as a fraction of --bar-max */
+  --bar-rest: 0.15;
+  --fade: calc(1 - min(1, var(--hero-p, 0) * 3.333));
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+/* ---------- footage ---------- */
+.stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: var(--fade);
+  /* FG-1: no footage at all → a night-sky gradient in theme colours */
+  background:
+    radial-gradient(
+      120% 80% at 70% 10%,
+      color-mix(in srgb, var(--color-accent-2) 22%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      90% 70% at 15% 30%,
+      color-mix(in srgb, var(--color-accent) 16%, transparent),
+      transparent 65%
+    ),
+    var(--color-globe-base);
+}
+
+.hero[data-video='playing'] .stage,
+.hero[data-video='paused'] .stage {
+  cursor: pointer;
+}
+
+.poster,
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video {
+  opacity: 0;
+  transition: opacity 900ms var(--ease-out);
+}
+
+.video[data-ready] {
+  opacity: 1;
+}
+
+/* FG-2: the film cut between clips */
+.cut,
+.flash {
+  position: absolute;
+  inset: 0;
+  background: var(--color-bg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cut[data-on] {
+  opacity: 1;
+}
+
+.flash {
+  animation: flash 240ms linear;
+}
+
+@keyframes flash {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* FG-7: keeps the title readable (WCAG AA) over any footage, in both themes */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--color-bg) 0%,
+    color-mix(in srgb, var(--color-bg) 93%, transparent) 22%,
+    color-mix(in srgb, var(--color-bg) 88%, transparent) 46%,
+    color-mix(in srgb, var(--color-bg) 30%, transparent) 72%,
+    color-mix(in srgb, var(--color-bg) 50%, transparent) 100%
+  );
+}
+
+/* ---------- letterbox frame ---------- */
+.bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  height: var(--bar-max);
+  background: var(--color-bg);
+  pointer-events: none;
+  transform: scaleY(var(--bar-rest));
+  opacity: var(--fade);
+}
+
+.barTop {
+  top: 0;
+  transform-origin: top;
+}
+
+.barBottom {
+  bottom: 0;
+  transform-origin: bottom;
+}
+
+/* thin frame lines on the inner edge of each bar */
+.bar::after {
+  content: '';
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  height: 1px;
+  background: color-mix(in srgb, var(--color-fg) 14%, transparent);
+}
+
+.barTop::after {
+  bottom: 0;
+}
+
+.barBottom::after {
+  top: 0;
+}
+
+/* ---------- timecode ---------- */
+.timecode {
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--topbar-height) + var(--space-3));
+  left: calc(var(--gutter) - var(--space-3));
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 2rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  /* a small HUD backing keeps it readable over any footage */
+  background: color-mix(in srgb, var(--color-bg) 86%, transparent);
+  color: var(--color-fg-muted);
+  font-variant-numeric: tabular-nums;
+  opacity: var(--fade);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.rec {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.hero[data-video='playing'] .rec {
+  animation: rec 1.6s steps(2, jump-none) infinite;
+}
+
+@keyframes rec {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* ---------- title card ---------- */
+.content {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  align-content: end;
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding: calc(var(--topbar-height) + var(--space-9)) var(--gutter) calc(var(--space-9) + var(--space-4));
+  /* clicks on empty space reach the footage (play/pause) */
+  pointer-events: none;
+}
+
+.titleCard {
+  display: grid;
+  gap: var(--space-4);
+  pointer-events: auto;
+}
+
+.kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  color: var(--color-fg-muted);
+}
+
+.available {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 2px var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-fg);
+  background: color-mix(in srgb, var(--color-bg) 60%, transparent);
+}
+
+.availableDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-success) 60%, transparent);
+  animation: ping 2.4s var(--ease-out) infinite;
+}
+
+@keyframes ping {
+  70%,
+  100% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+}
+
+.name {
+  font-size: var(--font-size-hero);
+  line-height: 0.95;
+  padding-bottom: 0.1em;
+  outline: none;
+}
+
+/* HL-2: names wrap between words, never inside one */
+.word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.letter {
+  display: inline-block;
+}
+
+.tagline {
+  font-size: var(--font-size-xl);
+  color: var(--color-fg-muted);
+  max-width: 32ch;
+}
+
+/* ---------- scroll cue and controls ---------- */
+.scrollCue {
+  position: absolute;
+  z-index: 2;
+  right: var(--gutter);
+  bottom: calc(var(--space-9) + var(--space-4));
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  color: var(--color-fg-muted);
+  writing-mode: vertical-rl;
+  opacity: var(--fade);
+}
+
+.scrollLine {
+  width: 1px;
+  height: var(--space-8);
+  background: linear-gradient(var(--color-accent), transparent);
+  animation: cue 2.2s var(--ease-in-out) infinite;
+  transform-origin: top;
+}
+
+@keyframes cue {
+  0% {
+    transform: scaleY(0);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
+}
+
+.controls {
+  position: absolute;
+  z-index: 3;
+  right: var(--gutter);
+  top: calc(var(--topbar-height) + var(--space-3));
+  display: flex;
+  gap: var(--space-2);
+  opacity: var(--fade);
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 2rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+  color: var(--color-fg);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.control:hover {
+  border-color: var(--color-accent);
+}
+
+/* pause ⏸ / play ▶ drawn in CSS */
+.pauseIcon {
+  width: 8px;
+  height: 10px;
+  border-left: 3px solid currentColor;
+  border-right: 3px solid currentColor;
+}
+
+.pauseIcon[data-paused] {
+  border: 0;
+  background: currentColor;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+/* ---------- intro (OS-1, §3.2) ---------- */
+.hero[data-intro='full'] .bar {
+  animation:
+    bars-in 500ms var(--ease-cinema) both,
+    bars-settle 400ms var(--ease-in-out) 2000ms both;
+}
+
+@keyframes bars-in {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes bars-settle {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(var(--bar-rest));
+  }
+}
+
+.hero[data-intro='full'] .letter {
+  animation: letter 560ms var(--ease-out) var(--d) both;
+}
+
+/*
+ * Reveals start at 1 % opacity, not 0: invisible to the eye, but the text is painted from
+ * the first frame, so the browser counts it as the page's main content straight away
+ * (LCP, master spec P-1) instead of only when the intro ends.
+ */
+@keyframes letter {
+  from {
+    opacity: 0.01;
+    transform: translateY(0.3em);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+.hero[data-intro='full'] .tagline,
+.hero[data-intro='full'] .kicker {
+  animation: rise 400ms var(--ease-out) 1600ms both;
+}
+
+.hero[data-intro='full'] .timecode,
+.hero[data-intro='full'] .scrollCue {
+  animation: fade 400ms var(--ease-out) 300ms both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0.01;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* OS-5: reduced motion — one quick fade, nothing slides */
+.hero[data-intro='reduced'] .titleCard,
+.hero[data-intro='reduced'] .bar {
+  animation: fade var(--dur-reduced) linear both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .availableDot,
+  .scrollLine,
+  .hero[data-video='playing'] .rec {
+    animation: none;
+  }
+
+  .video {
+    transition: none;
+  }
+}
+
+/* ---------- phones (HL-2) ---------- */
+@media (max-width: 640px) {
+  .hero {
+    --bar-max: 7svh;
+    --bar-rest: 0.14;
+  }
+
+  .scrollCue {
+    display: none;
+  }
+
+  .controlText {
+    display: none;
+  }
+
+  .scrim {
+    background: linear-gradient(
+      to top,
+      var(--color-bg) 0%,
+      color-mix(in srgb, var(--color-bg) 93%, transparent) 30%,
+      color-mix(in srgb, var(--color-bg) 88%, transparent) 60%,
+      color-mix(in srgb, var(--color-bg) 40%, transparent) 82%,
+      color-mix(in srgb, var(--color-bg) 55%, transparent) 100%
+    );
+  }
+}
+
+/* leave room for the floating Fast Lane */
+@media (max-width: 899px) {
+  .content {
+    padding-bottom: calc(var(--space-9) + var(--space-8));
+  }
+}

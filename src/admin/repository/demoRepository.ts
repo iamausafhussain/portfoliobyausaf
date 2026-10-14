@@ -21,7 +21,7 @@ import {
   testimonialInsert,
 } from '../../data/schemas';
 import { conflictError, entityNames, labelFor, RepoError } from './errors';
-import { demoImages, demoNewMessages, demoRows, demoSettings } from './demoSeed';
+import { demoHeroFiles, demoImages, demoNewMessages, demoRows, demoSettings } from './demoSeed';
 import { checkFileForBucket } from './limits';
 import { verifyTotp } from './totp';
 import type { PublicSource } from '../../data/source';
@@ -164,6 +164,15 @@ export function createDemoRepository(): AdminRepository & { publicSource: Public
       url: blobUrl(blob, svg),
     });
   });
+  for (const f of demoHeroFiles) {
+    files.set(f.path, {
+      path: f.path,
+      size: f.size,
+      contentType: f.contentType,
+      updatedAt: '2026-10-01T09:00:00Z',
+      url: `${import.meta.env.BASE_URL}hero-sample/${f.file}`,
+    });
+  }
 
   /* ---------------- auth ---------------- */
   let session: { email: string; aal: 'aal1' | 'aal2' } | null = null;

@@ -68,6 +68,7 @@ describe('production bundle', () => {
         '__demoRepo',
         'createDemoRepository',
         'publicSource',
+        '__queryClient',
       ]) {
         expect(code.includes(marker), `${marker} in ${file}`).toBe(false);
       }
@@ -83,6 +84,23 @@ describe('production bundle', () => {
       expect(code.includes('GoTrueClient'), `Supabase Auth in ${f}`).toBe(false);
     }
     expect(allJs.some((f) => f.code.includes('GreenSock'))).toBe(true);
+  });
+
+  it('Three.js and the particle scene are a lazy chunk (spec 04 PT-5, AC-4.12)', () => {
+    for (const f of entryFiles) {
+      const code = readFileSync(path.join(outDir, f), 'utf8');
+      expect(code.includes('WebGLRenderer'), `three.js in ${f}`).toBe(false);
+      expect(code.includes('uTintGlow'), `particle shader in ${f}`).toBe(false);
+    }
+    expect(allJs.some((f) => f.code.includes('uTintGlow') && !entryFiles.includes(f.file))).toBe(true);
+  });
+
+  it('dev-only switches are not in the build (?noguard, ?intro=hold, demo clips)', () => {
+    for (const { file, code } of allJs) {
+      expect(code.includes('noguard'), `noguard in ${file}`).toBe(false);
+      expect(/["']hold["']/.test(code), `?intro=hold in ${file}`).toBe(false);
+      expect(code.includes('Demo daylight reel'), `demo clip in ${file}`).toBe(false);
+    }
   });
 
   it('initial JS is within the 200 KB gzip budget (P-2)', () => {

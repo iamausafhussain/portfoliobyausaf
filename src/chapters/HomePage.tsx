@@ -1,17 +1,17 @@
 /**
  * Home page skeleton (spec 03 HP-1 – HP-4): every chapter in order, with simple, real
- * content until Parts 4–7 give each its cinematic version.
+ * content until Parts 5–7 give each its cinematic version. The hero is the Opening Scene (Part 4).
  */
 import { useSiteSettings } from '../data/queries/public';
 import { Chapter } from '../shell/Chapter';
 import { useHomeChapters } from '../shell/ChapterRegistry';
 import { useDocumentTitle } from '../shell/hooks';
+import { HeroChapter } from './hero/HeroChapter';
 import {
   AboutPlaceholder,
   ContactPlaceholder,
   CreditsPlaceholder,
   CustomSectionPlaceholder,
-  HeroPlaceholder,
   ProjectsPlaceholder,
   ReviewsPlaceholder,
   TimelinePlaceholder,
@@ -37,7 +37,7 @@ export function HomePage() {
         if (entry.key === 'hero') {
           return (
             <Chapter key={entry.id} entry={entry} variant="hero">
-              <HeroPlaceholder headingId={`${entry.id}-title`} />
+              <HeroChapter headingId={`${entry.id}-title`} />
             </Chapter>
           );
         }

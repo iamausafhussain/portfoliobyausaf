@@ -1,0 +1,9 @@
+/* Behind the page content, over the page background (spec 04 PT-1). */
+.canvas {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}

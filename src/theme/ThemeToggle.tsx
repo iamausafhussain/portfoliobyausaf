@@ -3,12 +3,14 @@
  * Used in the public top bar and in the admin.
  */
 import { useId, useRef } from 'react';
+import { useMagnetic } from '../cursor/magnetic';
 import { useTheme } from './ThemeProvider';
 import styles from './ThemeToggle.module.css';
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, toggle } = useTheme();
   const ref = useRef<HTMLButtonElement>(null);
+  useMagnetic(ref);
   const next = theme === 'dark' ? 'light' : 'dark';
   const maskId = `theme-mask-${useId().replace(/:/g, '')}`;
   return (

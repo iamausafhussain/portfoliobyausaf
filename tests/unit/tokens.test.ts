@@ -63,8 +63,14 @@ describe('token CSS', () => {
         const f = path.join(d, n);
         return statSync(f).isDirectory() ? walk(f) : /\.(css|tsx?)$/.test(n) ? [f] : [];
       });
+    const files = walk(path.resolve(__dirname, '../../src'));
+    // component-local variables count too: declared in CSS (`--x:`) or set from TSX (`'--x':`)
+    for (const f of files) {
+      for (const m of readFileSync(f, 'utf8').matchAll(/['\s{;(](--[a-z0-9-]+)'?\s*:/g))
+        if (m[1]) defined.add(m[1]);
+    }
     const missing: string[] = [];
-    for (const f of walk(path.resolve(__dirname, '../../src'))) {
+    for (const f of files) {
       for (const m of readFileSync(f, 'utf8').matchAll(/var\((--[a-z0-9-]+)\)/g)) {
         if (m[1] && !m[1].includes('${') && !defined.has(m[1]))
           missing.push(`${m[1]} in ${path.basename(f)}`);

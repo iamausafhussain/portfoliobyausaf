@@ -1,4 +1,6 @@
 /** Resume · Projects · Contact — always one click away (spec 03 NV-4). */
+import { useRef } from 'react';
+import { useMagnetic } from '../cursor/magnetic';
 import { useSiteSettings } from '../data/queries/public';
 import { publicMediaUrl } from '../data/source';
 import { useNavigateToChapter } from './useNavigateToChapter';
@@ -7,6 +9,8 @@ import styles from './shell.module.css';
 export function FastLane({ variant }: { variant: 'bar' | 'floating' }) {
   const settings = useSiteSettings();
   const goTo = useNavigateToChapter();
+  const contact = useRef<HTMLButtonElement>(null);
+  useMagnetic(contact);
   const resume = settings.data?.resume_path ? publicMediaUrl(settings.data.resume_path) : '';
 
   return (
@@ -24,6 +28,7 @@ export function FastLane({ variant }: { variant: 'bar' | 'floating' }) {
         Projects
       </button>
       <button
+        ref={contact}
         type="button"
         className={`${styles.fastItem} ${styles.fastPrimary}`}
         onClick={() => goTo('contact')}

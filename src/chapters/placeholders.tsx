@@ -1,5 +1,5 @@
 /**
- * Plain, readable chapter content until Parts 4–7 replace it (spec 03 HP-4). It also
+ * Plain, readable chapter content until Parts 5–7 replace it (spec 03 HP-4). It also
  * serves as the non-3D version of each chapter (master spec A-3).
  */
 import type { ReactNode } from 'react';
@@ -52,27 +52,6 @@ const year = (d: string | null | undefined) => (d ? d.slice(0, 4) : '');
 
 /* ------------------------------------------------------------------ */
 
-export function HeroPlaceholder({ headingId }: { headingId: string }) {
-  const settings = useSiteSettings();
-  const s = settings.data;
-  return (
-    <div className={styles.hero}>
-      <div className={styles.heroInner}>
-        <p className="label">{s?.location || 'Portfolio'}</p>
-        <h1 id={headingId} className={styles.heroName} tabIndex={-1}>
-          {s?.display_name ?? 'Ausaf Hussain'}
-        </h1>
-        {s?.tagline && <p className={styles.heroTagline}>{s.tagline}</p>}
-      </div>
-      <p className={`label ${styles.scrollCue}`} aria-hidden>
-        Scroll
-        <span className={styles.scrollLine} />
-      </p>
-      <Pending part={4} />
-    </div>
-  );
-}
-
 export function AboutPlaceholder() {
   const settings = useSiteSettings();
   const s = settings.data;
@@ -97,7 +76,7 @@ export function ProjectsPlaceholder() {
     <State loading={projects.isPending} error={projects.isError} empty={list.length === 0}>
       <ul className={styles.cards}>
         {list.map((p) => (
-          <li key={p.id} className={styles.card}>
+          <li key={p.id} className={styles.card} data-cursor="view">
             {p.cover && <Img image={p.cover} className={styles.cardImage} />}
             <div className={styles.cardBody}>
               <p className="label">

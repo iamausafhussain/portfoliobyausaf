@@ -16,11 +16,30 @@ export const demoImages: { path: string; label: string; w: number; h: number }[]
   { path: 'images/projects/demo-edi.webp', label: 'EDI pipeline', w: 1600, h: 900 },
   { path: 'images/projects/demo-reel.webp', label: 'Drone reel', w: 1600, h: 900 },
   { path: 'images/projects/demo-dashboard.webp', label: 'Dashboard', w: 1600, h: 900 },
-  { path: 'images/hero/demo-poster.webp', label: 'Hero poster', w: 1920, h: 1080 },
   { path: 'images/portrait/demo-portrait.webp', label: 'Portrait', w: 800, h: 1000 },
   { path: 'images/achievements/demo-badge.webp', label: 'Badge', w: 600, h: 600 },
   { path: 'images/talks/demo-stage.webp', label: 'On stage', w: 1200, h: 800 },
   { path: 'images/unused/demo-orphan.webp', label: 'Unused', w: 800, h: 600 },
+];
+
+/**
+ * Demo hero footage: the generated sample clips bundled in public/hero-sample (spec 04
+ * Q7), stored under the same paths an upload would get.
+ */
+export const demoHeroFiles: { path: string; file: string; contentType: string; size: number }[] = [
+  { path: 'images/hero/demo-poster.webp', file: 'dusk.webp', contentType: 'image/webp', size: 79_576 },
+  { path: 'images/hero/demo-day.webp', file: 'day.webp', contentType: 'image/webp', size: 93_256 },
+  { path: 'videos/hero/demo-dusk.mp4', file: 'dusk.mp4', contentType: 'video/mp4', size: 2_190_688 },
+  { path: 'videos/hero/demo-dusk.webm', file: 'dusk.webm', contentType: 'video/webm', size: 1_829_150 },
+  {
+    path: 'videos/hero/demo-dusk-phone.mp4',
+    file: 'dusk-phone.mp4',
+    contentType: 'video/mp4',
+    size: 487_235,
+  },
+  { path: 'videos/hero/demo-day.mp4', file: 'day.mp4', contentType: 'video/mp4', size: 3_246_198 },
+  { path: 'videos/hero/demo-day.webm', file: 'day.webm', contentType: 'video/webm', size: 2_262_198 },
+  { path: 'videos/hero/demo-day-phone.mp4', file: 'day-phone.mp4', contentType: 'video/mp4', size: 698_551 },
 ];
 
 export function demoSettings(): SettingsRow {
@@ -53,17 +72,32 @@ export function demoRows(): Record<AdminTable, Row[]> {
       {
         ...base(101, 0),
         title: 'Demo drone reel',
-        source_type: 'url',
-        video_mp4: 'https://example.com/demo-reel.mp4',
-        video_webm: null,
-        video_mobile: null,
+        source_type: 'upload',
+        video_mp4: 'videos/hero/demo-dusk.mp4',
+        video_webm: 'videos/hero/demo-dusk.webm',
+        video_mobile: 'videos/hero/demo-dusk-phone.mp4',
         poster: {
           path: 'images/hero/demo-poster.webp',
-          alt: 'Aerial shot over green hills',
-          width: 1920,
-          height: 1080,
+          alt: 'Aerial view of a coastline at dusk',
+          width: 1280,
+          height: 720,
         },
-        theme: 'both',
+        theme: 'dark',
+      },
+      {
+        ...base(102, 1),
+        title: 'Demo daylight reel',
+        source_type: 'upload',
+        video_mp4: 'videos/hero/demo-day.mp4',
+        video_webm: 'videos/hero/demo-day.webm',
+        video_mobile: 'videos/hero/demo-day-phone.mp4',
+        poster: {
+          path: 'images/hero/demo-day.webp',
+          alt: 'Aerial view of green hills and lakes by day',
+          width: 1280,
+          height: 720,
+        },
+        theme: 'light',
       },
     ],
     projects: [

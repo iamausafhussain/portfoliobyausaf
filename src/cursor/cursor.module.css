@@ -1,0 +1,126 @@
+/* Custom cursor (spec 04 CU-2, CU-3). Positions come from cursorEngine as transforms. */
+
+.root {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: var(--z-cursor);
+  pointer-events: none;
+  /* stays visible over footage and both themes */
+  mix-blend-mode: difference;
+  color: var(--color-cursor);
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.root[data-visible='1'] {
+  opacity: 1;
+}
+
+/* over text fields the system text cursor takes over */
+.root[data-kind='hide'] {
+  opacity: 0;
+}
+
+.dot,
+.corner,
+.label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.root[data-kind='view'] .dot,
+.root[data-kind='play'] .dot,
+.root[data-kind='drag'] .dot {
+  opacity: 0;
+}
+
+.corner {
+  width: 10px;
+  height: 10px;
+  border: 0 solid currentColor;
+  transition: border-width var(--dur-fast) var(--ease-out);
+}
+
+.tl {
+  border-top-width: 1.5px;
+  border-left-width: 1.5px;
+}
+
+.tr {
+  border-top-width: 1.5px;
+  border-right-width: 1.5px;
+}
+
+.br {
+  border-bottom-width: 1.5px;
+  border-right-width: 1.5px;
+}
+
+.bl {
+  border-bottom-width: 1.5px;
+  border-left-width: 1.5px;
+}
+
+/* shutter click */
+.root[data-pressed='1'] .corner {
+  border-width: 0;
+}
+
+.root[data-pressed='1'] .tl {
+  border-top-width: 2.5px;
+  border-left-width: 2.5px;
+}
+
+.root[data-pressed='1'] .tr {
+  border-top-width: 2.5px;
+  border-right-width: 2.5px;
+}
+
+.root[data-pressed='1'] .br {
+  border-bottom-width: 2.5px;
+  border-right-width: 2.5px;
+}
+
+.root[data-pressed='1'] .bl {
+  border-bottom-width: 2.5px;
+  border-left-width: 2.5px;
+}
+
+.label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.root[data-kind='view'] .label,
+.root[data-kind='play'] .label,
+.root[data-kind='drag'] .label {
+  opacity: 1;
+}
+
+/* hide the system cursor while ours is on, except where typing happens (CU-6) */
+:global(html.custom-cursor),
+:global(html.custom-cursor *) {
+  cursor: none !important;
+}
+
+:global(html.custom-cursor) :is(input, textarea, select, [contenteditable='true'], [contenteditable='']) {
+  cursor: auto !important;
+}

@@ -1,5 +1,6 @@
 /** Frame for every public page (spec 03 §3.1). */
 import { Outlet, ScrollRestoration } from 'react-router';
+import { CursorProvider } from '../cursor/CursorProvider';
 import { readSupabaseEnv } from '../lib/env';
 import { MotionProvider } from '../motion/MotionProvider';
 import { ChapterRegistryProvider } from '../shell/ChapterRegistry';
@@ -29,21 +30,23 @@ function DevNotice() {
 export function PublicLayout() {
   return (
     <MotionProvider>
-      <ChapterRegistryProvider>
-        <a className="skip-link" href="#main">
-          Skip to content
-        </a>
-        <TopBar />
-        <main id="main" className={styles.main} tabIndex={-1}>
-          <Outlet />
-        </main>
-        <Footer />
-        <FastLane variant="floating" />
-        <FilmGrain />
-        <DevNotice />
-        <RouteEffects />
-        <ScrollRestoration />
-      </ChapterRegistryProvider>
+      <CursorProvider>
+        <ChapterRegistryProvider>
+          <a className="skip-link" href="#main">
+            Skip to content
+          </a>
+          <TopBar />
+          <main id="main" className={styles.main} tabIndex={-1}>
+            <Outlet />
+          </main>
+          <Footer />
+          <FastLane variant="floating" />
+          <FilmGrain />
+          <DevNotice />
+          <RouteEffects />
+          <ScrollRestoration />
+        </ChapterRegistryProvider>
+      </CursorProvider>
     </MotionProvider>
   );
 }

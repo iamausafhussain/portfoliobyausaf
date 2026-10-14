@@ -62,7 +62,12 @@ export function MotionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     whenIdle(() => {
-      void loadMotionLibs().then((l) => active && setLibs(l));
+      loadMotionLibs()
+        .then((l) => active && setLibs(l))
+        // offline or blocked: the site simply stays without smooth scrolling (spec 03 SC-5)
+        .catch(() => {
+          libsPromise = null;
+        });
     });
     return () => {
       active = false;

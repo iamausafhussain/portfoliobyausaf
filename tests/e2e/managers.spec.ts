@@ -255,6 +255,7 @@ test('AC-2.14 / AC-2.15 / AC-2.19 big JPEG becomes a ≤2560px WebP; alt text re
 test('AC-2.17 videos over 15 MB are refused; over 4 MB uploads with a warning', async ({ page }) => {
   await signIn(page);
   await go(page, 'Hero media');
+  const videosBefore = (await demo<{ path: string }[]>(page, 'files.listAll', 'videos')).length; // demo sample clips
   await page.getByRole('link', { name: 'New clip' }).click();
   const input = page.locator('input[type=file][accept="video/mp4"]').first();
   await input.setInputFiles({
@@ -268,7 +269,7 @@ test('AC-2.17 videos over 15 MB are refused; over 4 MB uploads with a warning', 
   await expect(page.getByText(/This video is 5\.0 MB/)).toBeVisible();
   await expect
     .poll(async () => (await demo<{ path: string }[]>(page, 'files.listAll', 'videos')).length)
-    .toBe(1);
+    .toBe(videosBefore + 1);
 });
 
 test('AC-2.18 a poster can be captured from the uploaded video', async ({ page }) => {

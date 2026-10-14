@@ -1,5 +1,6 @@
 /** Full chapter list, as an overlay (spec 03 NV-3). Native <dialog>: focus trap and Esc built in. */
 import { useEffect, useRef, useState } from 'react';
+import { useMagnetic } from '../cursor/magnetic';
 import { Link } from 'react-router';
 import { usePublishedCustomSections, useSiteSettings } from '../data/queries/public';
 import { publicMediaUrl } from '../data/source';
@@ -13,6 +14,7 @@ export function ChapterMenu() {
   const [open, setOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const button = useRef<HTMLButtonElement>(null);
+  useMagnetic(button);
   const { chapters } = useHomeChapters();
   const { active } = useChapterRegistry();
   const sections = usePublishedCustomSections();

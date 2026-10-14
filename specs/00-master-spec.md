@@ -1,8 +1,8 @@
 # Part 0 — Master Spec
 
 **Project:** Ausaf Hussain — Animated Portfolio ("Director's Cut × Data in Transit")
-**Status:** Draft — awaiting approval
-**Version:** 0.3 · 2026-10-13
+**Status:** Approved · Part 0 built and verified (2026-10-14)
+**Version:** 0.4 · 2026-10-14
 **Owner:** Ausaf · **Builder:** Claude
 
 ---
@@ -83,9 +83,10 @@ All values below are **design tokens**. They live in one source (`src/theme/toke
 | `accent-text` | `#F57327` | `#9C3F09` | Accent-coloured body text / links (AA on `bg`) |
 | `accent-2` | `#49ABE8` (signal blue) | `#1981C8` | Secondary data trails, info states |
 | `accent-2-text` | `#49ABE8` | `#13649B` | Secondary accent as text |
+| `on-accent` | `#0B0B0D` | `#FFFFFF` | Text/icons on an `accent` background (buttons) |
 | `border` | `#26262C` | `#E2DCCF` | Dividers |
 | `danger` | `#E5534B` | `#B42318` | Errors |
-| `success` | `#3FB27F` | `#1E7F4F` | Success states |
+| `success` | `#3FB27F` | `#1B7849` | Success states |
 | `grain-opacity` | `0.08` | `0.04` | Film grain overlay |
 | `globe-base` | `#121216` matte | `#EFEAE0` porcelain | Globe material |
 | `globe-glow` | on (bloom) | off (soft shadow instead) | Packet rendering |
@@ -94,7 +95,9 @@ Accent hues are taken from the Awwwards "Animation" colour palette (`#F57327`, `
 
 All text/background pairs must meet **WCAG AA** (4.5:1 body, 3:1 large text and UI components) in both themes. `accent` / `accent-2` in light mode are for UI and large text only; small text uses the `-text` variants.
 
-Measured contrast on `bg`: dark — `fg` 16.1, `fg-muted` 6.6, `accent` 6.9, `accent-2` 7.8 · light — `fg` 16.5, `fg-muted` 6.2, `accent-text` 6.0, `accent-2-text` 5.7, `accent` 4.3 and `accent-2` 3.8 (UI/large text only). All pass AA for their intended use.
+Measured contrast on `bg`: dark — `fg` 16.1, `fg-muted` 6.6, `accent` 6.9, `accent-2` 7.8 · light — `fg` 16.5, `fg-muted` 6.2, `accent-text` 6.0, `accent-2-text` 5.7, `success` 4.9, `accent` 4.3 and `accent-2` 3.8 (UI/large text only); `on-accent` on `accent` 6.9 (dark) / 4.8 (light). All pass AA for their intended use, enforced by `tests/unit/tokens.test.ts`.
+
+CSS variable names are the token names in kebab-case with a `--color-` prefix, e.g. `--color-bg-elevated`, `--color-accent-2-text`.
 
 ### 6.2 Typography
 
@@ -107,7 +110,7 @@ Two fonts only. Data labels, tech tags and timecodes use Inter Medium with upper
 
 **Garamond note:** Apple Garamond is Apple's proprietary corporate typeface and is not licensed for embedding on websites. The spec uses **EB Garamond Italic** (open-source, SIL OFL) as the implementation, which is the closest freely licensed match. The font family is a single token (`font-italic`), so if you obtain a web licence for Apple Garamond or another Garamond, swapping it is a one-line change.
 
-Fluid type scale using `clamp()`: `xs 12 · sm 14 · base 16 · lg 20 · xl 28 · 2xl 40 · 3xl 64 · hero 96–160 px`.
+Fluid type scale using `clamp()`, growing linearly between a 375 px and a 1440 px wide viewport (size at 375 → size at 1440): `xs 12 · sm 14 · base 16 · lg 18→20 · xl 22→28 · 2xl 28→40 · 3xl 36→64 · hero 56→160 px`. (The hero minimum is 56 px so "Ausaf Hussain" fits on one line on a phone.)
 Fonts are self-hosted (woff2, subset, `font-display: swap`).
 
 #### 6.2.1 Swappable fonts
@@ -344,22 +347,22 @@ Latest 2 versions of Chrome, Edge, Firefox, Safari (macOS + iOS), Samsung Intern
 
 Part 0 produces the foundation every later part builds on:
 
-- [ ] 0.1 Scaffold Vite + React + TypeScript project with the folder structure in §10
-- [ ] 0.2 Add ESLint, Prettier, Vitest; strict `tsconfig`
-- [ ] 0.3 Implement `src/theme/tokens.ts` with all tokens from §6 (both themes)
-- [ ] 0.4 Emit tokens as CSS custom properties; global styles, resets
-- [ ] 0.4a Implement `src/theme/fonts.ts` and generate `@font-face`, font variables and preloads from it (§6.2.1); self-host EB Garamond Italic and Inter
-- [ ] 0.5 Add `.env.example`, `netlify.toml` (SPA redirect), README with setup steps
-- [ ] 0.6 Token preview page (`/dev/tokens`, dev-only) showing colours, type and motion in both themes
+- [x] 0.1 Scaffold Vite + React + TypeScript project with the folder structure in §10
+- [x] 0.2 Add ESLint, Prettier, Vitest; strict `tsconfig`
+- [x] 0.3 Implement `src/theme/tokens.ts` with all tokens from §6 (both themes)
+- [x] 0.4 Emit tokens as CSS custom properties; global styles, resets
+- [x] 0.4a Implement `src/theme/fonts.ts` and generate `@font-face`, font variables and preloads from it (§6.2.1); self-host EB Garamond Italic and Inter
+- [x] 0.5 Add `.env.example`, `netlify.toml` (SPA redirect), README with setup steps
+- [x] 0.6 Token preview page (`/dev/tokens`, dev-only) showing colours, type and motion in both themes
 
 ### Acceptance criteria — Part 0
-- [ ] AC-0.1 `npm run dev`, `npm run build`, `npm run lint`, `npm test` all succeed on a clean clone.
-- [ ] AC-0.2 Token preview page renders every colour, type size and motion token in both themes.
-- [ ] AC-0.3 All §6.1 text/background pairs pass WCAG AA (automated contrast test).
-- [ ] AC-0.4 No hard-coded colour values outside `tokens.ts` (lint/grep check).
-- [ ] AC-0.5 Folder structure matches §10.
-- [ ] AC-0.6 Changing `family` and `files` in `fonts.ts` (test: swap Garamond for another serif) updates the whole site with no other file edited.
-- [ ] AC-0.7 No font family names appear outside `fonts.ts` (grep check).
+- [x] AC-0.1 `npm run dev`, `npm run build`, `npm run lint`, `npm test` all succeed on a clean clone. ✅ *verified on a fresh clone: `npm ci`, `build`, `lint`, `test` pass; `dev` serves `/` and `/dev/tokens` with no console errors*
+- [x] AC-0.2 Token preview page renders every colour, type size and motion token in both themes. ✅ *checked in Chromium at 1440 px and 375 px, both themes, no horizontal scroll*
+- [x] AC-0.3 All §6.1 text/background pairs pass WCAG AA (automated contrast test). ✅ *26 contrast tests; caught light `success` at 4.47:1, fixed to `#1B7849` (4.91:1)*
+- [x] AC-0.4 No hard-coded colour values outside `tokens.ts` (lint/grep check). ✅ *`tests/unit/guardrails.test.ts`; also a test that every `var(--…)` used in `src/` is defined*
+- [x] AC-0.5 Folder structure matches §10. ✅ *`tests/unit/guardrails.test.ts`*
+- [x] AC-0.6 Changing `family` and `files` in `fonts.ts` (test: swap Garamond for another serif) updates the whole site with no other file edited. ✅ *`tests/unit/designSystem.test.ts` swaps the italic font and checks every generated rule*
+- [x] AC-0.7 No font family names appear outside `fonts.ts` (grep check). ✅ *`tests/unit/guardrails.test.ts`*
 
 ## 16. Decisions log
 
@@ -379,3 +382,4 @@ No open questions.
 - 0.1 (2026-10-13) — Initial draft.
 - 0.2 (2026-10-13) — Accent colours from Awwwards palette; Garamond italic + Inter; admin-managed hero footage (§11.1); display name, hosting and repo decisions recorded (§16).
 - 0.3 (2026-10-13) — Two fonts only (JetBrains Mono removed); fonts swappable from a single `fonts.ts` config (§6.2.1, FT-1–FT-6, AC-0.6/0.7).
+- 0.4 (2026-10-14) — Built and verified. Changes found during the build: light `success` darkened to `#1B7849` (failed AA at 4.47:1); added `on-accent` token for button labels; fluid type minimums defined for 375 px (hero 56→160 px); CSS variable naming documented (§6.1, §6.2).

@@ -1,0 +1,170 @@
+#!/usr/bin/env node
+/**
+ * Checks the security rules against your LIVE Supabase project (spec 01 task 1.14).
+ *
+ *   npm run db:verify
+ *
+ * Reads VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY from .env.
+ * Optional, for the owner checks (upload limits, owner access): set OWNER_EMAIL and
+ * OWNER_PASSWORD in your shell for this one run — never put them in .env or commit them:
+ *
+ *   OWNER_EMAIL=you@example.com OWNER_PASSWORD='…' npm run db:verify          (macOS/Linux)
+ *   $env:OWNER_EMAIL='you@example.com'; $env:OWNER_PASSWORD='…'; npm run db:verify   (PowerShell)
+ *
+ * The script only reads data, plus uploads and immediately deletes three tiny test files
+ * when owner credentials are given. It never changes your content.
+ * If your account requires two-factor login, the owner checks are skipped.
+ */
+import { readFileSync } from 'node:fs';
+import { createClient } from '@supabase/supabase-js';
+
+function loadDotEnv() {
+  try {
+    for (const line of readFileSync('.env', 'utf8').split(/\r?\n/)) {
+      const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/.exec(line);
+      if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
+    }
+  } catch {
+    /* no .env — rely on the environment */
+  }
+}
+loadDotEnv();
+
+const url = process.env.VITE_SUPABASE_URL;
+const anonKey = process.env.VITE_SUPABASE_ANON_KEY;
+if (!url || !anonKey) {
+  console.error('✗ Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env first (see supabase/README.md).');
+  process.exit(1);
+}
+
+let passed = 0;
+let failed = 0;
+const ok = (cond, name, detail = '') => {
+  if (cond) {
+    passed++;
+    console.log(`  ✓ ${name}`);
+  } else {
+    failed++;
+    console.log(`  ✗ ${name}${detail ? ` — ${detail}` : ''}`);
+  }
+};
+
+const fresh = () => createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+const contentTables = [
+  'hero_media',
+  'projects',
+  'achievements',
+  'experience',
+  'skills',
+  'testimonials',
+  'custom_sections',
+  'custom_items',
+];
+
+console.log('\n▸ Anonymous visitor');
+const anon = fresh();
+{
+  const { data, error } = await anon.from('site_settings').select('id, display_name');
+  ok(!error && data?.length === 1, 'reads site_settings', error?.message);
+}
+for (const t of contentTables) {
+  const { data, error } = await anon.from(t).select('id').eq('is_published', false);
+  ok(
+    !error && data.length === 0,
+    `sees no unpublished ${t}`,
+    error?.message ?? `${data?.length} rows visible`,
+  );
+}
+for (const t of contentTables) {
+  const { error } = await anon.from(t).insert({});
+  ok(!!error, `cannot insert into ${t}`);
+}
+{
+  const { error } = await anon.from('site_settings').update({ tagline: 'x' }).eq('id', 1);
+  ok(!!error, 'cannot update site_settings');
+}
+{
+  const { error } = await anon.from('messages').select('id').limit(1);
+  ok(!!error, 'cannot read messages');
+}
+{
+  const { error } = await anon.from('app_owner').select('*');
+  ok(!!error, 'cannot read app_owner');
+}
+{
+  const { error } = await anon.rpc('reorder', { p_table: 'projects', p_ids: [] });
+  ok(!!error, 'cannot call reorder');
+}
+{
+  const { data, error } = await anon.rpc('is_owner');
+  ok(!error && data === false, 'is_owner() is false', error?.message);
+}
+{
+  const { error } = await anon.storage
+    .from('images')
+    .upload(
+      `verify/anon-${Date.now()}.png`,
+      new Blob([new Uint8Array([137, 80, 78, 71])], { type: 'image/png' }),
+    );
+  ok(!!error, 'cannot upload files');
+}
+{
+  const { data, error } = await anon.storage.from('images').list();
+  ok(!!error || (data?.length ?? 0) === 0, 'cannot list bucket contents', error?.message);
+}
+
+const email = process.env.OWNER_EMAIL;
+const password = process.env.OWNER_PASSWORD;
+if (!email || !password) {
+  console.log('\n▸ Owner checks skipped (set OWNER_EMAIL and OWNER_PASSWORD for this run to include them)');
+} else {
+  console.log('\n▸ Owner');
+  const owner = fresh();
+  const { data: auth, error: authError } = await owner.auth.signInWithPassword({ email, password });
+  if (authError) {
+    ok(false, 'signs in', authError.message);
+  } else if (
+    auth.session &&
+    (await owner.auth.mfa.getAuthenticatorAssuranceLevel()).data?.nextLevel === 'aal2'
+  ) {
+    console.log('  – two-factor login is on; owner checks skipped');
+  } else {
+    const { data: isOwner } = await owner.rpc('is_owner');
+    ok(isOwner === true, 'is recognised as owner (setup step S6 done)');
+    {
+      const { error } = await owner.from('projects').select('id').eq('is_published', false);
+      ok(!error, 'can read unpublished content', error?.message);
+    }
+    {
+      const { error } = await owner.from('messages').select('id').limit(1);
+      ok(!error, 'can read messages', error?.message);
+    }
+    const stamp = Date.now();
+    const tiny = new Blob([new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10])], { type: 'image/png' });
+    {
+      const path = `verify/ok-${stamp}.png`;
+      const { error } = await owner.storage.from('images').upload(path, tiny, { contentType: 'image/png' });
+      ok(!error, 'can upload an image', error?.message);
+      if (!error) await owner.storage.from('images').remove([path]);
+    }
+    {
+      const path = `verify/wrong-type-${stamp}.txt`;
+      const { error } = await owner.storage
+        .from('documents')
+        .upload(path, new Blob(['hello'], { type: 'text/plain' }), { contentType: 'text/plain' });
+      ok(!!error, 'wrong file type is rejected (documents accepts PDF only)');
+      if (!error) await owner.storage.from('documents').remove([path]);
+    }
+    {
+      const path = `verify/too-big-${stamp}.png`;
+      const big = new Blob([new Uint8Array(5 * 1024 * 1024 + 1)], { type: 'image/png' });
+      const { error } = await owner.storage.from('images').upload(path, big, { contentType: 'image/png' });
+      ok(!!error, 'file over 5 MB is rejected');
+      if (!error) await owner.storage.from('images').remove([path]);
+    }
+    await owner.auth.signOut();
+  }
+}
+
+console.log(`\n${failed === 0 ? '✔' : '✗'} ${passed} passed, ${failed} failed\n`);
+process.exit(failed === 0 ? 0 : 1);

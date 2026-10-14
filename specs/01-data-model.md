@@ -1,7 +1,7 @@
 # Part 1 — Data Model, Security (RLS) and Auth
 
-**Status:** Draft — awaiting approval
-**Version:** 0.1 · 2026-10-14
+**Status:** Approved · Built and verified locally (2026-10-14) · live setup S1–S7 pending
+**Version:** 0.2 · 2026-10-14
 **Depends on:** Part 0 (master spec v0.3)
 **Feeds:** Part 2 (admin), Parts 4–7 (public chapters)
 
@@ -280,7 +280,7 @@ No `sort_order` / `is_published`.
 
 ### 3.6 Row Level Security
 
-RLS is **enabled and forced** on every table. Policies:
+RLS is **enabled** on every table (not *forced*: forcing would also apply RLS to the table owner `postgres`, which breaks the security-definer `is_owner()` check and setup step S6; API roles never own tables, so they are always subject to RLS). Policies:
 
 | Table | Anonymous / non-owner | Owner |
 |---|---|---|
@@ -288,11 +288,13 @@ RLS is **enabled and forced** on every table. Policies:
 | `site_settings` | `select` | `select`, `update` |
 | `hero_media`, `projects`, `achievements`, `experience`, `skills`, `testimonials`, `custom_sections` | `select` where `is_published` | all |
 | `custom_items` | `select` where `is_published` **and** parent section is published | all |
-| `messages` | `insert` only, with check `status = 'new'` | `select`, `update`, `delete` |
+| `messages` | `insert` only, with check `status = 'new'` | `select`, `update` (status column only), `delete` |
 
 Notes:
 - Anonymous inserts into `messages` cannot set `status` or `created_at` to anything other than defaults (column-level grants limit insertable columns to `name, email, kind, subject, body, budget`).
 - `delete` is owner-only everywhere.
+- `app_owner` has no grants at all: not even the owner can read it through the API (only `is_owner()` can).
+- `site_settings` can only be updated through the API, never inserted or deleted; its single row is created by migration `0003`.
 - Table-level `grant`s are kept minimal so a missing policy fails closed.
 
 ### 3.7 Storage buckets
@@ -320,7 +322,7 @@ Notes:
 | File | Contents |
 |---|---|
 | `src/lib/supabase.ts` | Single client created from `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`; throws a clear error if either is missing. |
-| `src/data/database.types.ts` | Generated with `supabase gen types typescript`. |
+| `src/data/database.types.ts` | Generated with `supabase gen types typescript` (first version generated from a local Postgres with all migrations applied). |
 | `src/data/schemas/*.ts` | One Zod schema per entity (row + insert/update variants), plus `ImageRef` and `FieldDefinition`. |
 | `src/data/schemas/customItem.ts` | `buildItemSchema(fields)` — creates a Zod schema from a section's field definitions. |
 | `src/data/queries/*.ts` | TanStack Query hooks for public reads (`usePublishedProjects`, `useSiteSettings`, …). Admin hooks come in Part 2. |
@@ -362,52 +364,52 @@ The seed adds one example row per table (marked clearly as placeholder) so the f
 
 ## 4. Tasks
 
-- [ ] 1.1 Write `0001_extensions_enums.sql` (§3.2)
-- [ ] 1.2 Write `0002_helpers.sql` — `set_updated_at`, `is_owner`, `is_image_ref`, `is_image_ref_array` (§3.5)
-- [ ] 1.3 Write `0003_tables.sql` — all tables with constraints and triggers (§3.3)
-- [ ] 1.4 Write `0004_indexes.sql` (§3.4)
-- [ ] 1.5 Write `0005_rls.sql` — enable/force RLS, grants, policies (§3.6)
-- [ ] 1.6 Write `0006_storage.sql` — buckets and storage policies (§3.7)
-- [ ] 1.7 Write `0007_functions.sql` — `reorder` (§3.5)
-- [ ] 1.8 Write `seed.sql`
-- [ ] 1.9 Write `tests/rls.test.sql` covering every acceptance criterion in §5
-- [ ] 1.10 Run all migrations + tests against a local Postgres with a stubbed `auth` schema in the build environment; fix until green
-- [ ] 1.11 Add `src/lib/supabase.ts`, generated types, Zod schemas, `buildItemSchema`, public query hooks (§3.9)
-- [ ] 1.12 Unit tests (Vitest) for Zod schemas and `buildItemSchema`
-- [ ] 1.13 Write `supabase/README.md` with the setup guide (§3.11)
-- [ ] 1.14 Ausaf runs setup S1–S7; Claude re-runs the security tests against the live project with the anon key (read-only checks)
+- [x] 1.1 Write `0001_extensions_enums.sql` (§3.2)
+- [x] 1.2 Write `0002_helpers.sql` — `set_updated_at`, `is_owner`, `is_image_ref`, `is_image_ref_array` (§3.5)
+- [x] 1.3 Write `0003_tables.sql` — all tables with constraints and triggers (§3.3)
+- [x] 1.4 Write `0004_indexes.sql` (§3.4)
+- [x] 1.5 Write `0005_rls.sql` — enable/force RLS, grants, policies (§3.6)
+- [x] 1.6 Write `0006_storage.sql` — buckets and storage policies (§3.7)
+- [x] 1.7 Write `0007_functions.sql` — `reorder` (§3.5)
+- [x] 1.8 Write `seed.sql`
+- [x] 1.9 Write `tests/rls.test.sql` covering every acceptance criterion in §5
+- [x] 1.10 Run all migrations + tests against a local Postgres with a stubbed `auth` schema in the build environment; fix until green
+- [x] 1.11 Add `src/lib/supabase.ts`, generated types, Zod schemas, `buildItemSchema`, public query hooks (§3.9)
+- [x] 1.12 Unit tests (Vitest) for Zod schemas and `buildItemSchema`
+- [x] 1.13 Write `supabase/README.md` with the setup guide (§3.11)
+- [ ] 1.14 Ausaf runs setup S1–S7, then `npm run db:verify` (≈25 anonymous checks; with `OWNER_EMAIL`/`OWNER_PASSWORD` for one run, also owner access and live upload type/size limits) — **pending**
 
 ## 5. Acceptance criteria
 
 ### Schema
-- [ ] AC-1.1 All migrations apply cleanly, in order, to an empty database.
-- [ ] AC-1.2 A second row in `site_settings` is rejected.
-- [ ] AC-1.3 A second row in `app_owner` is rejected.
-- [ ] AC-1.4 Duplicate or invalid slugs (`My Project`, `a--b`, `admin`) are rejected.
-- [ ] AC-1.5 Text over its length limit is rejected by the database.
-- [ ] AC-1.6 An image reference without `alt` is rejected.
-- [ ] AC-1.7 `experience.end_date` before `start_date` is rejected.
-- [ ] AC-1.8 `custom_items.data` that is not a JSON object is rejected.
-- [ ] AC-1.9 Deleting a custom section deletes its items.
-- [ ] AC-1.10 Updating any row changes `updated_at`.
-- [ ] AC-1.11 `reorder` sets `sort_order` to match the given order and rejects a table name outside the whitelist.
+- [x] AC-1.1 All migrations apply cleanly, in order, to an empty database. ✅ *applied twice in a row (re-runnable) plus seed twice, by `npm run db:test`*
+- [x] AC-1.2 A second row in `site_settings` is rejected. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.3 A second row in `app_owner` is rejected. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.4 Duplicate or invalid slugs (`My Project`, `a--b`, `admin`) are rejected. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.5 Text over its length limit is rejected by the database. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.6 An image reference without `alt` is rejected. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.7 `experience.end_date` before `start_date` is rejected. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.8 `custom_items.data` that is not a JSON object is rejected. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.9 Deleting a custom section deletes its items. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.10 Updating any row changes `updated_at`. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.11 `reorder` sets `sort_order` to match the given order and rejects a table name outside the whitelist. ✅ *`supabase/tests/rls.test.sql`*
 
 ### Security
-- [ ] AC-1.12 Anonymous: can read published rows; cannot read unpublished rows in any table.
-- [ ] AC-1.13 Anonymous: cannot read items of an unpublished custom section, even if the items are published.
-- [ ] AC-1.14 Anonymous: insert, update and delete fail on every content table.
-- [ ] AC-1.15 Anonymous: can insert a valid message; cannot set `status`; cannot select, update or delete messages.
-- [ ] AC-1.16 Signed-in non-owner: same results as AC-1.12–1.15.
-- [ ] AC-1.17 Owner: full CRUD on every content table; can read and update messages.
-- [ ] AC-1.18 Anonymous and non-owner: cannot upload to any bucket; owner can.
-- [ ] AC-1.19 Upload of a wrong file type or over the size limit is rejected.
-- [ ] AC-1.20 Calling `reorder` as anonymous or non-owner fails.
+- [x] AC-1.12 Anonymous: can read published rows; cannot read unpublished rows in any table. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.13 Anonymous: cannot read items of an unpublished custom section, even if the items are published. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.14 Anonymous: insert, update and delete fail on every content table. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.15 Anonymous: can insert a valid message; cannot set `status`; cannot select, update or delete messages. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.16 Signed-in non-owner: same results as AC-1.12–1.15. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.17 Owner: full CRUD on every content table; can read and update messages. ✅ *`supabase/tests/rls.test.sql`*
+- [x] AC-1.18 Anonymous and non-owner: cannot upload to any bucket; owner can. ✅ *`supabase/tests/rls.test.sql`*
+- [ ] AC-1.19 Upload of a wrong file type or over the size limit is rejected. ⏳ *bucket limits verified locally; live enforcement is checked by `npm run db:verify` with owner credentials (task 1.14)*
+- [x] AC-1.20 Calling `reorder` as anonymous or non-owner fails. ✅ *`supabase/tests/rls.test.sql`*
 
 ### App layer
-- [ ] AC-1.21 The app fails fast with a readable error if Supabase env vars are missing.
-- [ ] AC-1.22 Every entity has a Zod schema; invalid rows are caught and logged, not rendered.
-- [ ] AC-1.23 `buildItemSchema` enforces required fields, types and select options for every field type.
-- [ ] AC-1.24 No service-role key, database password or personal email in the repo (grep check).
+- [x] AC-1.21 The app fails fast with a readable error if Supabase env vars are missing. ✅ *`readSupabaseEnv()` names each missing variable and how to fix it*
+- [x] AC-1.22 Every entity has a Zod schema; invalid rows are caught and logged, not rendered. ✅ *`parseRows()` drops and logs invalid rows; custom item data also validated per section*
+- [x] AC-1.23 `buildItemSchema` enforces required fields, types and select options for every field type. ✅ *all 10 field types, required/optional, select options, 50 KB limit, unknown keys kept*
+- [x] AC-1.24 No service-role key, database password or personal email in the repo (grep check). ✅ *`tests/unit/guardrails.test.ts` scans every committed text file*
 
 ## 6. Risks
 
@@ -418,14 +420,34 @@ The seed adds one example row per table (marked clearly as placeholder) so the f
 | Owner locks themself out | Password reset via email; app_owner can be re-set from the SQL Editor |
 | Custom field renamed after items exist | Old values kept in JSON; admin shows a "fields no longer defined" notice (Part 2) |
 
-## 7. Open questions
+## 7. Decisions
 
-| # | Question | Default if no answer |
+| # | Question | Decision |
 |---|---|---|
-| Q1 | Turn on two-factor login (authenticator app such as Google Authenticator) for the admin? | **Yes**, required for the owner |
-| Q2 | Project categories `work / freelance / personal` — OK? | Use as listed |
-| Q3 | Show a public "Available for work" badge? | Yes, toggle in admin |
-| Q4 | Auto-delete archived messages after some time? | No, keep forever |
+| Q1 | Two-factor login for the admin? | **Yes, required.** Enforcement is added in Part 2 together with the enrolment screen: `is_owner()` will also require a two-factor session (`aal2`). Until then the owner can sign in with password only. |
+| Q2 | Project categories `work / freelance / personal` | As listed |
+| Q3 | Public "Available for work" badge | Yes, toggle in admin (`site_settings.available_for_work`) |
+| Q4 | Auto-delete archived messages | No, keep forever |
+
+## 8. Verification summary (2026-10-14)
+
+| Check | Result |
+|---|---|
+| `npm run db:test` — migrations ×2, seed ×2, schema + security checks as anon, stranger and owner | **212 / 212 passed** |
+| Mutation check — security rules deliberately broken to confirm the tests notice | 3 of 4 caught; the 4th (dropping the "section is published" check on custom items) is still blocked by RLS on the section itself, so visitors still can't see those items |
+| `npm test` — Zod schemas, `buildItemSchema`, env errors, media URLs, guardrails | **198 / 198 passed** |
+| Types generated by the Supabase CLI from the migrated database; `tsc` strict | Clean |
+| Live project (task 1.14) | Pending setup |
 
 ## Changelog
 - 0.1 (2026-10-14) — Initial draft.
+- 0.2 (2026-10-14) — Built and verified. Changes found during the build:
+  - RLS enabled but not *forced* (§3.6, reason given there).
+  - Owner may update only a message's `status`; nobody (including the owner) can read `app_owner` through the API; `site_settings` row is created by migration `0003`, not the seed.
+  - Field definitions are also validated by the database (not only the app), and a custom section cannot be placed after `contact`.
+  - `reorder()` rejects duplicate ids; sort order is 0-based.
+  - ImageRef may carry an optional `blurhash` (for blurred placeholders); paths are checked for `..` and unknown keys are rejected.
+  - Optional text columns are stored as `''` (not null) unless marked nullable.
+  - Seed rows are all unpublished and marked "[Placeholder]".
+  - Added `npm run db:verify` for the live checks (task 1.14) and `supabase/README.md` for setup.
+  - Q1–Q4 decided (§7).

@@ -8,6 +8,7 @@ import { FieldShell } from '../ui/FieldShell';
 import { Button, Notice, Spinner, ui } from '../ui/primitives';
 import { routeForStatus, useAuth } from './AuthProvider';
 import { FullScreenLoader, nextPath } from './RequireOwner';
+import { TotpEnrolment } from './TotpEnrolment';
 import styles from './auth.module.css';
 
 export const MIN_PASSWORD_LENGTH = 12;
@@ -226,7 +227,6 @@ export function SetupTwoFactorPage() {
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
-  const [showKey, setShowKey] = useState(false);
 
   useEffect(() => {
     if (redirect) return;
@@ -273,23 +273,19 @@ export function SetupTwoFactorPage() {
         <li>
           Install an authenticator app (Google Authenticator, Microsoft Authenticator, 1Password, Bitwarden…).
         </li>
-        <li>Scan this QR code with it.</li>
+        <li>Scan this QR code with it — or, on your phone, tap &ldquo;Open in authenticator app&rdquo;.</li>
         <li>Enter the 6-digit code it shows.</li>
       </ol>
       {loadError && <Notice tone="error">{loadError}</Notice>}
-      <div className={styles.qrWrap}>
-        {setup ? (
-          <>
-            <img className={styles.qr} src={setup.qrCode} alt="QR code for your authenticator app" />
-            <button type="button" className={styles.linkButton} onClick={() => setShowKey((s) => !s)}>
-              {showKey ? 'Hide setup key' : "Can't scan? Show the setup key"}
-            </button>
-            {showKey && <code className={styles.secret}>{setup.secret}</code>}
-          </>
-        ) : (
-          !loadError && <Spinner label="Preparing QR code" />
-        )}
-      </div>
+      {setup ? (
+        <TotpEnrolment setup={setup} label="QR code for your authenticator app" />
+      ) : (
+        !loadError && (
+          <div className={styles.qrWrap}>
+            <Spinner label="Preparing QR code" />
+          </div>
+        )
+      )}
       <form className={styles.form} onSubmit={submit} noValidate>
         <CodeInput value={code} onChange={setCode} error={error} autoFocus={false} />
         <Button type="submit" variant="primary" busy={busy} disabled={!setup}>

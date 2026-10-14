@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../auth/AuthProvider';
 import { NewPasswordForm } from '../auth/screens';
 import authStyles from '../auth/auth.module.css';
+import { TotpEnrolment } from '../auth/TotpEnrolment';
 import { FieldGroup } from '../fields/media';
 import { useRepository } from '../repository';
 import { isRepoError } from '../repository/errors';
@@ -107,10 +108,7 @@ function Authenticators() {
 
       {setup ? (
         <form className={styles.stack} onSubmit={finish} noValidate>
-          <div className={authStyles.qrWrap}>
-            <img className={authStyles.qr} src={setup.qrCode} alt="QR code for your backup authenticator" />
-            <code className={authStyles.secret}>{setup.secret}</code>
-          </div>
+          <TotpEnrolment setup={setup} label="QR code for your backup authenticator" />
           <FieldShell label="6-digit code from the backup app" required error={error}>
             {(a11y) => (
               <input

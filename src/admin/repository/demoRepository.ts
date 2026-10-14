@@ -195,22 +195,10 @@ export function createDemoRepository(): AdminRepository {
     async startTotpSetup() {
       await delay();
       pendingFactor = `factor-${authenticators.length + 1}`;
-      // A QR-looking placeholder (not scannable): three finder squares and a pseudo-random grid.
-      const ink = themes.light.color.fg;
-      const paper = themes.light.color.bgElevated;
-      const finder = (x: number, y: number) =>
-        `<rect x="${x}" y="${y}" width="7" height="7" fill="${ink}"/><rect x="${x + 1}" y="${y + 1}" width="5" height="5" fill="${paper}"/><rect x="${x + 2}" y="${y + 2}" width="3" height="3" fill="${ink}"/>`;
-      const inFinder = (x: number, y: number) => (x < 8 && y < 8) || (x > 12 && y < 8) || (x < 8 && y > 12);
-      const modules: string[] = [];
-      for (let y = 0; y < 21; y++)
-        for (let x = 0; x < 21; x++)
-          if (!inFinder(x, y) && (x * 7 + y * 13 + x * y) % 3 === 0)
-            modules.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${ink}"/>`);
-      const qr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 25 25" shape-rendering="crispEdges"><rect x="-2" y="-2" width="25" height="25" fill="${paper}"/>${finder(0, 0)}${finder(14, 0)}${finder(0, 14)}${modules.join('')}</svg>`;
       return {
         factorId: pendingFactor,
-        qrCode: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(qr)}`,
-        secret: 'DEMO DEMO DEMO DEMO',
+        uri: `otpauth://totp/Demo%20Portfolio:${encodeURIComponent(DEMO_EMAIL)}?secret=JBSWY3DPEHPK3PXP&issuer=Demo%20Portfolio`,
+        secret: 'JBSWY3DPEHPK3PXP',
       };
     },
     async finishTotpSetup(factorId, code) {

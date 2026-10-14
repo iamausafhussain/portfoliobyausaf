@@ -212,3 +212,11 @@ describe('auth helpers', () => {
     expect(nextPath(null)).toBe('/admin');
   });
 });
+
+describe('authenticator setup key', async () => {
+  const { groupKey } = await import('../../src/admin/auth/TotpEnrolment');
+  it('groups the key in fours for typing', () => {
+    expect(groupKey('JBSWY3DPEHPK3PXP')).toBe('JBSW Y3DP EHPK 3PXP');
+    expect(groupKey('ABCDE')).toBe('ABCD E');
+  });
+});

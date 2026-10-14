@@ -48,8 +48,8 @@ export interface AuthState {
 
 export interface TotpSetup {
   factorId: string;
-  /** SVG data URI of the QR code */
-  qrCode: string;
+  /** otpauth:// link: encoded as the QR code, and opens the authenticator app on a phone */
+  uri: string;
   /** Base32 secret for manual entry */
   secret: string;
 }

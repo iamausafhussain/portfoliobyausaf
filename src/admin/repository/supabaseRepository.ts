@@ -103,9 +103,14 @@ const auth: AuthApi = {
       }
       const friendlyName =
         name?.trim() || `Authenticator ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`;
-      const { data, error } = await client.auth.mfa.enroll({ factorType: 'totp', friendlyName });
+      const { data, error } = await client.auth.mfa.enroll({
+        factorType: 'totp',
+        friendlyName,
+        // the name shown in the authenticator app
+        issuer: 'Ausaf Hussain · Portfolio',
+      });
       if (error || !data) throw new RepoError('unknown', error?.message ?? 'Could not start setup.');
-      return { factorId: data.id, qrCode: data.totp.qr_code, secret: data.totp.secret };
+      return { factorId: data.id, uri: data.totp.uri, secret: data.totp.secret };
     });
   },
 

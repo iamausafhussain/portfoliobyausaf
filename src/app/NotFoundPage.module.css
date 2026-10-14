@@ -1,0 +1,16 @@
+.wrap {
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  gap: var(--space-4);
+  padding: var(--gutter);
+  text-align: center;
+}
+
+.title {
+  font-size: var(--font-size-3xl);
+}
+
+.text {
+  color: var(--color-fg-muted);
+}

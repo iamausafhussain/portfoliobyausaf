@@ -1,0 +1,21 @@
+.wrap {
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  gap: var(--space-5);
+  padding: var(--gutter);
+  max-width: var(--max-width);
+  margin-inline: auto;
+}
+
+.name {
+  font-size: var(--font-size-hero);
+  /* room for the italic f descender */
+  padding-bottom: 0.12em;
+}
+
+.tagline {
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-lg);
+  max-width: 40ch;
+}

@@ -47,3 +47,19 @@ test('the backup authenticator on the Account page shows a scannable QR code too
   const png = PNG.sync.read(await page.screenshot({ fullPage: true }));
   expect(jsQR(new Uint8ClampedArray(png.data), png.width, png.height)?.data).toMatch(/^otpauth:\/\//);
 });
+
+test('end to end: a code computed from the scanned QR signs you in', async ({ page }) => {
+  const { totp } = await import('../../src/admin/repository/totp');
+  await page.goto('/admin/login');
+  await page.getByLabel('Email').fill(DEMO.email);
+  await page.getByLabel('Password').fill('x');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.locator('img[alt^="QR code"]')).toBeVisible();
+  const png = PNG.sync.read(await page.screenshot());
+  const uri = jsQR(new Uint8ClampedArray(png.data), png.width, png.height)?.data ?? '';
+  const secret = new URL(uri).searchParams.get('secret') ?? '';
+  // what an authenticator app would show right now
+  await page.getByLabel('6-digit code').fill(await totp(secret));
+  await page.getByRole('button', { name: 'Finish setup' }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+});

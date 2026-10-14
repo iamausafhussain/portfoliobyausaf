@@ -220,3 +220,24 @@ describe('authenticator setup key', async () => {
     expect(groupKey('ABCDE')).toBe('ABCD E');
   });
 });
+
+describe('demo TOTP (RFC 6238)', async () => {
+  const { base32Decode, totp, verifyTotp } = await import('../../src/admin/repository/totp');
+  // RFC 6238 test secret "12345678901234567890" in base32
+  const rfc = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
+  it('decodes base32', () => {
+    expect(new TextDecoder().decode(base32Decode(rfc))).toBe('12345678901234567890');
+  });
+  it('matches the RFC 6238 SHA-1 test vectors', async () => {
+    expect(await totp(rfc, 59_000, 8)).toBe('94287082');
+    expect(await totp(rfc, 1111111109_000, 8)).toBe('07081804');
+    expect(await totp(rfc, 1234567890_000, 8)).toBe('89005924');
+  });
+  it('accepts one step of clock drift, not more', async () => {
+    const now = 1_760_000_000_000;
+    const code = await totp(rfc, now);
+    expect(await verifyTotp(rfc, code, now + 30_000)).toBe(true);
+    expect(await verifyTotp(rfc, code, now + 95_000)).toBe(false);
+    expect(await verifyTotp(rfc, 'abc123', now)).toBe(false);
+  });
+});

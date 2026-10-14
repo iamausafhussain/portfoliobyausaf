@@ -23,6 +23,7 @@ import {
 import { conflictError, entityNames, labelFor, RepoError } from './errors';
 import { demoImages, demoNewMessages, demoRows, demoSettings } from './demoSeed';
 import { checkFileForBucket } from './limits';
+import { verifyTotp } from './totp';
 import { themes } from '../../theme/tokens';
 import type {
   AdminRepository,
@@ -40,6 +41,9 @@ import type {
 const DEMO_EMAIL = 'demo@example.com';
 const STRANGER_EMAIL = 'stranger@example.com';
 const DEMO_CODE = '000000';
+/** Real secret behind the demo QR code, so a scanned authenticator app works too. */
+const DEMO_SECRET = 'JBSWY3DPEHPK3PXP';
+const codeOk = async (code: string) => code.trim() === DEMO_CODE || (await verifyTotp(DEMO_SECRET, code));
 
 const schemas: Record<AdminTable, z.ZodType> = {
   hero_media: heroMediaInsert,
@@ -197,13 +201,13 @@ export function createDemoRepository(): AdminRepository {
       pendingFactor = `factor-${authenticators.length + 1}`;
       return {
         factorId: pendingFactor,
-        uri: `otpauth://totp/Demo%20Portfolio:${encodeURIComponent(DEMO_EMAIL)}?secret=JBSWY3DPEHPK3PXP&issuer=Demo%20Portfolio`,
-        secret: 'JBSWY3DPEHPK3PXP',
+        uri: `otpauth://totp/Demo%20Portfolio:${encodeURIComponent(DEMO_EMAIL)}?secret=${DEMO_SECRET}&issuer=Demo%20Portfolio`,
+        secret: DEMO_SECRET,
       };
     },
     async finishTotpSetup(factorId, code) {
       await delay();
-      if (factorId !== pendingFactor || code.trim() !== DEMO_CODE) {
+      if (factorId !== pendingFactor || !(await codeOk(code))) {
         throw new RepoError(
           'credentials',
           "That code didn't match. Check the time on your phone and try again.",
@@ -223,8 +227,7 @@ export function createDemoRepository(): AdminRepository {
     },
     async verifyCode(code) {
       await delay();
-      if (code.trim() !== DEMO_CODE)
-        throw new RepoError('credentials', 'Email, password or code is incorrect.');
+      if (!(await codeOk(code))) throw new RepoError('credentials', 'Email, password or code is incorrect.');
       if (session) session.aal = 'aal2';
       emit();
     },
@@ -427,7 +430,7 @@ export function createDemoRepository(): AdminRepository {
 
   return {
     kind: 'demo',
-    loginHint: `Demo mode: ${DEMO_EMAIL}, any password, code ${DEMO_CODE}.`,
+    loginHint: `Demo mode: ${DEMO_EMAIL}, any password, code ${DEMO_CODE} (or scan the QR with a real authenticator app).`,
     auth,
     data,
     files: filesApi,

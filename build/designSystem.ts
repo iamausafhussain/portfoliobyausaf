@@ -15,6 +15,8 @@ import { fromFile } from '@capsizecss/unpack/fs';
 import type { HtmlTagDescriptor, Plugin } from 'vite';
 import { buildFontFaceCss, buildTokenCss, fontVars } from '../src/theme/css.ts';
 import { fontRoles, fonts, type FontRole } from '../src/theme/fonts.ts';
+import { buildThemeScript, themeColor } from '../src/theme/themeScript.ts';
+import { defaultTheme } from '../src/theme/tokens.ts';
 
 type Metrics = Parameters<typeof createFontStack>[0][number];
 
@@ -85,6 +87,13 @@ export function designSystem(): Plugin {
             injectTo: 'head-prepend',
           }));
         return [
+          // runs before first paint: picks the theme (spec 03 TS-1)
+          {
+            tag: 'meta',
+            attrs: { name: 'theme-color', content: themeColor(defaultTheme) },
+            injectTo: 'head-prepend',
+          },
+          { tag: 'script', children: buildThemeScript(), injectTo: 'head-prepend' },
           ...preloads,
           { tag: 'style', attrs: { id: 'design-tokens' }, children: `\n${css}\n`, injectTo: 'head' },
         ];

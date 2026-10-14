@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../auth/AuthProvider';
 import { useAdminList } from '../data/hooks';
 import { useRepository } from '../repository';
+import { ThemeToggle } from '../../theme/ThemeToggle';
 import { Icon } from '../ui/Icon';
 import { IconButton, Notice } from '../ui/primitives';
 import { contentNav, toolsNav, type NavItem } from './nav';
@@ -121,12 +122,16 @@ export function AdminLayout() {
           aria-expanded={sheetOpen}
         />
         <span className={styles.brandSmall}>Admin</span>
+        <ThemeToggle className={styles.pushRight} />
       </header>
 
       <aside className={styles.sidebar}>
-        <div className={styles.brand}>
-          <span className={styles.brandName}>Ausaf Hussain</span>
-          <span className="label">Admin</span>
+        <div className={styles.brandRow}>
+          <div className={styles.brand}>
+            <span className={styles.brandName}>Ausaf Hussain</span>
+            <span className="label">Admin</span>
+          </div>
+          <ThemeToggle />
         </div>
         <Navigation onSignOut={signOut} />
       </aside>

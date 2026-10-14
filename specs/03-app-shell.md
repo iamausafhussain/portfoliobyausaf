@@ -1,7 +1,7 @@
 # Part 3 — App Shell: Routing, Themes, Smooth Scroll, Fast Lane, Device Tiers
 
-**Status:** Draft — awaiting approval
-**Version:** 0.1 · 2026-10-14
+**Status:** Approved · Built and verified in demo mode (2026-10-14)
+**Version:** 0.3 · 2026-10-14
 **Depends on:** Part 0 (tokens, fonts), Part 1 (data layer), Part 2 (admin, demo mode)
 **Feeds:** Parts 4–7 plug their chapters into the shell built here
 
@@ -93,7 +93,7 @@ The frame every public page lives in, and the systems the cinematic chapters rel
 
 | ID | Requirement |
 |---|---|
-| SC-1 | Lenis smooth scrolling on devices with a mouse/trackpad; **native scrolling on touch devices**, with reduced motion, and in Lite mode. |
+| SC-1 | Lenis smooth scrolling on mouse/trackpad **and touch** devices (Lenis `syncTouch`, with momentum tuned so it doesn't feel laggy). Native scrolling with reduced motion and in Lite mode. Text selection, find-in-page, pinch-zoom and `position: sticky` keep working. |
 | SC-2 | Lenis drives GSAP ScrollTrigger (one shared ticker), so Parts 4–7 can attach scroll animations with `useScrollTrigger()`. |
 | SC-3 | `scrollToChapter(id)` scrolls smoothly with an offset for the top bar, updates the URL hash without a jump, and focuses the heading. Keyboard scrolling (Space, Page Down, arrows, Home/End) keeps working. |
 | SC-4 | Opening a URL with a `#hash` lands on that chapter after content loads. Back/forward restores scroll position. |
@@ -103,7 +103,7 @@ The frame every public page lives in, and the systems the cinematic chapters rel
 
 | ID | Requirement |
 |---|---|
-| DT-1 | Tier is decided once per visit: **low** if there is no WebGL, `Save-Data` is on, or memory ≤ 2 GB / ≤ 2 CPU cores; **mid** on phones/tablets, memory ≤ 4 GB, or a known low-end GPU; otherwise **high**. |
+| DT-1 | Tier is decided once per visit: **low** if there is no WebGL, `Save-Data` is on, memory ≤ 2 GB / ≤ 2 CPU cores, or WebGL runs in software (no GPU); **mid** on phones/tablets, memory ≤ 4 GB, or a known low-end GPU; otherwise **high**. |
 | DT-2 | A 1-second frame-time probe after load moves the tier down one step if the median frame takes over 22 ms (below ~45 fps). It never moves up. |
 | DT-3 | **Lite mode** switch (footer, and in the chapter menu): forces `low` and is remembered. Reduced motion doesn't force `low` (3D can still show, just without motion). |
 | DT-4 | Testing override: `?tier=low|mid|high` sets the tier for the session. |
@@ -208,66 +208,73 @@ The production-bundle test asserts the initial total stays under 200 KB and that
 
 ## 4. Tasks
 
-- [ ] 3.1 Theme: pre-paint script (from the Vite plugin), ThemeProvider, `useTheme`, iris transition, fallback cross-fade, theme-color meta, OS-follow
-- [ ] 3.2 ThemeToggle (projector switch) in public top bar and admin (sidebar + phone bar)
-- [ ] 3.3 Device: `detectTier`, frame probe, Lite mode, `?tier=` override, `useReducedMotion`, `data-tier`
-- [ ] 3.4 Motion: lazy GSAP + Lenis, shared ticker, `useScrollTrigger`, `scrollToChapter`, hash landing, scroll restoration
-- [ ] 3.5 Public data source with demo mode (PD-1/PD-2); extend bundle test
-- [ ] 3.6 ChapterRegistry, `orderChapters`, HomePage skeleton with placeholders
-- [ ] 3.7 Top bar, chapter indicator, chapter menu, Fast Lane, footer, film grain
-- [ ] 3.8 Routes: project page, section page, resume, 404, route effects (focus, title, transitions)
-- [ ] 3.9 Unit tests (theme script, tier detection, chapter ordering, storage failures) and e2e tests (§5)
-- [ ] 3.10 Screenshots at 375 / 1440 px, both themes, all tiers; fix issues; update docs and specs
+- [x] 3.1 Theme: pre-paint script (from the Vite plugin), ThemeProvider, `useTheme`, iris transition, fallback cross-fade, theme-color meta, OS-follow
+- [x] 3.2 ThemeToggle (projector switch) in public top bar and admin (sidebar + phone bar)
+- [x] 3.3 Device: `detectTier`, frame probe, Lite mode, `?tier=` override, `useReducedMotion`, `data-tier`
+- [x] 3.4 Motion: lazy GSAP + Lenis, shared ticker, `useScrollTrigger`, `scrollToChapter`, hash landing, scroll restoration
+- [x] 3.5 Public data source with demo mode (PD-1/PD-2); extend bundle test
+- [x] 3.6 ChapterRegistry, `orderChapters`, HomePage skeleton with placeholders
+- [x] 3.7 Top bar, chapter indicator, chapter menu, Fast Lane, footer, film grain
+- [x] 3.8 Routes: project page, section page, resume, 404, route effects (focus, title, transitions)
+- [x] 3.9 Unit tests (theme script, tier detection, chapter ordering, storage failures) and e2e tests (§5)
+- [x] 3.10 Screenshots at 375 / 1440 px, both themes, all tiers; fix issues; update docs and specs
 
 ## 5. Acceptance criteria
 
 ### Theme
-- [ ] AC-3.1 First visit with the OS in light mode renders light from the first paint; same for dark (checked before any JavaScript bundle runs).
-- [ ] AC-3.2 After toggling, a reload keeps the choice; with `localStorage` blocked the toggle still works for the session.
-- [ ] AC-3.3 With no saved choice, changing the OS theme updates the open page.
-- [ ] AC-3.4 The toggle runs the iris wipe in browsers with View Transitions, cross-fades otherwise, and switches instantly with reduced motion.
-- [ ] AC-3.5 The admin toggle shares the same saved choice.
-- [ ] AC-3.6 `theme-color` matches the theme's background.
+- [x] AC-3.1 First visit with the OS in light mode renders light from the first paint; same for dark (checked before any JavaScript bundle runs). ✅ *e2e with the app bundle blocked, so only the inline script can act*
+- [x] AC-3.2 After toggling, a reload keeps the choice; with `localStorage` blocked the toggle still works for the session. ✅ *e2e (reload keeps it; with storage throwing, no errors and the toggle works)*
+- [x] AC-3.3 With no saved choice, changing the OS theme updates the open page. ✅ *e2e*
+- [x] AC-3.4 The toggle runs the iris wipe in browsers with View Transitions, cross-fades otherwise, and switches instantly with reduced motion. ✅ *e2e (View Transition seen; reduced motion switches synchronously with no transition)*
+- [x] AC-3.5 The admin toggle shares the same saved choice. ✅ *e2e*
+- [x] AC-3.6 `theme-color` matches the theme's background. ✅ *e2e + unit (theme-color equals the background token)*
 
 ### Navigation
-- [ ] AC-3.7 The chapter indicator names the chapter in the middle of the screen while scrolling through every chapter, including a custom section.
-- [ ] AC-3.8 The chapter menu lists all chapters plus nav-enabled sections; choosing one scrolls there and focuses its heading; Esc closes it.
-- [ ] AC-3.9 Fast Lane: Resume opens the PDF; Projects and Contact scroll to their chapters — also from `/projects/:slug`.
-- [ ] AC-3.10 Custom sections appear after their `insert_after` chapter in `sort_order`; drafts and "hidden from home" sections don't.
-- [ ] AC-3.11 `/projects/:slug` and `/s/:slug` render published content and 404 for unpublished or missing slugs; `/resume` redirects or explains.
-- [ ] AC-3.12 After every route change focus is on the page's `<h1>` and the title is updated.
+- [x] AC-3.7 The chapter indicator names the chapter in the middle of the screen while scrolling through every chapter, including a custom section. ✅ *e2e through all 8 chapters including the custom “Talks” section*
+- [x] AC-3.8 The chapter menu lists all chapters plus nav-enabled sections; choosing one scrolls there and focuses its heading; Esc closes it. ✅ *e2e*
+- [x] AC-3.9 Fast Lane: Resume opens the PDF; Projects and Contact scroll to their chapters — also from `/projects/:slug`. ✅ *e2e, including a resume uploaded in the demo admin appearing in the Fast Lane*
+- [x] AC-3.10 Custom sections appear after their `insert_after` chapter in `sort_order`; drafts and "hidden from home" sections don't. ✅ *unit (`orderChapters`) + e2e*
+- [x] AC-3.11 `/projects/:slug` and `/s/:slug` render published content and 404 for unpublished or missing slugs; `/resume` redirects or explains. ✅ *e2e (published project and section pages, draft/unknown → 404, `/resume` with no resume)*
+- [x] AC-3.12 After every route change focus is on the page's `<h1>` and the title is updated. ✅ *e2e*
 
 ### Motion and devices
-- [ ] AC-3.13 Smooth scroll is on with a mouse, off on touch, with reduced motion and in Lite mode; keyboard scrolling works in all cases.
-- [ ] AC-3.14 `detectTier` gives the documented tier for each rule (unit tests); `?tier=` overrides; the probe only ever lowers the tier.
-- [ ] AC-3.15 Lite mode is remembered and sets `data-tier="low"`; grain is off on `low` and with reduced motion.
-- [ ] AC-3.16 GSAP and Lenis aren't in the initial download; initial JS ≤ 200 KB gzip (bundle test).
+- [x] AC-3.13 Smooth scroll is on with a mouse and on touch, off with reduced motion and in Lite mode; keyboard scrolling works in all cases. ✅ *e2e: Lenis on with mouse and on touch; off with reduced motion and Lite; End key scrolls*
+- [x] AC-3.14 `detectTier` gives the documented tier for each rule (unit tests); `?tier=` overrides; the probe only ever lowers the tier. ✅ *unit (every rule) + e2e (`?tier=`)*
+- [x] AC-3.15 Lite mode is remembered and sets `data-tier="low"`; grain is off on `low` and with reduced motion. ✅ *e2e (persists across reload; grain hidden)*
+- [x] AC-3.16 GSAP and Lenis aren't in the initial download; initial JS ≤ 200 KB gzip (bundle test). ✅ *bundle test: no GSAP, Lenis or Supabase Auth in the first download; initial JS 155 KB gzip*
 
 ### Quality
-- [ ] AC-3.17 Every public page works at 375 px and 1440 px, both themes, tiers low/mid/high, with no horizontal scroll and no console errors.
-- [ ] AC-3.18 Keyboard only: skip link, top bar, menu, Fast Lane, toggle, footer all reachable with visible focus; menu traps focus while open.
-- [ ] AC-3.19 Public demo mode shows demo content; nothing demo-related is in a production build.
-- [ ] AC-3.20 Build, lint, unit, e2e and database tests all pass.
+- [x] AC-3.17 Every public page works at 375 px and 1440 px, both themes, tiers low/mid/high, with no horizontal scroll and no console errors. ✅ *`tests/e2e/public-screens.spec.ts`: 4 pages + menu × 375/1440 × dark/light × low/mid/high, plus manual review of screenshots*
+- [x] AC-3.18 Keyboard only: skip link, top bar, menu, Fast Lane, toggle, footer all reachable with visible focus; menu traps focus while open. ✅ *e2e (skip link first; top bar controls reachable; focus stays inside the open menu; Esc returns focus)*
+- [x] AC-3.19 Public demo mode shows demo content; nothing demo-related is in a production build. ✅ *e2e uses demo content throughout; bundle test checks no demo code in production*
+- [x] AC-3.20 Build, lint, unit, e2e and database tests all pass. ✅ *build, lint, 544 unit, 71 e2e (1 retried under load), 223 database checks*
 
 ## 6. Risks
 
 | Risk | Mitigation |
 |---|---|
-| Smooth scroll fights the browser (jank, broken find-in-page or anchors) | Native scroll on touch; Lenis only on pointer devices; anchors and keyboard tested; Lite mode turns it off |
+| Smooth scroll fights the browser (jank on touch, broken find-in-page or anchors) | Touch momentum tuned and tested on a phone-sized touch emulation; anchors and keyboard tested; Lite mode and reduced motion switch it off |
 | Theme transition looks wrong over WebGL (Part 5) | `transition` timing exposed in `useTheme()` so the scene tweens alongside; iris uses a screenshot of the page, so the canvas is included |
 | Wrong tier on a capable phone | Mid tier still gets 3D; the probe only downgrades; visitors can force Lite mode |
 | Initial bundle creeps over 200 KB | Bundle test fails the build; motion libraries lazy-loaded |
 
-## 7. Open questions
+## 7. Decisions (Ausaf, 2026-10-14)
 
-| # | Question | Default if no answer |
+| # | Question | Decision |
 |---|---|---|
-| Q1 | Theme switch effect: **iris wipe** from the toggle, or a simple cross-fade? | Iris wipe |
-| Q2 | Chapter indicator: **film timecode** (`CH 02 · The System`) or simple dots on the side? | Film timecode |
-| Q3 | Fast Lane on phones: **floating pill at the bottom** or inside the menu only? | Floating pill at the bottom |
-| Q4 | Smooth scroll on touch screens? | No — native scrolling on touch |
-| Q5 | Show a **Lite mode** switch to visitors (footer and menu)? | Yes |
-| Q6 | Show a small "Admin" link in the footer? | Yes, small and `nofollow` (the admin is protected by two-factor either way) |
+| Q1 | Theme switch effect | Iris wipe |
+| Q2 | Chapter indicator | Film timecode |
+| Q3 | Fast Lane on phones | Floating pill at the bottom |
+| Q4 | Smooth scroll on touch screens | **Yes** (changed from the draft default; SC-1, AC-3.13 updated) |
+| Q5 | Lite mode switch for visitors | Yes |
+| Q6 | Small "Admin" link in the footer | Yes, `nofollow` |
 
 ## Changelog
 - 0.1 (2026-10-14) — Initial draft.
+- 0.2 (2026-10-14) — Approved. Smooth scrolling on touch screens turned on (Q4).
+- 0.3 (2026-10-14) — Built and verified. Changes found during the build:
+  - **Software rendering counts as low tier** (DT-1): WebGL without a GPU (SwiftShader, llvmpipe) is far too slow for the 3D scene.
+  - **Public reads use the small REST client** instead of the full Supabase client, so sign-in, realtime and storage code stay out of the first download: initial JS went from 205 KB to **155 KB gzip** (budget 200 KB).
+  - **Landing on a #chapter holds its position** while content above it is still loading (it was being pushed down as images and data arrived), until the layout settles or the visitor scrolls.
+  - The demo backend is now **shared** by the demo admin and the demo site in the same tab (PD-1), and edits in the admin refresh the site's data.
+  - `--topbar-height` added as a design token.

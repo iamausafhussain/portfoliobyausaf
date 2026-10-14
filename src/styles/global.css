@@ -123,3 +123,116 @@ a {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- theme switch (spec 03 TS-4) ---------- */
+
+/* iris wipe: the new theme is revealed by a growing circle (clip-path animated from JS) */
+.theme-iris::view-transition-old(root),
+.theme-iris::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+.theme-iris::view-transition-new(root) {
+  z-index: 1;
+}
+
+/* fallback for browsers without View Transitions: cross-fade colours */
+.theme-fading,
+.theme-fading *,
+.theme-fading *::before,
+.theme-fading *::after {
+  transition:
+    background-color var(--dur-slow) var(--ease-in-out),
+    color var(--dur-slow) var(--ease-in-out),
+    border-color var(--dur-slow) var(--ease-in-out),
+    fill var(--dur-slow) var(--ease-in-out),
+    stroke var(--dur-slow) var(--ease-in-out) !important;
+}
+
+/* page-to-page cross-fade (spec 03 NV-7) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur-base);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ---------- smooth scroll (Lenis' recommended styles) ---------- */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* ---------- film grain (spec 03 MO-2) ---------- */
+.film-grain {
+  position: fixed;
+  inset: -50%;
+  z-index: var(--z-grain);
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: overlay;
+  animation: grain 0.9s steps(8) infinite;
+}
+
+[data-tier='mid'] .film-grain {
+  animation: none;
+}
+
+[data-tier='low'] .film-grain {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .film-grain {
+    display: none;
+  }
+}
+
+@keyframes grain {
+  0% {
+    transform: translate(0, 0);
+  }
+  12% {
+    transform: translate(-6%, 4%);
+  }
+  25% {
+    transform: translate(5%, -7%);
+  }
+  37% {
+    transform: translate(-3%, 9%);
+  }
+  50% {
+    transform: translate(8%, 2%);
+  }
+  62% {
+    transform: translate(-9%, -3%);
+  }
+  75% {
+    transform: translate(3%, 6%);
+  }
+  87% {
+    transform: translate(-4%, -8%);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}

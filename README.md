@@ -9,7 +9,7 @@ The project is built **spec-first**: read [`specs/`](specs/) before changing beh
 | [Part 0 — Master spec](specs/00-master-spec.md)               | Built                          |
 | [Part 1 — Data model, security, auth](specs/01-data-model.md) | Built, live                    |
 | [Part 2 — Admin panel](specs/02-admin-panel.md)               | Built (live checklist pending) |
-| [Part 3 — App shell](specs/03-app-shell.md)                   | Spec in review                 |
+| [Part 3 — App shell](specs/03-app-shell.md)                   | Built                          |
 | Parts 4–8                                                     | Not started                    |
 
 ## Requirements
@@ -38,7 +38,7 @@ To try the admin **without Supabase**, run:
 npm run dev:demo          # http://localhost:5173/admin — demo@example.com, any password, code 000000
 ```
 
-Demo mode uses an in-memory backend with sample content; changes disappear on reload. It only exists in development and is never part of a production build (a test checks this).
+`npm run dev:demo` also serves the public site (http://localhost:5173) with the same sample content, so edits in the demo admin show up on the demo site in the same tab. Demo mode uses an in-memory backend; changes disappear on reload. It only exists in development and is never part of a production build (a test checks this).
 
 ## Scripts
 
@@ -75,6 +75,12 @@ Preview every token in both themes at **http://localhost:5173/dev/tokens** (dev 
 4. Restart `npm run dev`.
 
 The `@font-face` rules, the size-matched fallback (prevents text jumping while the font loads), the CSS variable and the preload tag all update automatically.
+
+### Testing devices and motion
+
+- `?tier=low`, `?tier=mid` or `?tier=high` on any page forces a device tier for that visit.
+- The **Lite mode** switch (footer and chapter menu) turns off smooth scrolling, film grain and, later, the 3D scene.
+- Your system's "reduce motion" setting does the same for animation.
 
 ### Change a colour
 

@@ -27,8 +27,15 @@ export default tseslint.config(
     },
   },
   {
-    // Admin files export hooks next to components on purpose; fast refresh is a dev nicety.
-    files: ['src/admin/**/*.{ts,tsx}'],
+    // Providers and route modules export hooks/loaders next to components on purpose; fast refresh is a dev nicety.
+    files: [
+      'src/admin/**/*.{ts,tsx}',
+      'src/theme/**/*.tsx',
+      'src/shell/**/*.tsx',
+      'src/device/**/*.tsx',
+      'src/motion/**/*.tsx',
+      'src/chapters/**/*.tsx',
+    ],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
   prettier,

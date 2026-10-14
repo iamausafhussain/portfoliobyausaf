@@ -1,6 +1,7 @@
 /** Sign-in screens (spec 02 AD-2, AD-6, AD-7). */
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router';
+import { ThemeToggle } from '../../theme/ThemeToggle';
 import { useRepository } from '../repository';
 import { isRepoError } from '../repository/errors';
 import type { TotpSetup } from '../repository/types';
@@ -18,7 +19,10 @@ function AuthCard({ title, lead, children }: { title: string; lead?: ReactNode; 
     <main className={styles.page}>
       <div className={styles.card}>
         <div className={styles.brand}>
-          <p className="label">Ausaf Hussain · Admin</p>
+          <div className={styles.brandTop}>
+            <p className="label">Ausaf Hussain · Admin</p>
+            <ThemeToggle />
+          </div>
           <h1 className={styles.title}>{title}</h1>
           {lead && <p className={styles.lead}>{lead}</p>}
         </div>

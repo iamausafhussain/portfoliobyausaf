@@ -170,6 +170,8 @@ export const layout = {
   maxWidth: 1280,
   /** Side gutter in px: [mobile, desktop] */
   gutter: [16, 48],
+  /** Public top bar height in px (spec 03 NV-1) */
+  topbarHeight: 64,
 } as const;
 
 /* ------------------------------------------------------------------ */

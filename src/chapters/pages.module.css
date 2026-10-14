@@ -1,0 +1,160 @@
+.page {
+  max-width: 52rem;
+  margin-inline: auto;
+  padding: calc(var(--topbar-height) + var(--space-8)) var(--gutter) var(--space-9);
+  display: grid;
+  gap: var(--space-6);
+}
+
+.head {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.title {
+  font-size: var(--font-size-3xl);
+  padding-bottom: 0.08em;
+  outline: none;
+}
+
+.lead {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-relaxed);
+}
+
+.muted {
+  color: var(--color-fg-muted);
+}
+
+.back,
+.retry {
+  justify-self: start;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-fg);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.back:hover,
+.retry:hover {
+  border-color: var(--color-accent);
+}
+
+.links {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+
+.cover {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.tags {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tags li {
+  padding: 2px var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+  color: var(--color-fg-muted);
+}
+
+.prose {
+  display: grid;
+  gap: var(--space-4);
+  line-height: var(--line-height-relaxed);
+  overflow-wrap: anywhere;
+}
+
+.prose h2,
+.prose h3 {
+  font-size: var(--font-size-xl);
+  margin-top: var(--space-3);
+}
+
+.prose ul,
+.prose ol {
+  padding-left: var(--space-5);
+}
+
+.gallery {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+}
+
+.gallery img,
+.itemImage {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
+.items {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  border-top: 1px solid var(--color-border);
+}
+
+.item {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.itemTitle {
+  font-size: var(--font-size-xl);
+}
+
+.preLine {
+  white-space: pre-line;
+}
+
+.skeletonTitle,
+.skeletonBlock {
+  border-radius: var(--radius-md);
+  background: var(--color-border);
+  animation: pulse 1.4s var(--ease-in-out) infinite;
+}
+
+.skeletonTitle {
+  height: 3rem;
+  width: 60%;
+}
+
+.skeletonBlock {
+  height: 16rem;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}

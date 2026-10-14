@@ -5,7 +5,7 @@
  * RLS, still sees the public view here) and parses results through the entity's Zod schema.
  */
 import { useQuery } from '@tanstack/react-query';
-import { getSupabase } from '../../lib/supabase';
+import { getPublicSource, type PublishedTable } from '../source';
 import { parseRow, parseRows } from '../parse';
 import {
   achievementRow,
@@ -22,9 +22,6 @@ import {
   type CustomSection,
 } from '../schemas';
 
-type PublishedTable =
-  'hero_media' | 'projects' | 'achievements' | 'experience' | 'skills' | 'testimonials' | 'custom_sections';
-
 export const queryKeys = {
   siteSettings: ['site_settings'] as const,
   published: (table: PublishedTable) => ['published', table] as const,
@@ -33,24 +30,14 @@ export const queryKeys = {
 };
 
 async function fetchPublished(table: PublishedTable) {
-  const { data, error } = await getSupabase()
-    .from(table)
-    .select('*')
-    .eq('is_published', true)
-    .order('sort_order', { ascending: true })
-    .order('created_at', { ascending: true });
-  if (error) throw error;
-  return data;
+  return (await getPublicSource()).published(table);
 }
 
 export function useSiteSettings() {
   return useQuery({
     queryKey: queryKeys.siteSettings,
-    queryFn: async () => {
-      const { data, error } = await getSupabase().from('site_settings').select('*').eq('id', 1).maybeSingle();
-      if (error) throw error;
-      return parseRow(siteSettingsRow, data, 'site_settings');
-    },
+    queryFn: async () =>
+      parseRow(siteSettingsRow, await (await getPublicSource()).settings(), 'site_settings'),
   });
 }
 
@@ -71,16 +58,8 @@ export function usePublishedProjects() {
 export function useProject(slug: string) {
   return useQuery({
     queryKey: queryKeys.project(slug),
-    queryFn: async () => {
-      const { data, error } = await getSupabase()
-        .from('projects')
-        .select('*')
-        .eq('slug', slug)
-        .eq('is_published', true)
-        .maybeSingle();
-      if (error) throw error;
-      return parseRow(projectRow, data, 'projects');
-    },
+    queryFn: async () =>
+      parseRow(projectRow, await (await getPublicSource()).projectBySlug(slug), 'projects'),
   });
 }
 
@@ -132,17 +111,7 @@ export function usePublishedCustomSections() {
       );
       if (sections.length === 0) return [];
 
-      const { data, error } = await getSupabase()
-        .from('custom_items')
-        .select('*')
-        .in(
-          'section_id',
-          sections.map((s) => s.id),
-        )
-        .eq('is_published', true)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true });
-      if (error) throw error;
+      const data = await (await getPublicSource()).itemsFor(sections.map((s) => s.id));
       const items = parseRows(customItemRow, data, 'custom_items');
 
       return sections.map((section) => {

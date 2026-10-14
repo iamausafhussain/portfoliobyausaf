@@ -1,0 +1,48 @@
+.chapter {
+  position: relative;
+  min-height: 80svh;
+  padding: var(--space-10) var(--gutter) var(--space-9);
+  border-top: 1px solid var(--color-border);
+  scroll-margin-top: var(--topbar-height);
+}
+
+.inner {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  display: grid;
+  gap: var(--space-7);
+}
+
+.head {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.code {
+  display: flex;
+  gap: var(--space-2);
+  color: var(--color-fg-muted);
+}
+
+.code span:first-child {
+  color: var(--color-accent-text);
+}
+
+.title {
+  font-size: var(--font-size-3xl);
+  outline: none;
+  padding-bottom: 0.08em;
+}
+
+.body {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  scroll-margin-top: 0;
+}

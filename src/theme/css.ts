@@ -55,6 +55,7 @@ export function staticVars(): Record<string, string> {
   for (const [k, p] of Object.entries(easing)) v[`--ease-${kebab(k)}`] = cubicBezier(p);
   v['--max-width'] = rem(layout.maxWidth);
   v['--gutter'] = fluid(layout.gutter[0], layout.gutter[1]);
+  v['--topbar-height'] = rem(layout.topbarHeight);
   return v;
 }
 

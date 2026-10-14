@@ -62,10 +62,27 @@ describe('production bundle', () => {
 
   it('demo mode is not in the build at all', () => {
     for (const { file, code } of allJs) {
-      for (const marker of ['demo@example.com', 'Demo drone reel', '__demoRepo', 'createDemoRepository']) {
+      for (const marker of [
+        'demo@example.com',
+        'Demo drone reel',
+        '__demoRepo',
+        'createDemoRepository',
+        'publicSource',
+      ]) {
         expect(code.includes(marker), `${marker} in ${file}`).toBe(false);
       }
     }
+  });
+
+  it('GSAP and Lenis load later, not in the first download (spec 03 SC-5, AC-3.16)', () => {
+    for (const f of entryFiles) {
+      const code = readFileSync(path.join(outDir, f), 'utf8');
+      expect(code.includes('GreenSock'), `GSAP in ${f}`).toBe(false);
+      expect(code.includes('lenis-smooth'), `Lenis in ${f}`).toBe(false);
+      // the public site reads through the REST client; sign-in code stays in the admin
+      expect(code.includes('GoTrueClient'), `Supabase Auth in ${f}`).toBe(false);
+    }
+    expect(allJs.some((f) => f.code.includes('GreenSock'))).toBe(true);
   });
 
   it('initial JS is within the 200 KB gzip budget (P-2)', () => {

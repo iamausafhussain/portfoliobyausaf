@@ -1,0 +1,63 @@
+.toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-elevated);
+  color: var(--color-fg);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.toggle:hover {
+  border-color: var(--color-accent);
+}
+
+.toggle:active {
+  transform: scale(0.94);
+}
+
+.toggle svg {
+  overflow: visible;
+}
+
+.lens {
+  fill: currentColor;
+  transform-origin: 12px 12px;
+  transition: transform var(--dur-slow) var(--ease-cinema);
+}
+
+.beams line {
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.beams {
+  transform-origin: 12px 12px;
+  transition:
+    transform var(--dur-slow) var(--ease-cinema),
+    opacity var(--dur-base) var(--ease-out);
+}
+
+.cutout {
+  transition: transform var(--dur-slow) var(--ease-cinema);
+}
+
+/* dark theme: a crescent (the lamp is off), beams folded away */
+.toggle[data-state='dark'] .lens {
+  transform: scale(1.5);
+}
+
+.toggle[data-state='dark'] .cutout {
+  transform: translateX(-9px);
+}
+
+.toggle[data-state='dark'] .beams {
+  transform: rotate(-45deg) scale(0.4);
+  opacity: 0;
+}

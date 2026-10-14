@@ -1,7 +1,8 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
 import { HomePage } from '../chapters/HomePage';
+import { ResumeRoute } from '../chapters/ResumeRoute';
 import { NotFoundPage } from './NotFoundPage';
-import { RootLayout } from './RootLayout';
+import { PublicLayout } from './PublicLayout';
 
 const devRoutes: RouteObject[] = import.meta.env.DEV
   ? [
@@ -22,9 +23,17 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/',
-    Component: RootLayout,
+    Component: PublicLayout,
     HydrateFallback: () => null,
-    children: [{ index: true, Component: HomePage }, ...devRoutes, { path: '*', Component: NotFoundPage }],
+    children: [
+      { index: true, Component: HomePage },
+      // detail pages load on demand (they bring the Markdown renderer)
+      { path: 'projects/:slug', lazy: () => import('../chapters/ProjectPage') },
+      { path: 's/:slug', lazy: () => import('../chapters/SectionPage') },
+      { path: 'resume', Component: ResumeRoute },
+      ...devRoutes,
+      { path: '*', Component: NotFoundPage },
+    ],
   },
 ];
 

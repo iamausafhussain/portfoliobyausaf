@@ -137,3 +137,10 @@
   cursor: pointer;
   font-size: var(--font-size-sm);
 }
+
+.brandTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}

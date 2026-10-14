@@ -24,6 +24,7 @@ import { conflictError, entityNames, labelFor, RepoError } from './errors';
 import { demoImages, demoNewMessages, demoRows, demoSettings } from './demoSeed';
 import { checkFileForBucket } from './limits';
 import { verifyTotp } from './totp';
+import type { PublicSource } from '../../data/source';
 import { themes } from '../../theme/tokens';
 import type {
   AdminRepository,
@@ -148,7 +149,7 @@ function blobUrl(blob: Blob, fallbackText?: string): string {
   return fallbackText ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(fallbackText)}` : '';
 }
 
-export function createDemoRepository(): AdminRepository {
+export function createDemoRepository(): AdminRepository & { publicSource: PublicSource } {
   let tables = demoRows();
   let settings = demoSettings();
   const files = new Map<string, StoredFile & { url: string }>();
@@ -428,7 +429,39 @@ export function createDemoRepository(): AdminRepository {
     },
   };
 
+  /** Read-only public view: published rows only, like RLS (spec 03 PD-1). */
+  const publicSource: PublicSource = {
+    kind: 'demo',
+    async settings() {
+      await delay(30);
+      return structuredClone(settings);
+    },
+    async published(table) {
+      await delay(30);
+      return structuredClone(sorted(tables[table].filter((r) => r.is_published)));
+    },
+    async projectBySlug(slug) {
+      await delay(30);
+      const row = tables.projects.find((r) => r.slug === slug && r.is_published);
+      return row ? structuredClone(row) : null;
+    },
+    async itemsFor(sectionIds) {
+      await delay(30);
+      const live = new Set(tables.custom_sections.filter((s) => s.is_published).map((s) => s.id));
+      return structuredClone(
+        sorted(
+          tables.custom_items.filter(
+            (i) =>
+              i.is_published && sectionIds.includes(String(i.section_id)) && live.has(String(i.section_id)),
+          ),
+        ),
+      );
+    },
+    mediaUrl: (path) => filesApi.url(path),
+  };
+
   return {
+    publicSource,
     kind: 'demo',
     loginHint: `Demo mode: ${DEMO_EMAIL}, any password, code ${DEMO_CODE} (or scan the QR with a real authenticator app).`,
     auth,

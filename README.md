@@ -9,7 +9,8 @@ The project is built **spec-first**: read [`specs/`](specs/) before changing beh
 | [Part 0 — Master spec](specs/00-master-spec.md)               | Built                          |
 | [Part 1 — Data model, security, auth](specs/01-data-model.md) | Built, live                    |
 | [Part 2 — Admin panel](specs/02-admin-panel.md)               | Built (live checklist pending) |
-| Parts 3–8                                                     | Not started                    |
+| [Part 3 — App shell](specs/03-app-shell.md)                   | Spec in review                 |
+| Parts 4–8                                                     | Not started                    |
 
 ## Requirements
 

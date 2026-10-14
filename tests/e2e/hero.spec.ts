@@ -5,6 +5,9 @@
  * a software renderer).
  */
 import { expect, test, type Page } from '@playwright/test';
+import { PNG } from 'pngjs';
+import { toRgb } from '../../src/scene/hero/sampling';
+import { themes } from '../../src/theme/tokens';
 import { DEMO, demo, watchErrors } from './helpers';
 
 // video and WebGL run in software here, so give slow moments room
@@ -524,4 +527,27 @@ test('AC-4.18 the cursor loop sleeps while the pointer is still', async ({ page 
   expect(await cursor(page).getAttribute('data-frames')).toBe(frames);
   await page.mouse.move(500, 400, { steps: 4 });
   await expect.poll(() => cursor(page).getAttribute('data-frames')).not.toBe(frames);
+});
+
+test('the cursor shows above the Chapters menu (a modal dialog on the top layer)', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/?tier=high');
+  await page.getByRole('button', { name: 'Chapters' }).click();
+  await expect(page.locator('dialog[open]')).toBeVisible();
+  await page.mouse.move(700, 450, { steps: 5 });
+  await expect(cursor(page)).toHaveAttribute('data-visible', '1');
+  await expect(cursor(page)).toHaveAttribute('data-loop', 'idle', { timeout: 15_000 });
+  // the dot's pixels really are on screen, in the accent colour
+  const png = PNG.sync.read(await page.screenshot({ clip: { x: 698, y: 448, width: 5, height: 5 } }));
+  const [r, g, b] = [png.data[48]!, png.data[49]!, png.data[50]!]; // centre pixel
+  const [ar, ag, ab] = toRgb(themes.dark.color.accent).map((v) => Math.round(v * 255)) as [
+    number,
+    number,
+    number,
+  ];
+  expect(Math.abs(r - ar) + Math.abs(g - ag) + Math.abs(b - ab)).toBeLessThan(60);
+  // closing the menu keeps the cursor
+  await page.keyboard.press('Escape');
+  await page.mouse.move(500, 500, { steps: 3 });
+  await expect(cursor(page)).toHaveAttribute('data-visible', '1');
 });

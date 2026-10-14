@@ -1,16 +1,34 @@
 /* Custom cursor (spec 04 CU-2, CU-3). Positions come from cursorEngine as transforms. */
 
+/* the top-layer container (useTopLayer): a full-screen, click-through, invisible popover */
+.layer {
+  position: fixed;
+  inset: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  pointer-events: none;
+  z-index: var(--z-cursor);
+}
+
 .root {
   position: fixed;
   left: 0;
   top: 0;
   width: 0;
   height: 0;
-  z-index: var(--z-cursor);
   pointer-events: none;
-  /* stays visible over footage and both themes */
-  mix-blend-mode: difference;
-  color: var(--color-cursor);
+  /*
+   * Accent colour with a thin outline in the page colour, so it reads over footage and in
+   * both themes. (It lives on the top layer to show above dialogs, which also isolates it
+   * from the page, so blend modes can't be used here.)
+   */
+  color: var(--color-accent);
+  filter: drop-shadow(0 0 1px var(--color-bg)) drop-shadow(0 0 1px var(--color-bg));
   opacity: 0;
   transition: opacity var(--dur-base) var(--ease-out);
 }

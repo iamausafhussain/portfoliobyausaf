@@ -8,6 +8,8 @@ import { createPortal } from 'react-dom';
 import { useDeviceTier } from '../device/DeviceProvider';
 import { useReducedMotion } from '../device/useReducedMotion';
 import { Cursor } from './Cursor';
+import styles from './cursor.module.css';
+import { useTopLayer } from './useTopLayer';
 import { cursorEnabled } from './cursorEngine';
 
 const FINE = '(hover: hover) and (pointer: fine)';
@@ -33,6 +35,7 @@ export function CursorProvider({ children }: { children: ReactNode }) {
   const reducedMotion = useReducedMotion();
   const { tier, lite } = useDeviceTier();
   const enabled = cursorEnabled({ finePointer, reducedMotion, lite, tier });
+  const layer = useTopLayer(styles.layer!, enabled);
 
   // hide the system cursor only while ours is on; it comes back automatically otherwise
   useEffect(() => {
@@ -44,7 +47,7 @@ export function CursorProvider({ children }: { children: ReactNode }) {
   return (
     <CursorContext.Provider value={enabled}>
       {children}
-      {enabled && createPortal(<Cursor />, document.body)}
+      {enabled && layer && createPortal(<Cursor />, layer)}
     </CursorContext.Provider>
   );
 }

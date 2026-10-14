@@ -39,11 +39,6 @@ export interface ThemeTokens {
     success: string;
     /** Globe base material */
     globeBase: string;
-    /**
-     * Custom cursor (spec 04 CU-2). Drawn with `mix-blend-mode: difference`, so this is the
-     * colour that, "differenced" with the page background, shows as `accent`.
-     */
-    cursor: string;
   };
   effect: {
     /** Film grain overlay opacity */
@@ -70,7 +65,6 @@ export const themes: Record<ThemeName, ThemeTokens> = {
       danger: '#E5534B',
       success: '#3FB27F',
       globeBase: '#121216',
-      cursor: '#FF7E34',
     },
     effect: { grainOpacity: 0.08, globeGlow: true },
   },
@@ -89,7 +83,6 @@ export const themes: Record<ThemeName, ThemeTokens> = {
       danger: '#B42318',
       success: '#1B7849',
       globeBase: '#EFEAE0',
-      cursor: '#35A4DF',
     },
     effect: { grainOpacity: 0.04, globeGlow: false },
   },

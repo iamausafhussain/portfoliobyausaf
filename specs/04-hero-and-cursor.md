@@ -1,7 +1,7 @@
 # Part 4 — Opening Scene (Hero) and Custom Cursor
 
 **Status:** Built
-**Version:** 0.3 · 2026-10-14
+**Version:** 0.4 · 2026-10-14
 **Depends on:** Part 0 (tokens), Part 1 (`hero_media`, `site_settings`), Part 3 (shell, tiers, motion)
 **Feeds:** Part 5 (the hero's particles hand over to the 3D globe)
 
@@ -80,7 +80,7 @@ Two things that set the tone of the whole site:
 | ID | Requirement |
 |---|---|
 | CU-1 | **Only on devices with a precise pointer that can hover** (`(hover: hover) and (pointer: fine)`), never on touch, and turned off with reduced motion, in Lite mode and on the low tier. The system cursor returns automatically in every one of those cases. |
-| CU-2 | **Look**: a small solid dot (6 px) that tracks the pointer exactly, plus a **viewfinder ring** (36 px, thin corner brackets like a camera frame) that follows with a soft spring lag. Uses `accent` in both themes; `mix-blend-mode: difference` keeps it visible over footage. |
+| CU-2 | **Look**: a small solid dot (6 px) that tracks the pointer exactly, plus a **viewfinder ring** (36 px, thin corner brackets like a camera frame) that follows with a soft spring lag. Uses `accent` in both themes with a thin outline in the page colour, so it stays visible over footage. It sits on the browser's top layer, so it also shows above modal dialogs (the Chapters menu). |
 | CU-3 | **States** (the ring morphs, 200–300 ms): **link/button** → ring tightens around the target and snaps its corners to it ("focus lock"); **project card** → ring grows and shows a label `VIEW` in the label style; **video/hero** → shows `PLAY`/`PAUSE`; **text field** → hides, system text cursor shows; **pressed** → ring shrinks briefly (shutter click); **leaving the window** → fades out. |
 | CU-4 | **Magnetic buttons**: primary buttons (Fast Lane Contact, theme toggle, menu button) gently pull towards the cursor (max 6 px) and settle back. Off with reduced motion. |
 | CU-5 | Any element can opt in with `data-cursor="view" | "play" | "drag" | "hide"` and an optional `data-cursor-label="…"` (so Parts 5–7 add states without touching the cursor code). |
@@ -224,3 +224,4 @@ src/
 - 0.1 (2026-10-14) — Initial draft. Cursor added at Ausaf's request.
 - 0.2 (2026-10-14) — Approved. Q1–Q6 take the defaults; Q7: bundled sample clips (dusk/day) stand in until the real drone clip is uploaded (FG-1, AC-4.7).
 - 0.3 (2026-10-14) — Built. Refinements found while building and testing: PT-6 guard measures sustained slowness and also covers a failed 3D download; Data Saver skips particles; FG-3 source fallbacks; OS-3 skip click doesn't pause; heading label for screen readers; timecode backing and a slightly stronger scrim for AA; build notes (§3.5).
+- 0.4 (2026-10-14) — Fix: the cursor was hidden under the Chapters menu (modal dialogs sit on the browser's top layer). The cursor now lives on the top layer too and re-raises itself above any dialog; the difference blend is replaced by accent plus an outline, since top-layer content can't blend with the page (CU-2).

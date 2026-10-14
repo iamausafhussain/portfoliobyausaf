@@ -1,0 +1,131 @@
+.templates {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+}
+
+.template {
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+  width: 100%;
+  height: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.template:hover {
+  border-color: var(--color-accent);
+}
+
+.templateName {
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: var(--font-size-xl);
+}
+
+.templateFields {
+  font-size: var(--font-size-xs);
+  color: var(--color-fg-muted);
+}
+
+.builder {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1200px) {
+  .builder {
+    grid-template-columns: minmax(0, 1fr) 22rem;
+    align-items: start;
+  }
+}
+
+.builderMain {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.preview {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px dashed var(--color-accent-2);
+  border-radius: var(--radius-lg);
+  min-width: 0;
+}
+
+@media (min-width: 1200px) {
+  .preview {
+    position: sticky;
+    top: var(--space-5);
+    max-height: calc(100svh - 2 * var(--space-5));
+    overflow-y: auto;
+  }
+}
+
+.previewBody {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.fieldRow {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4) var(--space-4) var(--space-1);
+}
+
+.fieldHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fieldTitle {
+  flex: 1;
+  min-width: 0;
+  font-weight: var(--font-weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fieldFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.hidden {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.hidden div {
+  display: grid;
+  grid-template-columns: minmax(6rem, auto) 1fr;
+  gap: var(--space-3);
+}
+
+.hidden dt {
+  color: var(--color-fg-muted);
+  font-weight: var(--font-weight-medium);
+}
+
+.hidden dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

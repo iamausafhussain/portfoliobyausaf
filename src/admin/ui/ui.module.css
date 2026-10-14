@@ -1,0 +1,319 @@
+/* Shared admin UI primitives. Tokens only (master spec TH-6). */
+
+/* ---------- buttons ---------- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.primary:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.secondary {
+  background: var(--color-bg-elevated);
+  color: var(--color-fg);
+  border-color: var(--color-border);
+}
+
+.secondary:not(:disabled):hover {
+  border-color: var(--color-fg-muted);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--color-fg);
+}
+
+.ghost:not(:disabled):hover {
+  background: var(--color-bg-elevated);
+}
+
+.danger {
+  background: transparent;
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.small {
+  min-height: 2rem;
+  padding: 0 var(--space-3);
+  font-size: var(--font-size-xs);
+}
+
+.iconButton {
+  composes: button ghost;
+  min-width: 2.5rem;
+  padding: 0;
+  border-radius: var(--radius-md);
+  color: var(--color-fg-muted);
+}
+
+.iconButton:not(:disabled):hover {
+  color: var(--color-fg);
+}
+
+/* ---------- form fields ---------- */
+.field {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.labelRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.required {
+  color: var(--color-fg-muted);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-xs);
+}
+
+.counter {
+  font-size: var(--font-size-xs);
+  color: var(--color-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.counterOver {
+  color: var(--color-danger);
+}
+
+.help {
+  font-size: var(--font-size-xs);
+  color: var(--color-fg-muted);
+}
+
+.error {
+  display: flex;
+  gap: var(--space-1);
+  align-items: flex-start;
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+}
+
+.input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-size: var(--font-size-base);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.input:hover {
+  border-color: var(--color-fg-muted);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  border-color: var(--color-accent);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.textarea {
+  composes: input;
+  min-height: 7rem;
+  resize: vertical;
+  line-height: var(--line-height-normal);
+}
+
+.select {
+  composes: input;
+  appearance: auto;
+}
+
+/* ---------- switch ---------- */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.switchTrack {
+  position: relative;
+  flex: none;
+  width: 2.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.switchTrack::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc(1.5rem - 6px);
+  height: calc(1.5rem - 6px);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-elevated);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.switchInput {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.switchInput:checked + .switchTrack {
+  background: var(--color-accent);
+}
+
+.switchInput:checked + .switchTrack::after {
+  transform: translateX(1rem);
+}
+
+.switchInput:focus-visible + .switchTrack {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ---------- badges, cards, misc ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border: 1px solid var(--color-border);
+  color: var(--color-fg-muted);
+  white-space: nowrap;
+}
+
+.badgeLive {
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.badgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+}
+
+.card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  min-width: 0;
+}
+
+.notice {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+  font-size: var(--font-size-sm);
+}
+
+.noticeWarn {
+  border-color: var(--color-accent);
+}
+
+.noticeError {
+  border-color: var(--color-danger);
+}
+
+.spinner {
+  width: 1em;
+  height: 1em;
+  border-radius: var(--radius-pill);
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.skeleton {
+  border-radius: var(--radius-md);
+  background: var(--color-border);
+  animation: pulse 1.4s var(--ease-in-out) infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.progress {
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background: var(--color-accent);
+  transition: width var(--dur-fast) linear;
+}

@@ -13,9 +13,11 @@
  *
  * The script only reads data, plus uploads and immediately deletes three tiny test files
  * when owner credentials are given. It never changes your content.
- * If your account requires two-factor login, the owner checks are skipped.
+ * If two-factor login is set up, the script asks for the current 6-digit code from your
+ * authenticator app (or reads OWNER_TOTP_CODE).
  */
 import { readFileSync } from 'node:fs';
+import { createInterface } from 'node:readline/promises';
 import { createClient } from '@supabase/supabase-js';
 
 function loadDotEnv() {
@@ -123,12 +125,34 @@ if (!email || !password) {
   const { data: auth, error: authError } = await owner.auth.signInWithPassword({ email, password });
   if (authError) {
     ok(false, 'signs in', authError.message);
-  } else if (
-    auth.session &&
-    (await owner.auth.mfa.getAuthenticatorAssuranceLevel()).data?.nextLevel === 'aal2'
-  ) {
-    console.log('  – two-factor login is on; owner checks skipped');
   } else {
+    const aal = (await owner.auth.mfa.getAuthenticatorAssuranceLevel()).data;
+    const enforced = !(await owner.rpc('is_owner_account')).error;
+    if (enforced) {
+      const { data: before } = await owner.rpc('is_owner');
+      ok(before === false, 'password alone gives no owner rights (two-factor enforced by 0008)');
+    }
+    if (aal?.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+      let code = process.env.OWNER_TOTP_CODE;
+      if (!code && process.stdin.isTTY) {
+        const rl = createInterface({ input: process.stdin, output: process.stdout });
+        code = await rl.question('  Enter the 6-digit code from your authenticator app: ');
+        rl.close();
+      }
+      const { data: factors } = await owner.auth.mfa.listFactors();
+      let verified = false;
+      for (const f of factors?.totp ?? []) {
+        const { error } = await owner.auth.mfa.challengeAndVerify({
+          factorId: f.id,
+          code: (code ?? '').trim(),
+        });
+        if (!error) {
+          verified = true;
+          break;
+        }
+      }
+      ok(verified, 'accepts the authenticator code');
+    }
     const { data: isOwner } = await owner.rpc('is_owner');
     ok(isOwner === true, 'is recognised as owner (setup step S6 done)');
     {

@@ -402,7 +402,7 @@ The seed adds one example row per table (marked clearly as placeholder) so the f
 - [x] AC-1.16 Signed-in non-owner: same results as AC-1.12–1.15. ✅ *`supabase/tests/rls.test.sql`*
 - [x] AC-1.17 Owner: full CRUD on every content table; can read and update messages. ✅ *`supabase/tests/rls.test.sql`*
 - [x] AC-1.18 Anonymous and non-owner: cannot upload to any bucket; owner can. ✅ *`supabase/tests/rls.test.sql`*
-- [ ] AC-1.19 Upload of a wrong file type or over the size limit is rejected. ⏳ *bucket limits verified locally; live enforcement is checked by `npm run db:verify` with owner credentials (task 1.14)*
+- [x] AC-1.19 Upload of a wrong file type or over the size limit is rejected. ✅ *bucket limits verified locally; live enforcement confirmed by `npm run db:verify` with owner credentials (Ausaf, 2026-10-14)*
 - [x] AC-1.20 Calling `reorder` as anonymous or non-owner fails. ✅ *`supabase/tests/rls.test.sql`*
 
 ### App layer

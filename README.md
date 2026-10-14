@@ -4,12 +4,12 @@ A cinematic, animated portfolio ("Director's Cut × Data in Transit") built with
 
 The project is built **spec-first**: read [`specs/`](specs/) before changing behaviour.
 
-| Spec                                                          | Status         |
-| ------------------------------------------------------------- | -------------- |
-| [Part 0 — Master spec](specs/00-master-spec.md)               | Built          |
-| [Part 1 — Data model, security, auth](specs/01-data-model.md) | Built, live    |
-| [Part 2 — Admin panel](specs/02-admin-panel.md)               | Spec in review |
-| Parts 3–8                                                     | Not started    |
+| Spec                                                          | Status                         |
+| ------------------------------------------------------------- | ------------------------------ |
+| [Part 0 — Master spec](specs/00-master-spec.md)               | Built                          |
+| [Part 1 — Data model, security, auth](specs/01-data-model.md) | Built, live                    |
+| [Part 2 — Admin panel](specs/02-admin-panel.md)               | Built (live checklist pending) |
+| Parts 3–8                                                     | Not started                    |
 
 ## Requirements
 
@@ -27,18 +27,33 @@ npm run dev               # http://localhost:5173
 
 The site runs without a `.env`; anything that needs data will show a clear "Supabase is not configured" error until the values are set.
 
+### The admin
+
+Open **http://localhost:5173/admin** and sign in with your Supabase account (email, password and a code from your authenticator app). First-time setup, two-factor and recovery are in [`supabase/README.md`](supabase/README.md#admin-login-and-two-factor-part-2).
+
+To try the admin **without Supabase**, run:
+
+```bash
+npm run dev:demo          # http://localhost:5173/admin — demo@example.com, any password, code 000000
+```
+
+Demo mode uses an in-memory backend with sample content; changes disappear on reload. It only exists in development and is never part of a production build (a test checks this).
+
 ## Scripts
 
-| Command            | What it does                                                                                                          |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`      | Start the dev server                                                                                                  |
-| `npm run build`    | Type-check and build to `dist/`                                                                                       |
-| `npm run preview`  | Serve the production build locally                                                                                    |
-| `npm run lint`     | ESLint                                                                                                                |
-| `npm run format`   | Prettier (write)                                                                                                      |
-| `npm test`         | Unit tests and repository guardrails (Vitest)                                                                         |
-| `npm run db:test`  | Apply all migrations to a throwaway local Postgres and run the security tests                                         |
-| `npm run db:types` | Regenerate `src/data/database.types.ts` from your Supabase project (needs the Supabase CLI and `SUPABASE_PROJECT_ID`) |
+| Command             | What it does                                                                                                          |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`       | Start the dev server                                                                                                  |
+| `npm run dev:demo`  | Dev server with the admin on an in-memory demo backend (no Supabase needed)                                           |
+| `npm run build`     | Type-check and build to `dist/`                                                                                       |
+| `npm run preview`   | Serve the production build locally                                                                                    |
+| `npm run lint`      | ESLint                                                                                                                |
+| `npm run format`    | Prettier (write)                                                                                                      |
+| `npm test`          | Unit tests, repository guardrails and a production-bundle check (Vitest)                                              |
+| `npm run test:e2e`  | End-to-end tests of the admin in demo mode (Playwright; first run `npx playwright install chromium`)                  |
+| `npm run db:test`   | Apply all migrations to a throwaway local Postgres and run the security tests                                         |
+| `npm run db:verify` | Read-only security checks against your live Supabase project (see `supabase/README.md`)                               |
+| `npm run db:types`  | Regenerate `src/data/database.types.ts` from your Supabase project (needs the Supabase CLI and `SUPABASE_PROJECT_ID`) |
 
 ## Design system
 
@@ -80,10 +95,11 @@ src/
   scene/          Three.js / React Three Fiber scene (Part 5)
   chapters/       Home page chapters
   components/     Shared UI
-  admin/          Admin panel (Part 2)
+  admin/          Admin panel (Part 2): repository/ (Supabase + demo backends), auth/, shell/,
+                  fields/, media/, managers/, sections/, pages/
   styles/         Global CSS
   dev/            Dev-only pages
-tests/            Unit tests (Vitest) and end-to-end tests (Playwright)
+tests/            unit/ (Vitest) and e2e/ (Playwright, runs against demo mode)
 ```
 
 ## Deploying

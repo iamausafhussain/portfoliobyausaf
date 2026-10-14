@@ -1,0 +1,342 @@
+/* ---------- groups ---------- */
+.group {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-elevated);
+  min-width: 0;
+}
+
+.groupHead {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.groupTitle {
+  font-size: var(--font-size-lg);
+}
+
+.groupBody {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.twoCol {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+
+.inlineLink {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-accent-text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+/* ---------- scale ---------- */
+.scale {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.scaleItem {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-border);
+  cursor: pointer;
+}
+
+.scaleItem:hover {
+  color: var(--color-fg-muted);
+}
+
+.scaleOn,
+.scaleOn:hover {
+  color: var(--color-accent);
+}
+
+.dot::before {
+  content: '';
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+}
+
+/* ---------- list ---------- */
+.list {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+
+.listRow {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.globe {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* ---------- tags ---------- */
+.tags {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.tagList {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+
+.tag button {
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-fg-muted);
+  cursor: pointer;
+}
+
+.tag button:hover {
+  color: var(--color-fg);
+  background: var(--color-bg-elevated);
+}
+
+/* ---------- markdown ---------- */
+.markdown {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.mdBar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.mdTabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+}
+
+.mdTab {
+  border: 0;
+  background: none;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.mdTabOn {
+  background: var(--color-bg-elevated);
+  color: var(--color-fg);
+}
+
+.mdTools {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.mdTools button {
+  min-width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.mdPreview {
+  min-height: 7rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  overflow-wrap: anywhere;
+}
+
+.mdPreview ul,
+.mdPreview ol {
+  padding-left: var(--space-5);
+}
+
+/* ---------- media ---------- */
+.media {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.emptyMedia {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}
+
+.dropzone {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-6) var(--space-4);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+  color: var(--color-fg-muted);
+  text-align: center;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.dropzoneOver {
+  border-color: var(--color-accent);
+}
+
+.imageRow {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 640px) {
+  .imageRow {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.thumb {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.imageMeta {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.inlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.uploading {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.uploadingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gallery {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+}
+
+.galleryItem {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  min-width: 0;
+}
+
+.thumbSmall {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.galleryActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.videoRow {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.video {
+  width: 100%;
+  max-height: 20rem;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.fileRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.fileName {
+  overflow-wrap: anywhere;
+}

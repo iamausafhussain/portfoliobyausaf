@@ -1,0 +1,191 @@
+.frame {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+}
+
+@media (min-width: 1024px) {
+  .frame {
+    grid-template-columns: 16rem minmax(0, 1fr);
+    grid-template-rows: 1fr;
+  }
+}
+
+/* ---------- phone top bar ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (min-width: 1024px) {
+  .topbar {
+    display: none;
+  }
+}
+
+.brandSmall {
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: var(--font-size-lg);
+}
+
+/* ---------- sidebar ---------- */
+.sidebar {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow-y: auto;
+    padding: var(--space-6) var(--space-4);
+    border-right: 1px solid var(--color-border);
+  }
+}
+
+.brand {
+  display: grid;
+  gap: var(--space-1);
+  padding: 0 var(--space-3);
+}
+
+.brandName {
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-tight);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.navHeading {
+  margin: var(--space-4) var(--space-3) var(--space-1);
+  color: var(--color-fg-muted);
+}
+
+.navList {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.navList a,
+.navList button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 0;
+  background: none;
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.navList a span,
+.navList button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navList a:hover,
+.navList button:hover {
+  color: var(--color-fg);
+  background: var(--color-bg-elevated);
+}
+
+.navList a.active {
+  color: var(--color-fg);
+  background: var(--color-bg-elevated);
+  box-shadow: inset 2px 0 0 var(--color-accent);
+}
+
+.navFooter {
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  display: grid;
+  gap: 2px;
+}
+
+/* ---------- phone sheet ---------- */
+.sheet {
+  margin: 0;
+  width: min(20rem, 85vw);
+  height: 100svh;
+  max-height: 100svh;
+  padding: var(--space-4);
+  border: 0;
+  border-right: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  overflow-y: auto;
+}
+
+.sheet[open] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  animation: slideIn var(--dur-base) var(--ease-out);
+}
+
+.sheet::backdrop {
+  background: var(--color-bg);
+  opacity: 0.6;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+.sheetHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: var(--space-3);
+}
+
+/* ---------- main ---------- */
+.main {
+  min-width: 0;
+  padding: var(--space-5) var(--gutter) var(--space-9);
+  outline: none;
+}
+
+.banners {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  max-width: 64rem;
+}
+
+.banners:empty {
+  display: none;
+}

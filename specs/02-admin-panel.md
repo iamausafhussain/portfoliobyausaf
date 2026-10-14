@@ -1,7 +1,7 @@
 # Part 2 — Admin Panel and Custom-Section Builder
 
-**Status:** Draft — awaiting approval
-**Version:** 0.1 · 2026-10-14
+**Status:** Approved · Built and verified in demo mode (2026-10-14) · live checklist pending
+**Version:** 0.2 · 2026-10-14
 **Depends on:** Part 0 (design system), Part 1 (data model, RLS, auth)
 **Feeds:** Parts 4–7 (everything the public site shows is edited here)
 
@@ -267,68 +267,68 @@ All admin-only packages load only inside the admin chunk.
 ## 4. Tasks
 
 ### Phase A — Sign-in and shell
-- [ ] 2.1 Install dependencies; admin route tree, lazy chunk, `RequireOwner` guard
-- [ ] 2.2 `AdminRepository` interface; `SupabaseRepository` (auth, rows, reorder, files, errors, conflict check)
-- [ ] 2.3 `DemoRepository` with seed data and the same validation rules; `VITE_DEMO` switch; production exclusion test
-- [ ] 2.4 Login, code, authenticator setup, forgot / reset password screens
-- [ ] 2.5 `0008_require_mfa.sql`, `auth.jwt()` in the test stand-in, new security tests, `db:verify` code prompt, README recovery steps
-- [ ] 2.6 Admin shell: sidebar / phone sheet, toasts, confirm dialog, unsaved-changes guard, error summary
-- [ ] 2.7 Account page: change password, authenticators (add second / remove), sign out everywhere
+- [x] 2.1 Install dependencies; admin route tree, lazy chunk, `RequireOwner` guard
+- [x] 2.2 `AdminRepository` interface; `SupabaseRepository` (auth, rows, reorder, files, errors, conflict check)
+- [x] 2.3 `DemoRepository` with seed data and the same validation rules; `VITE_DEMO` switch; production exclusion test
+- [x] 2.4 Login, code, authenticator setup, forgot / reset password screens
+- [x] 2.5 `0008_require_mfa.sql`, `auth.jwt()` in the test stand-in, new security tests, `db:verify` code prompt, README recovery steps
+- [x] 2.6 Admin shell: sidebar / phone sheet, toasts, confirm dialog, unsaved-changes guard, error summary
+- [x] 2.7 Account page: change password, authenticators (add second / remove), sign out everywhere
 
 ### Phase B — Managers
-- [ ] 2.8 Field components (§3.4) with tests
-- [ ] 2.9 Media pipeline: resize/WebP, SVG sanitise, video checks, frame capture, upload progress/cancel, old-file cleanup
-- [ ] 2.10 Generic list (search, filters, publish switch, reorder, duplicate, delete) and generic form page
-- [ ] 2.11 Site settings, hero media, projects, achievements, experience, skills, testimonials
-- [ ] 2.12 Dashboard
+- [x] 2.8 Field components (§3.4) with tests
+- [x] 2.9 Media pipeline: resize/WebP, SVG sanitise, video checks, frame capture, upload progress/cancel, old-file cleanup
+- [x] 2.10 Generic list (search, filters, publish switch, reorder, duplicate, delete) and generic form page
+- [x] 2.11 Site settings, hero media, projects, achievements, experience, skills, testimonials
+- [x] 2.12 Dashboard
 
 ### Phase C — Custom sections and media
-- [ ] 2.13 Section builder: details, field editor, live preview, templates, change warnings
-- [ ] 2.14 Section items manager with generated forms and "Hidden data" panel
-- [ ] 2.15 Media library with "Used by" and unused-file cleanup
+- [x] 2.13 Section builder: details, field editor, live preview, templates, change warnings
+- [x] 2.14 Section items manager with generated forms and "Hidden data" panel
+- [x] 2.15 Media library with "Used by" and unused-file cleanup
 
 ### Phase D — Verify
-- [ ] 2.16 Component and flow tests in demo mode (see §5)
-- [ ] 2.17 Screenshots of every screen at 375 px and 1440 px in both themes; fix issues
+- [x] 2.16 Component and flow tests in demo mode (see §5)
+- [x] 2.17 Screenshots of every screen at 375 px and 1440 px in both themes; fix issues
 - [ ] 2.18 Ausaf: set up authenticator on the live site, run `0008`, run `db:verify`, walk through the live checklist (§5.4)
 
 ## 5. Acceptance criteria
 
 ### 5.1 Sign-in and security
-- [ ] AC-2.1 Visiting any `/admin` page while signed out redirects to the login page and returns to that page after signing in.
-- [ ] AC-2.2 First sign-in shows the authenticator setup; after a valid code the dashboard opens.
-- [ ] AC-2.3 Later sign-ins require the 6-digit code; a wrong code shows the generic error and does not sign in.
-- [ ] AC-2.4 After `0008`, a password-only (`aal1`) owner session cannot write anything (database test).
-- [ ] AC-2.5 A non-owner account is signed out with the "can't access the admin" message.
-- [ ] AC-2.6 Password reset email → new password works; passwords under 12 characters are refused.
-- [ ] AC-2.7 The last authenticator can't be removed; a second one can be added and removed.
-- [ ] AC-2.8 The public site's initial download contains no admin code (build-output check), and no demo code exists in a production build.
+- [x] AC-2.1 Visiting any `/admin` page while signed out redirects to the login page and returns to that page after signing in. ✅ *`tests/e2e/auth.spec.ts`*
+- [x] AC-2.2 First sign-in shows the authenticator setup; after a valid code the dashboard opens. ✅ *e2e*
+- [x] AC-2.3 Later sign-ins require the 6-digit code; a wrong code shows the generic error and does not sign in. ✅ *e2e (wrong code refused, right code accepted)*
+- [x] AC-2.4 After `0008`, a password-only (`aal1`) owner session cannot write anything (database test). ✅ *11 new checks in `supabase/tests/rls.test.sql` (223 total)*
+- [x] AC-2.5 A non-owner account is signed out with the "can't access the admin" message. ✅ *e2e + database check that `is_owner_account()` is false for other accounts*
+- [x] AC-2.6 Password reset email → new password works; passwords under 12 characters are refused. ✅ *e2e (12-character rule, mismatch, change succeeds; reset request never reveals if the email exists). Live reset email is on the live checklist*
+- [x] AC-2.7 The last authenticator can't be removed; a second one can be added and removed. ✅ *e2e*
+- [x] AC-2.8 The public site's initial download contains no admin code (build-output check), and no demo code exists in a production build. ✅ *`tests/unit/adminBundle.test.ts` builds for production and inspects every chunk; verified it fails when a demo string is added*
 
 ### 5.2 Managing content
-- [ ] AC-2.9 Each of the 7 built-in managers can create, edit, publish, unpublish, reorder (mouse and keyboard), duplicate and delete.
-- [ ] AC-2.10 Invalid input shows field errors and a summary, focuses the first error, and nothing is saved.
-- [ ] AC-2.11 Duplicate slug and other database errors show the plain messages from §3.6.
-- [ ] AC-2.12 Leaving a changed form asks for confirmation; leaving an unchanged form does not.
-- [ ] AC-2.13 Saving after the same row was changed elsewhere shows the conflict dialog, and "Reload" shows the newer data.
-- [ ] AC-2.14 A 6000 × 4000 JPEG is uploaded as a WebP no larger than 2560 px on its long side, with width and height stored.
-- [ ] AC-2.15 An image can't be saved without alt text.
-- [ ] AC-2.16 An SVG containing a `<script>` or `onload` is uploaded without them.
-- [ ] AC-2.17 A 16 MB video is refused before upload; a 5 MB one uploads with a size warning.
-- [ ] AC-2.18 A poster can be captured from the uploaded video.
-- [ ] AC-2.19 Replacing or deleting an image removes the old file from storage.
+- [x] AC-2.9 Each of the 7 built-in managers can create, edit, publish, unpublish, reorder (mouse and keyboard), duplicate and delete. ✅ *e2e: create/publish/duplicate/delete for 5 managers, hero and settings saves, keyboard reorder*
+- [x] AC-2.10 Invalid input shows field errors and a summary, focuses the first error, and nothing is saved. ✅ *e2e*
+- [x] AC-2.11 Duplicate slug and other database errors show the plain messages from §3.6. ✅ *e2e + unit (error mapping)*
+- [x] AC-2.12 Leaving a changed form asks for confirmation; leaving an unchanged form does not. ✅ *e2e*
+- [x] AC-2.13 Saving after the same row was changed elsewhere shows the conflict dialog, and "Reload" shows the newer data. ✅ *e2e*
+- [x] AC-2.14 A 6000 × 4000 JPEG is uploaded as a WebP no larger than 2560 px on its long side, with width and height stored. ✅ *e2e: 6000×4000 JPEG stored as 2560×1707 WebP*
+- [x] AC-2.15 An image can't be saved without alt text. ✅ *e2e*
+- [x] AC-2.16 An SVG containing a `<script>` or `onload` is uploaded without them. ✅ *unit (jsdom) + e2e*
+- [x] AC-2.17 A 16 MB video is refused before upload; a 5 MB one uploads with a size warning. ✅ *e2e*
+- [x] AC-2.18 A poster can be captured from the uploaded video. ✅ *e2e with a real recorded video clip*
+- [x] AC-2.19 Replacing or deleting an image removes the old file from storage. ✅ *e2e (also: files shared with a duplicate are kept; uploads in an abandoned form are removed)*
 
 ### 5.3 Custom sections and media
-- [ ] AC-2.20 A section created from the *Talks* template, with one field added and one reordered, saves; the live preview matches the item form.
-- [ ] AC-2.21 Items for that section are validated by its fields (required, type, select options).
-- [ ] AC-2.22 Renaming a field key after items exist keeps the old values, shows the warning before saving, and shows them in "Hidden data"; "Remove hidden data" clears them.
-- [ ] AC-2.23 Deleting a section states how many items will be deleted and deletes them.
-- [ ] AC-2.24 The media library shows "Used by" correctly for project covers, galleries, hero posters, the resume and custom-item images; deleting unused files works.
-- [ ] AC-2.25 The dashboard counts match the data.
+- [x] AC-2.20 A section created from the *Talks* template, with one field added and one reordered, saves; the live preview matches the item form. ✅ *e2e*
+- [x] AC-2.21 Items for that section are validated by its fields (required, type, select options). ✅ *e2e*
+- [x] AC-2.22 Removing a field (or changing its type) after items exist keeps the old values, shows the warning before saving, and shows them in "Hidden data"; "Remove hidden data" clears them. (Keys of fields that already have items are locked, per AD-51, so they can't be renamed; labels can.) ✅ *e2e*
+- [x] AC-2.23 Deleting a section states how many items will be deleted and deletes them. ✅ *e2e*
+- [x] AC-2.24 The media library shows "Used by" correctly for project covers, galleries, hero posters, the resume and custom-item images; deleting unused files works. ✅ *e2e (covers, galleries, hero posters, resume, custom-item images; bulk delete of unused)*
+- [x] AC-2.25 The dashboard counts match the data. ✅ *e2e*
 
 ### 5.4 Quality
-- [ ] AC-2.26 Every admin screen works at 375 px and 1440 px, in both themes, with no horizontal scrolling and no console errors.
-- [ ] AC-2.27 Every action in AC-2.9 can be done with the keyboard alone; focus is always visible.
-- [ ] AC-2.28 `npm run build`, `lint`, `test` and `db:test` pass.
+- [x] AC-2.26 Every admin screen works at 375 px and 1440 px, in both themes, with no horizontal scrolling and no console errors. ✅ *`tests/e2e/screens.spec.ts`: 16 screens × 375/1440 px × dark/light, plus manual review of the screenshots*
+- [x] AC-2.27 Every action in AC-2.9 can be done with the keyboard alone; focus is always visible. ✅ *keyboard reorder tested e2e; focus rings come from Part 0 tokens; dialogs use native `<dialog>` focus handling*
+- [x] AC-2.28 `npm run build`, `lint`, `test` and `db:test` pass. ✅ *build, lint (0 warnings), 412 unit tests, 36 e2e tests, 223 database checks*
 - [ ] AC-2.29 **Live checklist (Ausaf):** sign in with the authenticator; add a project with a cover; publish it; reorder; create a "Talks" section with one item; upload a hero clip with a captured poster; replace your resume; run `db:verify` with the code prompt.
 
 ## 6. Risks
@@ -341,9 +341,11 @@ All admin-only packages load only inside the admin chunk.
 | Browser can't encode WebP (very old Safari) | Falls back to the original file within limits |
 | Demo code leaking into production | Separate module behind `VITE_DEMO`, plus a build-output test |
 
-## 7. Open questions
+## 7. Decisions
 
-| # | Question | Default if no answer |
+All five defaults approved by Ausaf on 2026-10-14.
+
+| # | Question | Decision |
 |---|---|---|
 | Q1 | Keep the admin at `/admin`? (It's protected by login and two-factor either way.) | Yes, `/admin` |
 | Q2 | Resize images to 2560 px and convert to WebP automatically? | Yes |
@@ -351,5 +353,28 @@ All admin-only packages load only inside the admin chunk.
 | Q4 | Allow a backup authenticator (second phone or a password manager such as 1Password/Bitwarden)? | Yes, up to two |
 | Q5 | Automatically sign out of the admin after a period of inactivity? | No — Supabase session rules apply; sign out manually |
 
+## 8. Verification summary (2026-10-14)
+
+| Check | Result |
+|---|---|
+| `npm run test:e2e` — Playwright against demo mode | **36 / 36 passed** |
+| `npm test` — unit tests incl. production-bundle check | **412 / 412 passed** |
+| `npm run db:test` — migrations ×2, seed ×2, security checks incl. two-factor | **223 / 223 passed** |
+| `npm run lint`, `npm run build` | Clean |
+| Live project (task 2.18 / AC-2.29) | Pending — needs Ausaf's sign-in and authenticator |
+
+Not testable from the build environment (no access to the live project): the real Supabase upload endpoint, password-reset emails and authenticator enrolment against Supabase Auth. These are covered by the live checklist (AC-2.29).
+
 ## Changelog
 - 0.1 (2026-10-14) — Initial draft.
+- 0.2 (2026-10-14) — Built and verified. Changes found during the build:
+  - **AC-2.22 reworded**: field keys are locked once items use them (AD-51), so the check covers removing a field or changing its type instead of renaming a key.
+  - **Save waits for uploads**: Save is disabled ("Waiting for upload…") while an image or file is still processing or uploading, so a save can't miss it.
+  - **Publish switches are instant**: the switch flips immediately and reverts if the server refuses.
+  - **Abandoned uploads are cleaned up**: files uploaded into a form that is then left without saving are deleted (if nothing else uses them).
+  - **Files shared by duplicates are kept**: deleting an item only removes files no other item uses.
+  - **Duplicates are labelled** "(copy)" for every content type, so copies are distinguishable in lists.
+  - **Unsaved-changes check** compares values canonically (the form library flagged untouched optional fields as changed).
+  - **Error summary takes focus** on a failed save (not the first field), as §3.9 says.
+  - Added `is_owner_account()` in `0008` so the login screen can turn away other accounts before the code is entered, and so the admin can tell whether `0008` has been applied (banner).
+  - Setup guide gained steps A1–A3 (reset-link redirect URLs, authenticator setup, then `0008`) and lost-authenticator recovery, including the honest caveat that the password alone can set up a new authenticator until you do.

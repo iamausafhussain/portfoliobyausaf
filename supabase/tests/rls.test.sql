@@ -90,9 +90,10 @@ create function tests.login_anon() returns void language sql as $$
   select set_config('role', 'anon', true), set_config('request.jwt.claims', '', true);
 $$;
 
-create function tests.login(uid uuid) returns void language sql as $$
+-- aal2 = signed in with password AND authenticator code; aal1 = password only
+create function tests.login(uid uuid, aal text default 'aal2') returns void language sql as $$
   select set_config('role', 'authenticated', true),
-         set_config('request.jwt.claims', json_build_object('sub', uid, 'role', 'authenticated')::text, true);
+         set_config('request.jwt.claims', json_build_object('sub', uid, 'role', 'authenticated', 'aal', aal)::text, true);
 $$;
 
 grant execute on all functions in schema tests to anon, authenticated;
@@ -354,6 +355,31 @@ reset role;
 select tests.eq((select tagline from public.site_settings where id = 1), 'Changed', 'AC-1.16 site_settings unchanged after stranger attempt');
 select tests.eq((select count(*) from public.messages where status = 'new'), 3::bigint, 'AC-1.16 messages unchanged after stranger attempt');
 select tests.eq((select sort_order from public.projects where id = 'b0000000-0000-4000-8000-000000000001'), 0, 'AC-1.16 project unchanged after stranger attempt');
+
+-- ===========================================================================
+-- Owner WITHOUT the authenticator code (password only, aal1)  AC-2.4 / spec 02 AD-3
+-- ===========================================================================
+select tests.login('11111111-1111-4111-8111-111111111111', 'aal1');
+
+select tests.eq(public.is_owner(), false, 'AC-2.4  password-only owner session is not treated as owner');
+select tests.eq(public.is_owner_account(), true, 'AC-2.4  is_owner_account() still recognises the account');
+select tests.ok(tests.count('select 1 from public.projects where not is_published') = 0, 'AC-2.4  password-only owner cannot read drafts');
+select tests.throws($$insert into public.projects (slug, title, summary) values ('aal1-proj', 'X', 'X')$$, 'AC-2.4  password-only owner cannot insert', '42501');
+select tests.eq(tests.rows($$update public.site_settings set tagline = 'aal1 edit'$$), 0::bigint, 'AC-2.4  password-only owner updates 0 settings rows');
+select tests.eq(tests.count($$select 1 from public.messages$$), 0::bigint, 'AC-2.4  password-only owner reads 0 messages');
+select tests.throws($$insert into storage.objects (bucket_id, name) values ('images', 'aal1/x.png')$$, 'AC-2.4  password-only owner cannot upload', '42501');
+select tests.throws($$select public.reorder('projects', array['b0000000-0000-4000-8000-000000000001']::uuid[])$$, 'AC-2.4  password-only owner cannot reorder', '42501');
+
+reset role;
+
+select tests.login('22222222-2222-4222-8222-222222222222', 'aal2');
+select tests.eq(public.is_owner_account(), false, 'AC-2.5  is_owner_account() is false for other accounts');
+select tests.eq(public.is_owner(), false, 'AC-2.5  another account with two-factor is still not the owner');
+reset role;
+
+select tests.login_anon();
+select tests.throws($$select public.is_owner_account()$$, 'AC-2.5  anon cannot call is_owner_account()', '42501');
+reset role;
 
 -- ===========================================================================
 -- Owner  AC-1.11, AC-1.17, AC-1.18

@@ -41,6 +41,19 @@ as $$
 $$;
 grant execute on function auth.uid() to anon, authenticated, service_role;
 
+-- Same behaviour as Supabase: all JWT claims as jsonb (used for the 'aal' two-factor level).
+create function auth.jwt()
+returns jsonb
+language sql
+stable
+as $$
+  select coalesce(
+    nullif(current_setting('request.jwt.claim', true), ''),
+    nullif(current_setting('request.jwt.claims', true), '')
+  )::jsonb;
+$$;
+grant execute on function auth.jwt() to anon, authenticated, service_role;
+
 -- storage -----------------------------------------------------------------------
 create schema storage;
 grant usage on schema storage to anon, authenticated, service_role;

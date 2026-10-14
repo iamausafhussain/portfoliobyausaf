@@ -31,6 +31,7 @@ export const storagePath = z
 
 export const slug = z
   .string()
+  .min(1, 'Required')
   .max(80)
   .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and single hyphens');
 

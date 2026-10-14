@@ -23,8 +23,9 @@ import {
   uuid,
 } from './common';
 
+/** Known keys only; each link optional (missing, undefined or null all mean "no link"). */
 const urlMap = <K extends string>(keys: readonly [K, ...K[]]) =>
-  z.partialRecord(z.enum(keys), httpsUrl.nullable());
+  z.partialRecord(z.enum(keys), httpsUrl.nullish());
 
 /* ------------------------------------------------------------------ */
 /* site_settings                                                       */

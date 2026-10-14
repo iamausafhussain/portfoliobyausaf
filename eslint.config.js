@@ -23,8 +23,13 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       // master spec §13: no `any` without a comment explaining why
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
+  },
+  {
+    // Admin files export hooks next to components on purpose; fast refresh is a dev nicety.
+    files: ['src/admin/**/*.{ts,tsx}'],
+    rules: { 'react-refresh/only-export-components': 'off' },
   },
   prettier,
 );

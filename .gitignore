@@ -8,6 +8,7 @@ dist-ssr
 .env
 .env.*
 !.env.example
+!.env.demo
 *.local
 
 # Supabase CLI local state
@@ -28,3 +29,7 @@ npm-debug.log*
 .idea
 .DS_Store
 Thumbs.db
+
+# Playwright
+tests/e2e/.results
+playwright-report

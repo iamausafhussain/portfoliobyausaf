@@ -1,0 +1,90 @@
+.page {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5) var(--gutter);
+}
+
+.card {
+  width: min(26rem, 100%);
+  display: grid;
+  gap: var(--space-5);
+}
+
+.brand {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+}
+
+.lead {
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-sm);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.codeInput {
+  font-size: var(--font-size-xl);
+  letter-spacing: 0.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.qrWrap {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.qr {
+  width: 11rem;
+  height: 11rem;
+  image-rendering: pixelated;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-sm);
+}
+
+.secret {
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.08em;
+  word-break: break-all;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.steps {
+  display: grid;
+  gap: var(--space-2);
+  padding-left: var(--space-5);
+  font-size: var(--font-size-sm);
+  color: var(--color-fg-muted);
+}
+
+.links {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+}
+
+.linkButton {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--color-accent-text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}

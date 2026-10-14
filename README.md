@@ -4,11 +4,12 @@ A cinematic, animated portfolio ("Director's Cut × Data in Transit") built with
 
 The project is built **spec-first**: read [`specs/`](specs/) before changing behaviour.
 
-| Spec                                                          | Status                     |
-| ------------------------------------------------------------- | -------------------------- |
-| [Part 0 — Master spec](specs/00-master-spec.md)               | Built                      |
-| [Part 1 — Data model, security, auth](specs/01-data-model.md) | Built (live setup pending) |
-| Parts 2–8                                                     | Not started                |
+| Spec                                                          | Status         |
+| ------------------------------------------------------------- | -------------- |
+| [Part 0 — Master spec](specs/00-master-spec.md)               | Built          |
+| [Part 1 — Data model, security, auth](specs/01-data-model.md) | Built, live    |
+| [Part 2 — Admin panel](specs/02-admin-panel.md)               | Spec in review |
+| Parts 3–8                                                     | Not started    |
 
 ## Requirements
 

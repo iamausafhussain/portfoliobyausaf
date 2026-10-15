@@ -357,7 +357,7 @@ test.describe('particles', () => {
         type: string,
         ...rest: unknown[]
       ) {
-        if (this.hasAttribute('data-hero-particles') && type.startsWith('webgl')) return null;
+        if (this.hasAttribute('data-stage') && type.startsWith('webgl')) return null;
         return (orig as (...a: unknown[]) => unknown).call(this, type, ...rest);
       } as typeof orig;
     });

@@ -1,7 +1,7 @@
 /**
  * The hero's particle field (spec 04 PT-1 – PT-3): one Three.js `Points` object drawn
- * with a small custom shader. Knows nothing about React or scrolling; the caller sets
- * progress, scroll and theme and asks it to render.
+ * with a small custom shader, into the shared stage's renderer (spec 05 ST-3). Knows
+ * nothing about React or scrolling; the caller sets progress, scroll and theme.
  */
 import {
   BufferAttribute,
@@ -34,7 +34,6 @@ export function frameReady(s: FrameSource | null): s is FrameSource {
 
 export class ParticleField {
   readonly maxCount: number;
-  private renderer: WebGLRenderer;
   private scene = new Scene();
   private camera = new Camera();
   private geometry = new BufferGeometry();
@@ -45,18 +44,8 @@ export class ParticleField {
   private color: BufferAttribute;
   private rand: BufferAttribute;
 
-  constructor(canvas: HTMLCanvasElement, maxCount: number, pixelRatio: number) {
+  constructor(renderer: WebGLRenderer, maxCount: number, pixelRatio: number) {
     this.maxCount = maxCount;
-    this.renderer = new WebGLRenderer({
-      canvas,
-      alpha: true,
-      premultipliedAlpha: true,
-      antialias: false,
-      powerPreference: 'high-performance',
-    });
-    this.renderer.setPixelRatio(pixelRatio);
-    this.renderer.setClearColor(0x000000, 0);
-
     this.position = new BufferAttribute(new Float32Array(maxCount * 3), 3);
     this.color = new BufferAttribute(new Float32Array(maxCount * 3), 3);
     this.rand = new BufferAttribute(new Float32Array(maxCount * 4), 4);
@@ -94,7 +83,7 @@ export class ParticleField {
     points.frustumCulled = false;
     this.scene.add(points);
     // compile now, so the first scroll doesn't stutter
-    this.renderer.compile(this.scene, this.camera);
+    renderer.compile(this.scene, this.camera);
   }
 
   get count(): number {
@@ -107,7 +96,6 @@ export class ParticleField {
   }
 
   setSize(width: number, height: number) {
-    this.renderer.setSize(width, height, false);
     this.material.uniforms.uViewport!.value = [width, height];
   }
 
@@ -163,14 +151,12 @@ export class ParticleField {
     if (values.alpha !== undefined) u.uAlpha!.value = values.alpha;
   }
 
-  render() {
-    this.renderer.render(this.scene, this.camera);
+  render(renderer: WebGLRenderer) {
+    renderer.render(this.scene, this.camera);
   }
 
   dispose() {
     this.geometry.dispose();
     this.material.dispose();
-    this.renderer.dispose();
-    this.renderer.forceContextLoss();
   }
 }

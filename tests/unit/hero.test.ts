@@ -14,9 +14,10 @@ import {
   type Clip,
 } from '../../src/chapters/hero/heroMedia';
 import type { HeroMedia } from '../../src/data/schemas';
-import { createFrameGuard } from '../../src/scene/hero/frameGuard';
+import { createFrameGuard } from '../../src/scene/stage/frameGuard';
 import { getHeroCloud, onHeroCloud, publishHeroCloud } from '../../src/scene/hero/handoff';
 import {
+  CLOUD_FLOOR,
   cloudPoint,
   coverCrop,
   framePixelsToParticles,
@@ -202,20 +203,24 @@ describe('PT-1 – PT-4 particles', () => {
     expect(Math.max(...v)).toBeLessThan(1);
   });
 
-  it('the cloud rests below the middle of the screen (drifting down, decision Q2)', () => {
-    for (const r of [0, 0.5, 1]) {
-      const [x, y] = cloudPoint(r, r, 1000, 1000);
-      expect(x).toBeGreaterThanOrEqual(49.99);
-      expect(x).toBeLessThanOrEqual(950.01);
-      expect(y).toBeGreaterThan(400);
+  it('the cloud rests in a soft ellipse below the middle of the screen (drifting down, decision Q2)', () => {
+    for (let i = 0; i <= 20; i++) {
+      for (let j = 0; j <= 20; j++) {
+        const [x, y] = cloudPoint(i / 20, j / 20, 1000, 1000);
+        // inside the ellipse centred at (500, 660) with radii 460 × 240
+        expect(((x - 500) / 460) ** 2 + ((y - 660) / 240) ** 2).toBeLessThanOrEqual(1.0001);
+        expect(y).toBeGreaterThan(400);
+      }
     }
   });
 
-  it('layer fades in as soon as you scroll and out before the next chapter takes over', () => {
+  it('layer fades in as you scroll, settles to a quiet cloud, and hands over as the globe forms (spec 05 GL-6)', () => {
     expect(layerAlpha(0)).toBe(0);
     expect(layerAlpha(0.03)).toBe(1);
     expect(layerAlpha(0.5)).toBe(1);
-    expect(layerAlpha(1)).toBe(0);
+    expect(layerAlpha(1)).toBeCloseTo(CLOUD_FLOOR);
+    expect(layerAlpha(1, 0.5)).toBeCloseTo(CLOUD_FLOOR / 2);
+    expect(layerAlpha(1, 1)).toBe(0);
   });
 
   it('scroll progress covers the first 120 % of the hero (HL-3)', () => {

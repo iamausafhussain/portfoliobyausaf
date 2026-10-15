@@ -112,15 +112,25 @@ export function framePixelsToParticles(
  * Must match `cloud` in particles.vert.
  */
 export function cloudPoint(r1: number, r2: number, vw: number, vh: number): [number, number] {
-  return [vw * (0.5 + (r1 - 0.5) * 0.9), vh * (0.66 + (r2 - 0.5) * 0.5)];
+  // a soft ellipse rather than a box
+  const a = r1 * Math.PI * 2;
+  const rad = Math.sqrt(r2); // even spread across the ellipse
+  return [vw * (0.5 + Math.cos(a) * rad * 0.46), vh * (0.66 + Math.sin(a) * rad * 0.24)];
 }
 
-/** Overall opacity of the particle layer for a scroll progress (fades in, then out at the end). */
-export function layerAlpha(p: number): number {
+/** How bright the cloud stays while it drifts behind About (spec 05 §3.3). */
+export const CLOUD_FLOOR = 0.3;
+
+/**
+ * Overall opacity of the particle layer: fades in as soon as you scroll, settles to a
+ * quiet cloud behind About, then hands over to the globe as it forms (`formation` 0–1,
+ * spec 05 GL-6). Without a globe (`formation` stays 0) the cloud simply stays quiet.
+ */
+export function layerAlpha(p: number, formation = 0): number {
   if (p <= 0) return 0;
   const fadeIn = Math.min(1, p / 0.03);
-  const fadeOut = 1 - Math.min(1, Math.max(0, (p - 0.6) / 0.32));
-  return fadeIn * fadeOut;
+  const settle = 1 - (1 - CLOUD_FLOOR) * Math.min(1, Math.max(0, (p - 0.6) / 0.32));
+  return fadeIn * settle * (1 - Math.min(1, Math.max(0, formation)));
 }
 
 /**

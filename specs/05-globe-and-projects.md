@@ -1,7 +1,7 @@
 # Part 5 — The System: 3D Globe and Projects
 
-**Status:** Draft — awaiting approval
-**Version:** 0.1 · 2026-10-15
+**Status:** Approved — building
+**Version:** 0.2 · 2026-10-15
 **Depends on:** Part 0 (tokens), Part 1 (`projects`), Part 2 (admin), Part 3 (shell, tiers, motion), Part 4 (hero particles and their hand-off)
 **Feeds:** Part 6 (other chapters reuse the shared 3D stage), Part 8 (performance pass)
 
@@ -48,7 +48,7 @@ The engineering half of "Director's Cut × Data in Transit" (master spec §1): a
 
 | ID | Requirement |
 |---|---|
-| GL-1 | **Dot-matrix Earth**: land drawn as evenly spaced dots (≈ 12 000 on high, ≈ 5 000 on mid) over a matte sphere in `globe-base`, with a thin atmosphere rim. Built from public-domain map data (Natural Earth) at build time into a small file (≤ 60 KB). No downloaded 3D model is needed. |
+| GL-1 | **Dot-matrix Earth**: land drawn as evenly spaced dots (≈ 12 000 on high, ≈ 5 000 on mid) over a matte sphere in `globe-base`, with a thin atmosphere rim. Built from public-domain map data (Natural Earth) at build time into a small file (≤ 64 KB). No downloaded 3D model is needed. |
 | GL-2 | **Home node**: Bhubaneswar, labelled "Home · Bhubaneswar", in `accent`. All packet routes start or end here. |
 | GL-3 | **Project nodes**: one per published project at its `globe` position. Projects without a position are placed automatically (GL-4). Featured projects are larger and pulse gently. |
 | GL-4 | **Auto-placement**: a project with no position gets a stable spot (it never moves between visits) spread around the globe, never on top of another node; the order follows `sort_order`. |
@@ -73,8 +73,8 @@ The engineering half of "Director's Cut × Data in Transit" (master spec §1): a
 
 | ID | Requirement |
 |---|---|
-| TF-1 | **High**: full dots, packets with glow, formation from the hero particles. **Mid**: fewer dots and packets, no halo, formation kept. **Low / Lite / no WebGL**: no canvas. The chapter shows a still image of the globe (pre-rendered in both themes, ≤ 40 KB each) and the same cards as a normal list; no pinning. |
-| TF-2 | **Reduced motion**: no pinning, no camera turns and no flying particles. The globe fades in already formed and stays still; packets are shown as static dots on the arcs; the cards are a normal list. |
+| TF-1 | **High**: full dots, packets with glow, formation from the hero particles. **Mid**: fewer dots and packets, no halo, formation kept. **Low / Lite / no WebGL**: no canvas. The chapter shows a still image of the globe (pre-rendered in both themes, ≤ 60 KB each; only the current theme's loads) and the same cards as a normal list; no pinning. |
+| TF-2 | **Reduced motion**: no pinning, no camera turns and no flying particles: the chapter shows the still globe (as TF-1) and the cards as a normal list. |
 | TF-3 | Everything in the chapter is readable with WebGL off (master spec A-3). The canvas is `aria-hidden`; all meaning lives in the DOM cards. |
 
 ### 2.6 Project page (`/projects/:slug`)
@@ -127,6 +127,9 @@ scripts/
 
 ### 3.2 Technology choice
 
+**Built as:** the globe follows a DOM "slot" element (its centre and size come from the slot's box every frame, via the camera's view offset), so CSS decides where it sits, sticky positioning pins it, and the phone layout needs no extra 3D code. Picking, labels and drag happen in the DOM against the nodes' projected screen positions, no raycasting.
+
+
 The master spec named React Three Fiber. Part 4 was built with plain Three.js and it fitted well: smaller download, no React re-renders per frame, and full control of the loop. Part 5 continues with plain Three.js and a small stage manager, so no R3F dependency. The master spec will be updated to match.
 
 Packets get their "bloom" from additive halo sprites, not a post-processing pass, so there's no extra render pass and no extra library.
@@ -138,8 +141,8 @@ Packets get their "bloom" from additive halo sprites, not a post-processing pass
 | Hero → About | Part 4: footage → particles → cloud (unchanged) |
 | About | The cloud drifts gently behind About at low opacity (it isn't faded out completely any more) |
 | Entering The System | Cloud → globe formation (GL-6); title card appears |
-| Pinned tour | One stop per featured project; the camera turns to each node, ≈ 100 % of a screen height of scroll per stop |
-| After the tour | Globe shrinks and drifts aside; the "All projects" grid scrolls in |
+| Pinned tour | One stop per featured project; the globe turns to each node, one screen height of scroll per stop. Pinning is plain CSS `position: sticky`, so scrolling is never hijacked |
+| After the tour | The globe scrolls away with the end of the tour (it follows its place in the page) and idles; the "All projects" grid scrolls in |
 | Leaving | Globe fades out before Credits |
 
 ### 3.4 Data
@@ -225,15 +228,16 @@ Development only, for the data script: `world-atlas`, `topojson-client`. Nothing
 
 ## 7. Open questions
 
-| # | Question | Default if no answer |
+| # | Question | Answer |
 |---|---|---|
-| Q1 | Globe style: a **dot-matrix Earth** with real continents, or an abstract wireframe or particle sphere with no map? | Dot-matrix Earth |
-| Q2 | Where should projects sit? Real places (where the client or the work is, e.g. US for the Harman/Samsung work), or spread out automatically unless you set one? | Automatic unless set in the admin |
-| Q3 | The tour: **pinned, one stop per featured project**, or no pinning (globe beside a scrolling list of cards)? | Pinned tour for featured projects (max 6), then the grid |
-| Q4 | Should the hero's particles **re-form into the globe**, or should the globe just fade in? | Re-form (the Part 4 hand-off) |
-| Q5 | Packet routes: always **home ↔ project**, or also project ↔ project (a mesh)? | Home ↔ project |
-| Q6 | Blender: the globe is generated in code (sharper, smaller, themable). Do you still want a Blender-made asset anywhere in Part 5? | No, all in code |
-| Q7 | Include the styled project page and gallery in this part? | Yes |
+| Q1 | Globe style: a **dot-matrix Earth** with real continents, or an abstract wireframe or particle sphere with no map? | **Decided:** Dot-matrix Earth (default) |
+| Q2 | Where should projects sit? Real places (where the client or the work is, e.g. US for the Harman/Samsung work), or spread out automatically unless you set one? | **Decided:** Automatic unless set in the admin (default) |
+| Q3 | The tour: **pinned, one stop per featured project**, or no pinning (globe beside a scrolling list of cards)? | **Decided:** Pinned tour for featured projects (max 6), then the grid (default) |
+| Q4 | Should the hero's particles **re-form into the globe**, or should the globe just fade in? | **Decided:** Re-form (the Part 4 hand-off) (default) |
+| Q5 | Packet routes: always **home ↔ project**, or also project ↔ project (a mesh)? | **Decided:** Home ↔ project (default) |
+| Q6 | Blender: the globe is generated in code (sharper, smaller, themable). Do you still want a Blender-made asset anywhere in Part 5? | **Decided:** No, all in code (default) |
+| Q7 | Include the styled project page and gallery in this part? | **Decided:** Yes (default) |
 
 ## Changelog
 - 0.1 (2026-10-15) — Initial draft.
+- 0.2 (2026-10-15) — Approved by Ausaf with all defaults (Q1–Q7).

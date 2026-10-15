@@ -8,6 +8,8 @@ import { useDeviceTier } from '../../device/DeviceProvider';
 import { useReducedMotion } from '../../device/useReducedMotion';
 import { usePublishedHeroMedia, useSiteSettings } from '../../data/queries/public';
 import { publicMediaUrl } from '../../data/source';
+import { useAfterFirstPaint } from '../../motion/useAfterFirstPaint';
+import { useStage } from '../../scene/stage/StageProvider';
 import { useTheme } from '../../theme/ThemeProvider';
 import { chooseClips, forTheme, heroProgress, sampleClips, toClips, videoAllowed } from './heroMedia';
 import { HeroVideo, StageMedia } from './HeroVideo';
@@ -32,29 +34,6 @@ const visitPick = Math.random();
 
 const saveData = () =>
   !!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
-
-/** True once the page has loaded and the browser is idle, so video never competes with the first paint (FG-4, PT-5). */
-function useAfterFirstPaint(): boolean {
-  const [done, setDone] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    const idle = () => {
-      const w = window as Window & {
-        requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
-      };
-      const go = () => !cancelled && setDone(true);
-      if (w.requestIdleCallback) w.requestIdleCallback(go, { timeout: 1200 });
-      else setTimeout(go, 200);
-    };
-    if (document.readyState === 'complete') idle();
-    else window.addEventListener('load', idle, { once: true });
-    return () => {
-      cancelled = true;
-      window.removeEventListener('load', idle);
-    };
-  }, []);
-  return done;
-}
 
 function useInView(ref: React.RefObject<Element | null>): boolean {
   const [inView, setInView] = useState(true);
@@ -94,15 +73,9 @@ export function HeroChapter({ headingId }: { headingId: string }) {
 
   const videoOn = afterPaint && videoAllowed({ tier, saveData: saveData(), reducedMotion, lite });
   const hasVideo = videoOn && clips.length > 0;
-  // the 3D chunk is a download too: none with Data Saver
-  const particlesOn =
-    afterPaint &&
-    !particlesFailed &&
-    clips.length > 0 &&
-    tier !== 'low' &&
-    !reducedMotion &&
-    !lite &&
-    !saveData();
+  // the shared 3D stage decides tier, Lite, reduced motion and Data Saver (spec 05 ST-1)
+  const { stage } = useStage();
+  const particlesOn = !!stage && !particlesFailed && clips.length > 0;
 
   const togglePause = () => {
     setPaused((p) => {
@@ -190,14 +163,14 @@ export function HeroChapter({ headingId }: { headingId: string }) {
         <span className={styles.scrim} />
       </div>
 
-      {particlesOn && (
+      {particlesOn && stage && (
         <SceneBoundary onError={() => setParticlesFailed(true)}>
           <Suspense fallback={null}>
             <HeroParticles
+              stage={stage}
               heroRef={rootRef}
               media={media}
               tier={tier}
-              theme={theme}
               onFail={() => setParticlesFailed(true)}
             />
           </Suspense>

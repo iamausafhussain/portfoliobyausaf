@@ -8,7 +8,7 @@ import { useLocation, useNavigationType } from 'react-router';
 import { scrollToChapter, scrollToTop } from '../motion/scrollTo';
 
 /** Calls `find` every frame until it returns an element, or gives up after `timeout` ms. */
-function waitFor<T>(find: () => T | null, timeout = 4000): Promise<T | null> {
+function waitFor<T>(find: () => T | null, timeout = 10_000): Promise<T | null> {
   return new Promise((resolve) => {
     const start = performance.now();
     const tick = () => {

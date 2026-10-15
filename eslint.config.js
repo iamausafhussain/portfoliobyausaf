@@ -36,6 +36,7 @@ export default tseslint.config(
       'src/motion/**/*.tsx',
       'src/chapters/**/*.tsx',
       'src/cursor/**/*.tsx',
+      'src/scene/**/*.tsx',
     ],
     rules: { 'react-refresh/only-export-components': 'off' },
   },

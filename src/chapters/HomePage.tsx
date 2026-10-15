@@ -3,23 +3,24 @@
  * content until Parts 5–7 give each its cinematic version. The hero is the Opening Scene (Part 4).
  */
 import { useSiteSettings } from '../data/queries/public';
+import { StageProvider } from '../scene/stage/StageProvider';
 import { Chapter } from '../shell/Chapter';
 import { useHomeChapters } from '../shell/ChapterRegistry';
 import { useDocumentTitle } from '../shell/hooks';
 import { HeroChapter } from './hero/HeroChapter';
+import { SystemChapter } from './system/SystemChapter';
 import {
   AboutPlaceholder,
   ContactPlaceholder,
   CreditsPlaceholder,
   CustomSectionPlaceholder,
-  ProjectsPlaceholder,
   ReviewsPlaceholder,
   TimelinePlaceholder,
 } from './placeholders';
 
 const bodies = {
   about: AboutPlaceholder,
-  projects: ProjectsPlaceholder,
+  projects: SystemChapter,
   credits: CreditsPlaceholder,
   timeline: TimelinePlaceholder,
   reviews: ReviewsPlaceholder,
@@ -32,7 +33,7 @@ export function HomePage() {
   useDocumentTitle(settings.isPending ? undefined : '');
 
   return (
-    <>
+    <StageProvider>
       {chapters.map((entry) => {
         if (entry.key === 'hero') {
           return (
@@ -55,6 +56,6 @@ export function HomePage() {
           </Chapter>
         );
       })}
-    </>
+    </StageProvider>
   );
 }

@@ -30,7 +30,9 @@ void main() {
 
   vec2 anchored = vec2(position.x, position.y - uScroll);
   // must match cloudPoint() in sampling.ts
-  vec2 cloud = vec2(uViewport.x * (0.5 + (aRand.y - 0.5) * 0.9), uViewport.y * (0.66 + (aRand.z - 0.5) * 0.5));
+  float ca = aRand.y * 6.2831853;
+  float cr = sqrt(aRand.z);
+  vec2 cloud = vec2(uViewport.x * (0.5 + cos(ca) * cr * 0.46), uViewport.y * (0.66 + sin(ca) * cr * 0.24));
 
   vec2 p = mix(anchored, cloud, e);
   float arc = sin(e * 3.14159265);

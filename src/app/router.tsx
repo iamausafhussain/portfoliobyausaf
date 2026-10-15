@@ -28,7 +28,7 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, Component: HomePage },
       // detail pages load on demand (they bring the Markdown renderer)
-      { path: 'projects/:slug', lazy: () => import('../chapters/ProjectPage') },
+      { path: 'projects/:slug', lazy: () => import('../chapters/project/ProjectPage') },
       { path: 's/:slug', lazy: () => import('../chapters/SectionPage') },
       { path: 'resume', Component: ResumeRoute },
       ...devRoutes,

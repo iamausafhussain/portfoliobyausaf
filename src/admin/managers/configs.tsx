@@ -12,7 +12,6 @@ import {
 } from '../../data/schemas';
 import {
   DateField,
-  GlobeField,
   ListField,
   NumberField,
   ScaleField,
@@ -22,6 +21,7 @@ import {
   TextField,
   UrlField,
 } from '../fields/basic';
+import { GlobeField } from '../fields/GlobeField';
 import { MarkdownField } from '../fields/MarkdownField';
 import { FieldGroup, ImageField, ImageListField, VideoField } from '../fields/media';
 import { TagsField } from '../fields/TagsField';

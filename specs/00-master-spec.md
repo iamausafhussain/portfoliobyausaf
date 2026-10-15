@@ -210,7 +210,7 @@ Supabase Storage: images, resume PDF, footage posters (footage itself may be hos
 ```
 
 Key decisions:
-- **One persistent `<Canvas>`** behind the DOM for the whole home page; chapters drive the camera via ScrollTrigger rather than mounting separate canvases.
+- **One persistent canvas** behind the DOM for the whole home page (the shared stage, spec 05); chapters add layers to it rather than mounting separate canvases. Built with plain Three.js rather than React Three Fiber (smaller, no React re-renders per frame; decided in Parts 4–5).
 - **Admin and 3D code are separate lazy chunks**; recruiters on slow networks get content before 3D loads.
 - **Security lives in the database** (RLS), not the frontend. Only the anon key ships to the browser; the service-role key is never used client-side.
 - **Device tiers:** `high` (full effects), `mid` (reduced particles, no bloom), `low` (static 2D fallback, no WebGL). Tier is detected from GPU info, `deviceMemory`, and a short frame-time probe.

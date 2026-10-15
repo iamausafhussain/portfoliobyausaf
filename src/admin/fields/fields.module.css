@@ -96,6 +96,72 @@
   gap: var(--space-4);
 }
 
+/* "Place on globe" map (spec 05 AD-1) */
+.globeMap {
+  position: relative;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+.globeMap[data-auto] {
+  opacity: 0.55;
+}
+
+.globeCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  /* the dots are drawn in this colour */
+  color: color-mix(in srgb, var(--color-fg) 45%, transparent);
+  cursor: crosshair;
+}
+
+.globeHome,
+.globeMarker {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.globeHome {
+  border: 2px solid var(--color-accent);
+}
+
+.globeMarker {
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  background: var(--color-accent-2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-2) 30%, transparent);
+}
+
+.globePresets {
+  display: flex;
+  align-items: end;
+}
+
+.globePreset {
+  height: 2.5rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-fg);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.globePreset:hover {
+  border-color: var(--color-accent);
+}
+
 /* ---------- tags ---------- */
 .tags {
   display: grid;

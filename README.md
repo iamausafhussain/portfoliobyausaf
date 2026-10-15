@@ -11,7 +11,7 @@ The project is built **spec-first**: read [`specs/`](specs/) before changing beh
 | [Part 2 — Admin panel](specs/02-admin-panel.md)                           | Built (live checklist pending) |
 | [Part 3 — App shell](specs/03-app-shell.md)                               | Built                          |
 | [Part 4 — Opening scene and cursor](specs/04-hero-and-cursor.md)          | Built                          |
-| [Part 5 — The System: globe and projects](specs/05-globe-and-projects.md) | Spec in review                 |
+| [Part 5 — The System: globe and projects](specs/05-globe-and-projects.md) | Built                          |
 | Parts 6–8                                                                 | Not started                    |
 
 ## Requirements
@@ -84,7 +84,13 @@ The `@font-face` rules, the size-matched fallback (prevents text jumping while t
 - The **Lite mode** switch (footer and chapter menu) turns off smooth scrolling, film grain, the hero video, the particles and the custom cursor.
 - Your system's "reduce motion" setting does the same for animation.
 - The opening intro plays once per browser tab. To see it again, open a new tab (or clear session storage).
-- Development only: `?noguard` keeps the hero particles running on slow software renderers (used by the automated tests), and `?intro=hold` keeps the intro on screen until it's skipped. Neither exists in a production build.
+- Development only: `?noguard` keeps the 3D (hero particles and globe) running on slow software renderers (used by the automated tests), and `?intro=hold` keeps the intro on screen until it's skipped. Neither exists in a production build.
+
+### The globe
+
+The System chapter's globe is built in code from map data, so there's no 3D model to edit. In the admin, each project has an **On the globe** section: tick **Featured** to give it a stop in the scroll tour (up to 6) and a larger node, and either leave **Place automatically** on or click the map, pick a city or type coordinates.
+
+The land dots and the admin's city list come from `npm run globe:data` (re-run only to change the dot density or the cities). Map data: Natural Earth (public domain); cities: GeoNames (CC BY 4.0).
 
 ### Hero footage
 
@@ -107,7 +113,7 @@ src/
   theme/          tokens.ts, fonts.ts, CSS generation
   lib/            Supabase client, query client, utilities
   data/           Database types, Zod schemas, query hooks
-  scene/          Three.js / React Three Fiber scene (Part 5)
+  scene/          Three.js: the shared 3D stage, hero particles, globe
   chapters/       Home page chapters
   components/     Shared UI
   admin/          Admin panel (Part 2): repository/ (Supabase + demo backends), auth/, shell/,

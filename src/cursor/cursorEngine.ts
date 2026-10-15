@@ -225,8 +225,17 @@ export function startCursor(parts: CursorParts): () => void {
       if (ring.cx < 0) Object.assign(ring, { cx: pointer.x, cy: pointer.y });
       setVisible(true);
     }
+    // a page can change an element's cursor state while the pointer stays on it (e.g. the
+    // globe switches between "Drag" and "Open" over a node): re-read it when it changes
+    const explicit = (e.target as Element | null)?.closest?.('[data-cursor]');
+    const sig = explicit
+      ? `${explicit.getAttribute('data-cursor')}|${explicit.getAttribute('data-cursor-label') ?? ''}`
+      : '';
+    if (explicit && sig !== lastSig) applyTarget(resolveTarget(e.target as Element));
+    lastSig = sig;
     wake();
   };
+  let lastSig = '';
   const onOver = (e: PointerEvent) => {
     if (e.pointerType !== 'mouse') return;
     applyTarget(resolveTarget(e.target as Element | null));

@@ -338,7 +338,7 @@ Latest 2 versions of Chrome, Edge, Firefox, Safari (macOS + iOS), Samsung Intern
 | 2 | Admin panel + custom-section builder |
 | 3 | App shell: routing, theme system, smooth scroll, Fast Lane, device tiers |
 | 4 | Hero scene: film intro, footage → particles; custom cursor |
-| 5 | 3D globe and project system |
+| 5 | The System: shared 3D stage, dot-matrix globe with project nodes and data packets, project pages |
 | 6 | Content chapters: About, Credits, Timeline, Reviews, Custom |
 | 7 | Contact form + admin inbox |
 | 8 | Performance, SEO, accessibility audit, Netlify deploy |

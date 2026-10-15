@@ -125,7 +125,7 @@ export function demoRows(): Record<AdminTable, Row[]> {
             height: 900,
           },
           { path: 'images/projects/demo-edi.webp', alt: 'Pipeline overview', width: 1600, height: 900 },
-          { path: 'images/projects/demo-reel.webp', alt: 'Message flow', width: 1600, height: 900 },
+          { path: 'images/talks/demo-stage.webp', alt: 'Presenting the pipeline', width: 1200, height: 800 },
         ],
         tech: ['C#', '.NET', 'Azure Service Bus', 'EDI X12'],
         links: {},

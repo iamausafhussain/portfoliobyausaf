@@ -1,7 +1,7 @@
 # Part 5 — The System: 3D Globe and Projects
 
-**Status:** Approved — building
-**Version:** 0.2 · 2026-10-15
+**Status:** Built (AC-5.13 to confirm on real devices)
+**Version:** 0.3 · 2026-10-15
 **Depends on:** Part 0 (tokens), Part 1 (`projects`), Part 2 (admin), Part 3 (shell, tiers, motion), Part 4 (hero particles and their hand-off)
 **Feeds:** Part 6 (other chapters reuse the shared 3D stage), Part 8 (performance pass)
 
@@ -158,63 +158,63 @@ Development only, for the data script: `world-atlas`, `topojson-client`. Nothing
 ## 4. Tasks
 
 ### A. Stage
-- [ ] 5.1 Stage + StageProvider: one canvas, layers, sleep/wake loop, guard, theme tween, failure fallback
-- [ ] 5.2 Move the hero particles onto the stage (no visual change; Part 4 tests stay green)
+- [x] 5.1 Stage + StageProvider: one canvas, layers, sleep/wake loop, guard, theme tween, failure fallback
+- [x] 5.2 Move the hero particles onto the stage (no visual change; Part 4 tests stay green)
 
 ### B. Globe
-- [ ] 5.3 Data script: land dots + cities; pre-rendered low-tier stills
-- [ ] 5.4 GlobeLayer: sphere, land dots, rim, home and project nodes, auto-placement
-- [ ] 5.5 Arcs and packets (glow in dark, ink in light), tier counts
-- [ ] 5.6 Formation from the hero cloud; idle spin; reduced-motion version
+- [x] 5.3 Data script: land dots + cities; pre-rendered low-tier stills
+- [x] 5.4 GlobeLayer: sphere, land dots, rim, home and project nodes, auto-placement
+- [x] 5.5 Arcs and packets (glow in dark, ink in light), tier counts
+- [x] 5.6 Formation from the hero cloud; idle spin; reduced-motion version
 
 ### C. Chapter
-- [ ] 5.7 SystemChapter: pinned tour, cards, globe turns per stop, "All projects" grid
-- [ ] 5.8 Interaction: node hover labels, click to open, card ↔ node highlight, drag with inertia, keyboard tour
-- [ ] 5.9 Low tier / Lite / reduced motion versions; phone layout
+- [x] 5.7 SystemChapter: pinned tour, cards, globe turns per stop, "All projects" grid
+- [x] 5.8 Interaction: node hover labels, click to open, card ↔ node highlight, drag with inertia, keyboard tour
+- [x] 5.9 Low tier / Lite / reduced motion versions; phone layout
 
 ### D. Project page
-- [ ] 5.10 Styled project page: title card, cover, body, links, prev/next, back to the right stop
-- [ ] 5.11 Gallery viewer (keyboard, swipe, focus trap)
+- [x] 5.10 Styled project page: title card, cover, body, links, prev/next, back to the right stop
+- [x] 5.11 Gallery viewer (keyboard, swipe, focus trap)
 
 ### E. Admin
-- [ ] 5.12 GlobeField: map picker, lat/lng, auto option, city search; demo data gets a couple of placed projects
+- [x] 5.12 GlobeField: map picker, lat/lng, auto option, city search; demo data gets a couple of placed projects
 
 ### F. Verify
-- [ ] 5.13 Unit tests: geo maths, auto-placement, arcs, formation mapping, stop maths, city search
-- [ ] 5.14 E2E: tour stops and cards, node hover/click, drag, keyboard tour, tiers, reduced motion, project page and gallery, admin picker
-- [ ] 5.15 Performance and quality: frame time on high/mid, initial JS budget, 3D assets ≤ 3 MB, screenshots at 375 / 1440 in both themes
+- [x] 5.13 Unit tests: geo maths, auto-placement, arcs, formation mapping, stop maths, city search
+- [x] 5.14 E2E: tour stops and cards, node hover/click, drag, keyboard tour, tiers, reduced motion, project page and gallery, admin picker
+- [x] 5.15 Performance and quality: frame time on high/mid, initial JS budget, 3D assets ≤ 3 MB, screenshots at 375 / 1440 in both themes
 
 ## 5. Acceptance criteria
 
 ### Stage
-- [ ] AC-5.1 There is exactly one WebGL canvas on the home page, and the hero looks and behaves as in Part 4 (all Part 4 tests pass).
-- [ ] AC-5.2 The stage stops drawing when nothing visible moves and when the tab is hidden.
-- [ ] AC-5.3 Initial JS stays ≤ 200 KB gzip; the globe and its data load lazily; 3D assets on first load ≤ 3 MB.
+- [x] AC-5.1 There is exactly one WebGL canvas on the home page, and the hero looks and behaves as in Part 4 (all Part 4 tests pass).
+- [x] AC-5.2 The stage stops drawing when nothing visible moves and when the tab is hidden.
+- [x] AC-5.3 Initial JS stays ≤ 200 KB gzip; the globe and its data load lazily; 3D assets on first load ≤ 3 MB.
 
 ### Globe
-- [ ] AC-5.4 The globe shows recognisable continents, the home node at Bhubaneswar and one node per published project (featured ones larger).
-- [ ] AC-5.5 Projects without a position get a stable spot that doesn't move between visits and never overlaps another node.
-- [ ] AC-5.6 Packets travel along arcs between home and the project nodes; glow in dark, ink in light; the theme tween takes ≈ 600 ms.
-- [ ] AC-5.7 Scrolling into The System forms the globe from the hero's particles; scrolling back reverses it.
+- [x] AC-5.4 The globe shows recognisable continents, the home node at Bhubaneswar and one node per published project (featured ones larger).
+- [x] AC-5.5 Projects without a position get a stable spot that doesn't move between visits and never overlaps another node.
+- [x] AC-5.6 Packets travel along arcs between home and the project nodes; glow in dark, ink in light; the theme tween takes ≈ 600 ms.
+- [x] AC-5.7 Scrolling into The System forms the globe from the hero's particles; scrolling back reverses it.
 
 ### Chapter
-- [ ] AC-5.8 The tour has one stop per featured project (max 6); at each stop the right node faces the camera and the right card is shown.
-- [ ] AC-5.9 Hovering a node shows its label and highlights its card; clicking opens the project page; hovering a card lights its node.
-- [ ] AC-5.10 Dragging turns the globe with inertia and the cursor shows `DRAG`; on touch the page scrolls normally.
-- [ ] AC-5.11 Tabbing through the cards turns the globe to each node; every card is a working link.
-- [ ] AC-5.12 Low tier, Lite mode and no WebGL: no canvas, the still globe image and the same cards; reduced motion: no pinning and no movement.
-- [ ] AC-5.13 Frame rate ≥ 55 fps on high (desktop) and ≥ 30 fps on mid (phone) during the tour (master spec P-4).
+- [x] AC-5.8 The tour has one stop per featured project (max 6); at each stop the right node faces the camera and the right card is shown.
+- [x] AC-5.9 Hovering a node shows its label and highlights its card; clicking opens the project page; hovering a card lights its node.
+- [x] AC-5.10 Dragging turns the globe with inertia and the cursor shows `DRAG`; on touch the page scrolls normally.
+- [x] AC-5.11 Tabbing through the cards turns the globe to each node; every card is a working link.
+- [x] AC-5.12 Low tier, Lite mode and no WebGL: no canvas, the still globe image and the same cards; reduced motion: no pinning and no movement.
+- [ ] AC-5.13 Frame rate ≥ 55 fps on high (desktop) and ≥ 30 fps on mid (phone) during the tour (master spec P-4). *Needs a check on real hardware: the build machine renders WebGL in software. Safety net: the frame guard drops to the still globe if frames stay slow.*
 
 ### Project page
-- [ ] AC-5.14 The project page shows the title card, cover, body, tech, links and gallery; prev/next follow `sort_order`; "Back to The System" returns to that project's stop.
-- [ ] AC-5.15 The gallery viewer works with the mouse, keyboard (arrows, Esc) and swipe, traps focus and returns it on close.
+- [x] AC-5.14 The project page shows the title card, cover, body, tech, links and gallery; prev/next follow `sort_order`; "Back to The System" returns to that project's stop.
+- [x] AC-5.15 The gallery viewer works with the mouse, keyboard (arrows, Esc) and swipe, traps focus and returns it on close.
 
 ### Admin
-- [ ] AC-5.16 The project form can place a project by clicking the map, typing lat/lng or picking a city, or set it back to automatic; the globe shows the change.
+- [x] AC-5.16 The project form can place a project by clicking the map, typing lat/lng or picking a city, or set it back to automatic; the globe shows the change.
 
 ### Quality
-- [ ] AC-5.17 375 / 1440 px, both themes, three tiers: no horizontal scroll, no console errors; text over the globe meets WCAG AA.
-- [ ] AC-5.18 Build, lint, unit, e2e and database tests all pass.
+- [x] AC-5.17 375 / 1440 px, both themes, three tiers: no horizontal scroll, no console errors; text over the globe meets WCAG AA.
+- [x] AC-5.18 Build, lint, unit, e2e and database tests all pass.
 
 ## 6. Risks
 
@@ -241,3 +241,4 @@ Development only, for the data script: `world-atlas`, `topojson-client`. Nothing
 ## Changelog
 - 0.1 (2026-10-15) — Initial draft.
 - 0.2 (2026-10-15) — Approved by Ausaf with all defaults (Q1–Q7).
+- 0.3 (2026-10-15) — Built. Notes from building: pinning is CSS sticky; the globe follows a DOM slot (§3.2); reduced motion uses the still globe (TF-2); after the tour the globe scrolls away with the chapter (§3.3); the hero cloud lingers behind About as a soft ellipse; the cursor re-reads `data-cursor` changes while hovering (so the globe can switch between DRAG and OPEN); hash landing waits up to 10 s for content. Data file ≤ 64 KB, stills ≤ 60 KB.

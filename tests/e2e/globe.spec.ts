@@ -406,12 +406,16 @@ test('AC-5.16 admin: place a project by map, by city, by lat/lng, or back to aut
   const edi = (await rows(page, 'projects')).find((p) => p.slug === 'supply-chain-edi-pipeline')!;
   await page.getByRole('link', { name: 'Supply-chain EDI pipeline' }).first().click();
   await page.waitForURL(new RegExp(`/admin/projects/${edi.id}$`));
-  await page.getByRole('switch', { name: 'Place automatically' }).click();
+  await page.getByText('Place automatically').click();
   // click the map at New York (40.7, −74)
   const map = page.locator('[data-globe-map]');
   const box = (await map.boundingBox())!;
   await map.click({ position: { x: ((-74 + 180) / 360) * box.width, y: ((90 - 40.7) / 180) * box.height } });
-  await expect(page.getByLabel(/Latitude/)).toHaveValue(/^40\.[5-9]/);
+  // one map pixel is about half a degree
+  await expect
+    .poll(async () => Math.abs(Number(await page.getByLabel(/Latitude/).inputValue()) - 40.7))
+    .toBeLessThan(1);
+  expect(Math.abs(Number(await page.getByLabel(/Longitude/).inputValue()) + 74)).toBeLessThan(1);
   // a city
   await page.getByLabel('Find a city').fill('Pokhara, NP');
   await expect(page.getByLabel(/Latitude/)).toHaveValue('28.27');
@@ -425,7 +429,7 @@ test('AC-5.16 admin: place a project by map, by city, by lat/lng, or back to aut
     lng: 84.5,
   });
   // back to automatic
-  await page.getByRole('switch', { name: 'Place automatically' }).click();
+  await page.getByText('Place automatically').click();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expectToast(page, 'Saved.');
   expect((await demo<{ globe: unknown }>(page, 'data.get', 'projects', edi.id)).globe).toBeNull();

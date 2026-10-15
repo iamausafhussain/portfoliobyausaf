@@ -266,7 +266,7 @@ test('AC-3.12 after a route change focus is on the h1 and the title is updated',
   const h1 = page.getByRole('heading', { level: 1, name: 'Drone reel 2026' });
   await expect(h1).toBeFocused();
   await expect(page).toHaveTitle('Drone reel 2026 · Ausaf Hussain');
-  await page.getByRole('link', { name: 'Back to the opening scene' }).click();
+  await page.getByRole('button', { name: '← Back to The System' }).click();
   await expect(page).toHaveTitle('Ausaf Hussain — Portfolio');
 });
 

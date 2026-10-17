@@ -14,7 +14,8 @@ The project is built **spec-first**: read [`specs/`](specs/) before changing beh
 | [Part 5 — The System: globe and projects](specs/05-globe-and-projects.md) | Built                                       |
 | [Part 6 — Content chapters](specs/06-content-chapters.md)                 | Built                                       |
 | [Part 7 — Contact form and inbox](specs/07-contact-and-inbox.md)          | Built (run 0009; email alert setup pending) |
-| Part 8                                                                    | Not started                                 |
+| [Part 8 — Box Office: shop for digital products](specs/08-shop.md)        | Spec in review                              |
+| Part 9 — Performance, SEO, accessibility, deploy                          | Not started                                 |
 
 ## Requirements
 

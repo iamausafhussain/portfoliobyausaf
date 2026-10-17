@@ -12,7 +12,8 @@ The project is built **spec-first**: read [`specs/`](specs/) before changing beh
 | [Part 3 — App shell](specs/03-app-shell.md)                               | Built                          |
 | [Part 4 — Opening scene and cursor](specs/04-hero-and-cursor.md)          | Built                          |
 | [Part 5 — The System: globe and projects](specs/05-globe-and-projects.md) | Built                          |
-| Parts 6–8                                                                 | Not started                    |
+| [Part 6 — Content chapters](specs/06-content-chapters.md)                 | Built                          |
+| Parts 7–8                                                                 | Not started                    |
 
 ## Requirements
 

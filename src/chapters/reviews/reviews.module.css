@@ -1,0 +1,174 @@
+/* Reviews (spec 06 §2.6): one quote at a time, like a title card. */
+
+.muted {
+  color: var(--color-fg-muted);
+}
+
+.skeleton span {
+  display: block;
+  height: 12rem;
+  max-width: 48rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-border);
+  opacity: 0.6;
+}
+
+/* ---------- a review ---------- */
+.review {
+  margin: 0;
+  display: grid;
+  gap: var(--space-6);
+  max-width: 52rem;
+}
+
+.quote {
+  margin: 0;
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-snug);
+}
+
+.quote p::before {
+  content: '“';
+  color: var(--color-accent-text);
+}
+
+.quote p::after {
+  content: '”';
+  color: var(--color-accent-text);
+}
+
+.cite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+
+.avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.citeText {
+  display: grid;
+  gap: 2px;
+}
+
+.author {
+  font-weight: var(--font-weight-medium);
+}
+
+.stars {
+  color: var(--color-accent-text);
+  letter-spacing: 0.1em;
+}
+
+.citeLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  font-size: var(--font-size-sm);
+}
+
+/* ---------- stack for 1–2 (RV-3) ---------- */
+.stack {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-9);
+}
+
+/* ---------- carousel (RV-1, RV-2) ---------- */
+.carousel {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.stage {
+  display: grid;
+  touch-action: pan-y;
+}
+
+/* every slide shares one cell; only the active one is visible (all stay readable by screen readers) */
+.slide {
+  grid-area: 1 / 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-slow) var(--ease-in-out);
+}
+
+.slide[data-active] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.arrow {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: none;
+  color: var(--color-fg);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+}
+
+.arrow:hover {
+  border-color: var(--color-accent);
+}
+
+.position {
+  color: var(--color-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.positionNow {
+  color: var(--color-accent-text);
+}
+
+.markers {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.markers li {
+  width: 1.5rem;
+  height: 2px;
+  background: var(--color-border);
+  transition: background var(--dur-base) var(--ease-out);
+}
+
+.markers li[data-active] {
+  background: var(--color-accent);
+}
+
+@media (max-width: 640px) {
+  .quote {
+    font-size: var(--font-size-2xl);
+  }
+
+  .markers {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide,
+  .markers li {
+    transition: none;
+  }
+}

@@ -14,8 +14,66 @@
 }
 
 .head {
+  position: relative;
   display: grid;
   gap: var(--space-3);
+  padding-block: var(--space-4);
+}
+
+/* title card (spec 06 CH-1): two thin letterbox lines close in, then the label and title */
+.head::before,
+.head::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: min(100%, 28rem);
+  height: 1px;
+  background: color-mix(in srgb, var(--color-fg) 22%, transparent);
+  transform-origin: left;
+  transition: transform 700ms var(--ease-cinema);
+}
+
+.head::before {
+  top: 0;
+}
+
+.head::after {
+  bottom: 0;
+}
+
+.head > * {
+  transition:
+    opacity 500ms var(--ease-out),
+    transform 600ms var(--ease-out);
+}
+
+.head > :nth-child(2) {
+  transition-delay: 160ms;
+}
+
+:global(html.reveals-on) .head:not([data-revealed])::before,
+:global(html.reveals-on) .head:not([data-revealed])::after {
+  transform: scaleX(0);
+}
+
+:global(html.reveals-on) .head:not([data-revealed]) > * {
+  opacity: 0;
+  transform: translateY(0.4em);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .head::before,
+  .head::after,
+  .head > * {
+    transition: opacity var(--dur-reduced) linear;
+    transition-delay: 0ms;
+  }
+
+  :global(html.reveals-on) .head:not([data-revealed])::before,
+  :global(html.reveals-on) .head:not([data-revealed])::after,
+  :global(html.reveals-on) .head:not([data-revealed]) > * {
+    transform: none;
+  }
 }
 
 .code {

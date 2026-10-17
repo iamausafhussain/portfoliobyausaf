@@ -1,0 +1,416 @@
+/* Timeline (spec 06 §2.5): an editing timeline above the role details. */
+
+.timeline {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.muted {
+  color: var(--color-fg-muted);
+}
+
+.skeleton {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.skeleton span {
+  height: 8rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-border);
+  opacity: 0.6;
+}
+
+/* ---------- the edit timeline (TL-1, TL-2) ---------- */
+.panel {
+  --track-h: 3rem;
+  position: sticky;
+  top: calc(var(--topbar-height) + var(--space-3));
+  z-index: 2;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-bg-elevated) 94%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* a band of page background above the stuck panel, so role text doesn't show in the gap
+   under the top bar */
+.panel::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: 100%;
+  height: calc(var(--space-3) + 1px);
+  background: var(--color-bg);
+  pointer-events: none;
+}
+
+.ruler {
+  position: relative;
+  height: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tick {
+  position: absolute;
+  bottom: 0;
+  translate: -50% 0;
+  padding-bottom: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-fg-muted);
+}
+
+.tick::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 1px;
+  height: 6px;
+  background: var(--color-fg-muted);
+}
+
+.tracks {
+  position: relative;
+  height: calc(var(--tracks) * (var(--track-h) + var(--space-2)));
+}
+
+.clip {
+  position: absolute;
+  top: calc(var(--track) * (var(--track-h) + var(--space-2)));
+  height: var(--track-h);
+  min-width: 6px;
+  display: grid;
+  align-content: center;
+  gap: 1px;
+  padding: 0 var(--space-3);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--clip) 55%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--clip) 16%, transparent);
+  color: var(--color-fg);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+  --clip: var(--color-fg-muted);
+}
+
+.clip[data-type='full_time'] {
+  --clip: var(--color-accent);
+}
+
+.clip[data-type='freelance'],
+.clip[data-type='contract'] {
+  --clip: var(--color-accent-2);
+}
+
+.clip[data-active] {
+  background: color-mix(in srgb, var(--clip) 34%, transparent);
+  border-color: var(--clip);
+}
+
+.clipCompany,
+.clipRole {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clipCompany {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+.clipRole {
+  font-size: var(--font-size-xs);
+  color: var(--color-fg-muted);
+}
+
+.playhead {
+  position: absolute;
+  top: var(--space-4);
+  bottom: var(--space-3);
+  left: var(--space-5);
+  right: var(--space-5);
+  display: none;
+  pointer-events: none;
+}
+
+/* its position is --ph: a % of the ruler (set while you scroll the role details) */
+.panel[data-playhead] .playhead {
+  display: block;
+}
+
+.panel[data-playhead] .playhead::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--ph, 0%);
+  width: 2px;
+  margin-left: -1px;
+  background: var(--color-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+.playheadLabel {
+  position: absolute;
+  top: -0.2rem;
+  left: var(--ph, 0%);
+  translate: -50% -100%;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* ---------- role details (TL-3) ---------- */
+.roles {
+  --fill: 0;
+  position: relative;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-8);
+}
+
+.role {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--dur-base) var(--ease-out);
+  scroll-margin-top: calc(var(--topbar-height) + 12rem);
+}
+
+.role[data-active] {
+  border-color: color-mix(in srgb, var(--color-accent) 60%, var(--color-border));
+}
+
+.roleHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+}
+
+.roleTitle {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.logo {
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+}
+
+.roleName {
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-snug);
+}
+
+.company {
+  color: var(--color-fg-muted);
+}
+
+.when {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-1);
+  color: var(--color-fg-muted);
+}
+
+.duration {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent-text);
+}
+
+.description {
+  max-width: 68ch;
+  line-height: var(--line-height-relaxed);
+}
+
+.highlights {
+  padding-left: var(--space-5);
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-fg-muted);
+}
+
+.tags {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tags li {
+  padding: 2px var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+  color: var(--color-fg-muted);
+}
+
+/* ---------- skills as tracks (TL-4) ---------- */
+.skills {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.skillsTitle {
+  color: var(--color-fg-muted);
+}
+
+.skillTracks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  border-top: 1px solid var(--color-border);
+}
+
+.skillTrack {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.trackName {
+  color: var(--color-fg-muted);
+}
+
+.chips {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-elevated);
+  font-size: var(--font-size-sm);
+}
+
+.chip[data-featured] {
+  border-color: color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
+}
+
+/* an audio-style level meter: five bars */
+.meter {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 0.8rem;
+}
+
+.meter span {
+  width: 3px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--color-fg) 18%, transparent);
+}
+
+.meter span:nth-child(1) {
+  height: 40%;
+}
+.meter span:nth-child(2) {
+  height: 55%;
+}
+.meter span:nth-child(3) {
+  height: 70%;
+}
+.meter span:nth-child(4) {
+  height: 85%;
+}
+.meter span:nth-child(5) {
+  height: 100%;
+}
+
+.meter span[data-on] {
+  background: var(--color-accent);
+}
+
+/* ---------- phones: vertical timeline (TL-5) ---------- */
+@media (max-width: 799px) {
+  .panel {
+    display: none;
+  }
+
+  .roles {
+    padding-left: var(--space-6);
+  }
+
+  /* the line, and the playhead fill that follows your scroll */
+  .roles::before,
+  .roles::after {
+    content: '';
+    position: absolute;
+    left: var(--space-2);
+    top: 0;
+    width: 2px;
+    border-radius: 1px;
+  }
+
+  .roles::before {
+    bottom: 0;
+    background: var(--color-border);
+  }
+
+  .roles::after {
+    height: calc(var(--fill) * 100%);
+    background: var(--color-accent);
+  }
+
+  .role {
+    padding: var(--space-5);
+  }
+
+  .when {
+    justify-items: start;
+  }
+
+  .skillTrack {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clip,
+  .role {
+    transition: none;
+  }
+}

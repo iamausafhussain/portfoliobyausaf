@@ -1,6 +1,9 @@
 /** Frame for every public page (spec 03 §3.1). */
 import { Outlet, ScrollRestoration } from 'react-router';
+import '../chapters/shared/reveal.css';
+import { useReveals } from '../chapters/shared/useReveals';
 import { CursorProvider } from '../cursor/CursorProvider';
+import { useDeviceTier } from '../device/DeviceProvider';
 import { readSupabaseEnv } from '../lib/env';
 import { MotionProvider } from '../motion/MotionProvider';
 import { ChapterRegistryProvider } from '../shell/ChapterRegistry';
@@ -27,6 +30,13 @@ function DevNotice() {
   }
 }
 
+/** Scroll reveals for every public page; off in Lite mode (spec 06 CH-3). */
+function Reveals() {
+  const { lite } = useDeviceTier();
+  useReveals(!lite);
+  return null;
+}
+
 export function PublicLayout() {
   return (
     <MotionProvider>
@@ -44,6 +54,7 @@ export function PublicLayout() {
           <FilmGrain />
           <DevNotice />
           <RouteEffects />
+          <Reveals />
           <ScrollRestoration />
         </ChapterRegistryProvider>
       </CursorProvider>

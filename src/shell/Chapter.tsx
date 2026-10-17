@@ -38,7 +38,7 @@ export function Chapter({
         children
       ) : (
         <div className={styles.inner}>
-          <header className={styles.head}>
+          <header className={styles.head} data-reveal="title">
             <p className={`label ${styles.code}`}>
               <span>{chapterCode(entry.number)}</span>
               <span aria-hidden>·</span>

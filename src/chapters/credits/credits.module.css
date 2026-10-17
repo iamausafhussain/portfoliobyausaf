@@ -1,0 +1,148 @@
+/* Credits Roll (spec 06 §2.4): end-credits typography. */
+
+.credits {
+  display: grid;
+  gap: var(--space-9);
+}
+
+.muted {
+  color: var(--color-fg-muted);
+}
+
+.skeleton {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.skeleton span {
+  height: 1.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-border);
+  opacity: 0.6;
+}
+
+.groupTitle {
+  text-align: center;
+  color: var(--color-fg-muted);
+  margin-bottom: var(--space-5);
+}
+
+/* ---------- starring (CR-1) ---------- */
+.starring {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+}
+
+.star {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-elevated);
+}
+
+.badge {
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.starBody {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.kind {
+  color: var(--color-accent-text);
+}
+
+.starTitle {
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-snug);
+}
+
+.meta,
+.description {
+  color: var(--color-fg-muted);
+}
+
+.titleLink {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+/* ---------- the roll (CR-2) ---------- */
+.group {
+  display: grid;
+}
+
+.lines {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+  max-width: 52rem;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(var(--space-6), 1fr) minmax(0, auto);
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+.lineTitle {
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-snug);
+}
+
+/* the dotted leader between title and issuer, like a credits sheet */
+.leader {
+  border-bottom: 1px dotted color-mix(in srgb, var(--color-fg) 30%, transparent);
+  transform: translateY(-0.3em);
+}
+
+.lineMeta {
+  color: var(--color-fg-muted);
+  text-align: right;
+  font-size: var(--font-size-sm);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+/* phones: stacked and centred, like real end credits */
+@media (max-width: 640px) {
+  .line {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+    text-align: center;
+  }
+
+  .leader {
+    display: none;
+  }
+
+  .lineMeta {
+    text-align: center;
+  }
+
+  .star {
+    grid-template-columns: 1fr;
+  }
+}

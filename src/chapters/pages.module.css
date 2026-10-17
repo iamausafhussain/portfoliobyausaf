@@ -158,3 +158,31 @@
     opacity: 0.45;
   }
 }
+
+/* section pages (spec 06 CS-3) */
+.wide {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding: calc(var(--topbar-height) + var(--space-8)) var(--gutter) var(--space-10);
+  display: grid;
+  gap: var(--space-8);
+}
+
+.titleCard {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 56rem;
+}
+
+.bigTitle {
+  font-size: var(--font-size-hero);
+  line-height: 0.95;
+  padding-bottom: 0.08em;
+  outline: none;
+}
+
+@media (max-width: 899px) {
+  .wide {
+    padding-bottom: calc(var(--space-10) + var(--space-6));
+  }
+}

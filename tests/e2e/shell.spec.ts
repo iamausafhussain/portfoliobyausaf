@@ -120,7 +120,8 @@ test('AC-3.7 the timecode names the chapter in the middle of the screen, includi
     ['timeline', 'CH 05', 'Timeline'],
     ['reviews', 'CH 06', 'Reviews'],
     ['s-talks', 'CH 07', 'Talks'],
-    ['contact', 'CH 08', 'Final Scene'],
+    ['s-frames', 'CH 08', 'Frames'],
+    ['contact', 'CH 09', 'Final Scene'],
   ];
   for (const [id, code, title] of expected) {
     // re-scroll while polling: late images or data above can still shift the layout
@@ -150,6 +151,7 @@ test('AC-3.8 chapter menu: lists everything, jumps and focuses the heading, Esc 
     'Timeline',
     'Reviews',
     'Talks',
+    'Frames',
     'Final Scene',
   ]) {
     await expect(menu.getByRole('button', { name: new RegExp(t) })).toBeVisible();
@@ -172,7 +174,7 @@ test('AC-3.9 Fast Lane goes to Projects and Contact, also from a project page', 
   await expect(page.locator('#projects-title')).toBeInViewport();
   await expect(page).toHaveURL(/#projects$/);
 
-  await page.getByRole('link', { name: 'Supply-chain EDI pipeline' }).click();
+  await page.locator('#projects').getByRole('link', { name: 'Supply-chain EDI pipeline' }).click();
   await expect(page).toHaveURL(/\/projects\/supply-chain-edi-pipeline$/);
   await page
     .getByRole('navigation', { name: 'Fast lane' })
@@ -254,7 +256,8 @@ test('AC-3.11 a section with its own page renders its items by field type', asyn
   await expect(page.getByRole('heading', { level: 1, name: 'Talks' })).toBeVisible();
   await expect(page.getByRole('heading', { level: 2, name: 'Scaling EDI on Azure' })).toBeVisible();
   await expect(page.getByRole('img', { name: 'Speaking on stage' })).toBeVisible();
-  await expect(page.getByText('Format: Talk')).toBeVisible();
+  // a select field shows as a tag (spec 06 CS-2)
+  await expect(page.getByRole('main').getByRole('listitem').filter({ hasText: /^Talk$/ })).toBeVisible();
   // and it's in the chapter menu as a page
   await page.getByRole('button', { name: 'Chapters' }).click();
   await expect(page.getByRole('dialog').getByRole('link', { name: 'Talks' })).toBeVisible();

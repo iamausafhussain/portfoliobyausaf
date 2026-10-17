@@ -1,6 +1,7 @@
 /**
- * Home page skeleton (spec 03 HP-1 – HP-4): every chapter in order, with simple, real
- * content until Parts 5–7 give each its cinematic version. The hero is the Opening Scene (Part 4).
+ * The home page (spec 03 HP-1 – HP-4): every chapter in order. Opening Scene (Part 4),
+ * The System (Part 5), About, Credits, Timeline, Reviews and custom sections (Part 6);
+ * Contact gets its form in Part 7.
  */
 import { useSiteSettings } from '../data/queries/public';
 import { StageProvider } from '../scene/stage/StageProvider';
@@ -9,21 +10,19 @@ import { useHomeChapters } from '../shell/ChapterRegistry';
 import { useDocumentTitle } from '../shell/hooks';
 import { HeroChapter } from './hero/HeroChapter';
 import { SystemChapter } from './system/SystemChapter';
-import {
-  AboutPlaceholder,
-  ContactPlaceholder,
-  CreditsPlaceholder,
-  CustomSectionPlaceholder,
-  ReviewsPlaceholder,
-  TimelinePlaceholder,
-} from './placeholders';
+import { AboutChapter } from './about/AboutChapter';
+import { CreditsChapter } from './credits/CreditsChapter';
+import { CustomSectionChapter } from './custom/CustomSectionChapter';
+import { ContactPlaceholder } from './placeholders';
+import { ReviewsChapter } from './reviews/ReviewsChapter';
+import { TimelineChapter } from './timeline/TimelineChapter';
 
 const bodies = {
-  about: AboutPlaceholder,
+  about: AboutChapter,
   projects: SystemChapter,
-  credits: CreditsPlaceholder,
-  timeline: TimelinePlaceholder,
-  reviews: ReviewsPlaceholder,
+  credits: CreditsChapter,
+  timeline: TimelineChapter,
+  reviews: ReviewsChapter,
   contact: ContactPlaceholder,
 } as const;
 
@@ -45,7 +44,7 @@ export function HomePage() {
         if (entry.kind === 'custom' && entry.section) {
           return (
             <Chapter key={entry.id} entry={entry}>
-              <CustomSectionPlaceholder section={entry.section} />
+              <CustomSectionChapter section={entry.section} />
             </Chapter>
           );
         }

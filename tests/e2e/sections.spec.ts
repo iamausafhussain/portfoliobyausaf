@@ -82,7 +82,11 @@ test('AC-2.22 removing a field after items exist: warning, values kept as hidden
   await expectToast(page, 'Saved.');
 
   // the value is still stored…
-  let item = (await rows(page, 'custom_items'))[0]!;
+  const talksItem = async () =>
+    (await rows(page, 'custom_items')).find(
+      (i) => (i.data as { title?: string }).title === 'Scaling EDI on Azure',
+    )!;
+  let item = await talksItem();
   expect((item.data as Record<string, unknown>).venue).toBe('Demo meetup');
 
   // …and shown as hidden data on the item
@@ -95,7 +99,7 @@ test('AC-2.22 removing a field after items exist: warning, values kept as hidden
   await hidden.getByRole('button', { name: 'Remove hidden data' }).click();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expectToast(page, 'Saved.');
-  item = (await rows(page, 'custom_items'))[0]!;
+  item = await talksItem();
   expect(item.data).not.toHaveProperty('venue');
   expect(item.data).not.toHaveProperty('old_rating');
   expect((item.data as Record<string, unknown>).title).toBe('Scaling EDI on Azure');
@@ -109,8 +113,12 @@ test('AC-2.23 deleting a section says how many items go with it', async ({ page 
   await expect(dialog).toContainText('1 item in this section will be deleted too.');
   await dialog.getByRole('button', { name: 'Delete' }).click();
   await expectToast(page, 'Deleted Talks');
-  expect(await rows(page, 'custom_sections')).toHaveLength(0);
-  expect(await rows(page, 'custom_items')).toHaveLength(0);
+  const sections = await rows(page, 'custom_sections');
+  expect(sections.some((s) => s.name === 'Talks')).toBe(false);
+  const items = await rows(page, 'custom_items');
+  // only the Talks item went; other sections keep theirs
+  expect(items.every((i) => sections.some((s) => s.id === i.section_id))).toBe(true);
+  expect(items.some((i) => (i.data as { title?: string }).title === 'Scaling EDI on Azure')).toBe(false);
 });
 
 test('AC-2.24 media library: "Used by" is correct and unused files can be deleted', async ({ page }) => {

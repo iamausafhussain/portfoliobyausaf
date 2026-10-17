@@ -4,7 +4,7 @@ import { useSiteSettings } from '../data/queries/public';
 import { LiteSwitch } from './LiteSwitch';
 import styles from './shell.module.css';
 
-const socialNames: Record<string, string> = {
+export const socialNames: Record<string, string> = {
   github: 'GitHub',
   linkedin: 'LinkedIn',
   youtube: 'YouTube',

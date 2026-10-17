@@ -1,7 +1,7 @@
 # Part 6 — Content Chapters: About, Credits Roll, Timeline, Reviews, Custom Sections
 
-**Status:** Draft — awaiting approval
-**Version:** 0.1 · 2026-10-17
+**Status:** Built
+**Version:** 0.3 · 2026-10-17
 **Depends on:** Part 1 (content tables), Part 2 (admin, custom-section builder), Part 3 (shell, chapters, tiers), Part 4 (cursor), Part 5 (project cards, gallery viewer)
 **Feeds:** Part 7 (contact chapter sits at the end of this sequence), Part 8 (performance and SEO pass)
 
@@ -137,51 +137,52 @@ None.
 ## 4. Tasks
 
 ### A. Shared
-- [ ] 6.1 Reveal hook and title-card reveal in `Chapter`; remove placeholders
-- [ ] 6.2 `dates.ts` and `readouts.ts` (+ unit tests)
+- [x] 6.1 Reveal hook and title-card reveal in `Chapter`; remove placeholders
+- [x] 6.2 `dates.ts` and `readouts.ts` (+ unit tests)
 
 ### B. Chapters
-- [ ] 6.3 About: portrait frame, bio reveal, readouts with count-up, facts and résumé
-- [ ] 6.4 Credits Roll: starring cards, grouped credit lines, roll-in
-- [ ] 6.5 Timeline: edit timeline (ruler, clips, tracks, playhead), role details, skills tracks with meters, phone version
-- [ ] 6.6 Reviews: quote carousel (keyboard, swipe, live region), stack for 1–2
-- [ ] 6.7 Custom sections: item view mapping and the five layouts, home preview and `/s/<slug>` page
+- [x] 6.3 About: portrait frame, bio reveal, readouts with count-up, facts and résumé
+- [x] 6.4 Credits Roll: starring cards, grouped credit lines, roll-in
+- [x] 6.5 Timeline: edit timeline (ruler, clips, tracks, playhead), role details, skills tracks with meters, phone version
+- [x] 6.6 Reviews: quote carousel (keyboard, swipe, live region), stack for 1–2
+- [x] 6.7 Custom sections: item view mapping and the five layouts, home preview and `/s/<slug>` page
 
 ### C. Demo data
-- [ ] 6.8 Richer demo content (a few more roles, achievements of each kind, 4 testimonials, a gallery section) so every design can be seen in `dev:demo`
+- [x] 6.8 Richer demo content (a few more roles, achievements of each kind, 4 testimonials, a gallery section) so every design can be seen in `dev:demo`
 
 ### D. Verify
-- [ ] 6.9 Unit tests: dates, durations, readouts, track packing, item view mapping
-- [ ] 6.10 E2E: each chapter renders its data, reveals, carousel keys/swipe, timeline clip click and playhead, custom layouts, reduced motion and Lite, phone layouts; screenshots in both themes at 375 / 1440
+- [x] 6.9 Unit tests: dates, durations, readouts, track packing, item view mapping
+- [x] 6.10 E2E: each chapter renders its data, reveals, carousel keys/swipe, timeline clip click and playhead, custom layouts, reduced motion and Lite, phone layouts; screenshots in both themes at 375 / 1440
 
 ## 5. Acceptance criteria
 
 ### Shared
-- [ ] AC-6.1 Every chapter heading plays its title-card reveal once when it scrolls in; with reduced motion only a short fade; in Lite mode nothing.
-- [ ] AC-6.2 With JavaScript reveals disabled (observer unavailable) all content is visible.
-- [ ] AC-6.3 No "Placeholder" text remains anywhere on the public site.
+- [x] AC-6.1 Every chapter heading plays its title-card reveal once when it scrolls in; with reduced motion only a short fade; in Lite mode nothing.
+- [x] AC-6.2 With JavaScript reveals disabled (observer unavailable) all content is visible.
+- [x] AC-6.3 No "Placeholder" text remains anywhere on the public site.
 
 ### About
-- [ ] AC-6.4 Portrait (or initials), short and long bio, location, availability, socials and résumé button all show from the admin data; nothing empty shows.
-- [ ] AC-6.5 Readouts match the published data (years from the earliest role, counts of roles, projects, certifications, awards) and zero values are hidden.
+- [x] AC-6.4 Portrait (or initials), short and long bio, location, availability, socials and résumé button all show from the admin data; nothing empty shows.
+- [x] AC-6.5 Readouts match the published data (years from the earliest role, counts of roles, projects, certifications, awards) and zero values are hidden.
 
 ### Credits Roll
-- [ ] AC-6.6 Highlighted achievements appear first as starring cards; the rest appear grouped by kind as credit lines with issuer and year; empty kinds are absent.
+- [x] AC-6.6 Highlighted achievements appear first as starring cards; the rest appear grouped by kind as credit lines with issuer and year; empty kinds are absent.
 
 ### Timeline
-- [ ] AC-6.7 The ruler spans the earliest start to today; each role is a clip of the right length on a non-overlapping track; clicking a clip scrolls to its details.
-- [ ] AC-6.8 The playhead follows the scroll through the role details and lights the matching clip; phones show the vertical version.
-- [ ] AC-6.9 Dates, "Present" and durations are correct; skills are grouped by category with meters matching their levels.
+- [x] AC-6.7 The ruler spans the earliest start to today; each role is a clip of the right length on a non-overlapping track; clicking a clip scrolls to its details.
+- [x] AC-6.8 The playhead follows the scroll through the role details and lights the matching clip; phones show the vertical version.
+- [x] AC-6.9 Dates, "Present" and durations are correct; skills are grouped by category with meters matching their levels.
 
 ### Reviews
-- [ ] AC-6.10 One quote at a time with prev/next, position markers, arrow keys and swipe; no autoplay; all quotes are in the HTML; 1–2 testimonials show as a stack.
+- [x] AC-6.10 One quote at a time with prev/next, position markers, arrow keys and swipe; no autoplay; all quotes are in the HTML; 1–2 testimonials show as a stack.
 
 ### Custom sections
-- [ ] AC-6.11 Each of the five layouts renders a section built in the admin, on the home page (max 6 items + "See all") and on its own page; empty sections are left off the home page and menu.
+- [x] AC-6.11 Each of the five layouts renders a section built in the admin, on the home page (max 6 items + "See all") and on its own page; empty sections are left off the home page and menu.
 
 ### Quality
-- [ ] AC-6.12 375 / 1440 px, both themes, three tiers: no horizontal scroll, no console errors, AA contrast; initial JS stays within budget.
-- [ ] AC-6.13 Build, lint, unit, e2e and database tests all pass.
+- [x] AC-6.12 375 / 1440 px, both themes, three tiers: no horizontal scroll, no console errors, AA contrast; initial JS stays within budget.
+  *Text uses only the theme's text tokens, whose AA contrast is checked in the token tests; markdown is loaded on demand so the first download stays under 200 KB.*
+- [x] AC-6.13 Build, lint, unit, e2e and database tests all pass.
 
 ## 6. Risks
 
@@ -194,15 +195,22 @@ None.
 
 ## 7. Open questions
 
-| # | Question | Default if no answer |
+| # | Question | Answer |
 |---|---|---|
-| Q1 | Credits Roll: credit lines that **roll in as you scroll** (no pinning), or a **pinned rolling credits** sequence where the list scrolls up like a film ending? | Roll in as you scroll, no pinning |
-| Q2 | Timeline: the **video-editor timeline** (year ruler, role clips, playhead) on desktop, or a simpler vertical timeline everywhere? | Video-editor timeline on desktop, vertical on phones |
-| Q3 | About: show **readouts** worked out from your data (years of experience, projects, certifications…)? | Yes |
-| Q4 | Reviews: one quote at a time **without autoplay**, or should it advance by itself every few seconds (with a pause button)? | No autoplay |
-| Q5 | Skills: show **level meters** (1–5), or just names? | Meters where a level is set |
-| Q6 | Any 3D in these chapters, or keep 3D to the hero and the globe? | Keep 3D to the hero and the globe |
-| Q7 | About portrait label: `ROLL 01 · FRAME 01`, or something else (e.g. your camera, a place)? | `ROLL 01 · FRAME 01` |
+| Q1 | Credits Roll: credit lines that **roll in as you scroll** (no pinning), or a **pinned rolling credits** sequence where the list scrolls up like a film ending? | **Decided:** Roll in as you scroll, no pinning (default) |
+| Q2 | Timeline: the **video-editor timeline** (year ruler, role clips, playhead) on desktop, or a simpler vertical timeline everywhere? | **Decided:** Video-editor timeline on desktop, vertical on phones (default) |
+| Q3 | About: show **readouts** worked out from your data (years of experience, projects, certifications…)? | **Decided:** Yes (default) |
+| Q4 | Reviews: one quote at a time **without autoplay**, or should it advance by itself every few seconds (with a pause button)? | **Decided:** No autoplay (default) |
+| Q5 | Skills: show **level meters** (1–5), or just names? | **Decided:** Meters where a level is set (default) |
+| Q6 | Any 3D in these chapters, or keep 3D to the hero and the globe? | **Decided:** Keep 3D to the hero and the globe (default) |
+| Q7 | About portrait label: `ROLL 01 · FRAME 01`, or something else (e.g. your camera, a place)? | **Decided:** `ROLL 01 · FRAME 01` (default) |
 
 ## Changelog
 - 0.1 (2026-10-17) — Initial draft.
+- 0.2 (2026-10-17) — Approved by Ausaf with all defaults (Q1–Q7).
+- 0.3 (2026-10-17) — Built. All tasks and acceptance criteria done. Notes from the build:
+  - Reveals also watch for `data-reveal` being added to an existing element (React reuses a loading skeleton's element for the content).
+  - Pages of sections with no published items are left out of the chapter menu as well as the home page (CS-4).
+  - Markdown (long bio, custom item bodies) loads on demand and shows as plain paragraphs until then, keeping the initial JS within the P-2 budget.
+  - Section pages now use the same five layouts as the home page, so select fields show as tags ("Talk") rather than "Format: Talk"; the Part 3 tests were updated to match, along with the chapter numbers and the menu now that the demo data has a second section (Frames).
+  - The playhead moves back through each role from its end date; with overlapping roles it can jump forward between roles.

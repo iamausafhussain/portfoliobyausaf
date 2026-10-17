@@ -1,5 +1,5 @@
 /**
- * AC-3.17 — every public page at 375 px and 1440 px, dark and light, tiers low/mid/high:
+ * AC-3.17 / AC-6.12 — every public page at 375 px and 1440 px, dark and light, tiers low/mid/high:
  * no horizontal scrolling, no console errors. Screenshots go to tests/e2e/.results/public.
  */
 import { expect, test } from '@playwright/test';
@@ -9,6 +9,7 @@ const pages = [
   { name: 'home', path: '/' },
   { name: 'project', path: '/projects/supply-chain-edi-pipeline' },
   { name: 'resume', path: '/resume' },
+  { name: 'section', path: '/s/frames' },
   { name: '404', path: '/nothing-here' },
 ];
 
@@ -18,7 +19,7 @@ for (const [width, height] of [
 ] as const) {
   for (const scheme of ['dark', 'light'] as const) {
     for (const tier of ['low', 'mid', 'high'] as const) {
-      test(`AC-3.17 public pages at ${width}px, ${scheme}, ${tier}`, async ({ browser }) => {
+      test(`AC-3.17 / AC-6.12 public pages at ${width}px, ${scheme}, ${tier}`, async ({ browser }) => {
         test.setTimeout(180_000);
         const ctx = await browser.newContext({
           viewport: { width, height },

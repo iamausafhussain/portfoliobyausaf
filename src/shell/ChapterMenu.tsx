@@ -21,7 +21,11 @@ export function ChapterMenu() {
   const settings = useSiteSettings();
   const goTo = useNavigateToChapter();
 
-  const pages = (sections.data ?? []).map((s) => s.section).filter((s) => s.show_in_nav && s.has_page);
+  // pages of sections with no published items yet stay out of the menu (spec 06 CS-4)
+  const pages = (sections.data ?? [])
+    .filter((s) => s.items.length > 0)
+    .map((s) => s.section)
+    .filter((s) => s.show_in_nav && s.has_page);
   const resume = settings.data?.resume_path ? publicMediaUrl(settings.data.resume_path) : '';
 
   useEffect(() => {

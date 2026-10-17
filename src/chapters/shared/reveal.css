@@ -1,0 +1,23 @@
+/* Scroll reveals (spec 06 CH-2, CH-3). Only active once useReveals() has started. */
+html.reveals-on [data-reveal='up']:not([data-revealed]) {
+  opacity: 0;
+  transform: translateY(var(--space-5));
+}
+
+html.reveals-on [data-reveal='up'] {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
+  transition-delay: calc(min(var(--i, 0), 10) * 70ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.reveals-on [data-reveal='up']:not([data-revealed]) {
+    transform: none;
+  }
+
+  html.reveals-on [data-reveal='up'] {
+    transition: opacity var(--dur-reduced) linear;
+    transition-delay: 0ms;
+  }
+}

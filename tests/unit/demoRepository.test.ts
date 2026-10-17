@@ -74,7 +74,9 @@ describe('demo data rules', () => {
     const repo = await createSignedInDemoRepository();
     const [section] = await repo.data.list('custom_sections');
     await repo.data.remove('custom_sections', section!.id);
-    expect(await repo.data.list('custom_items')).toHaveLength(0);
+    const left = await repo.data.list('custom_items');
+    expect(left.length).toBeGreaterThan(0); // other sections keep theirs
+    expect(left.filter((i) => i.section_id === section!.id)).toHaveLength(0);
 
     const [t] = await repo.data.list('testimonials');
     await repo.data.remove('projects', String(t!.project_id));

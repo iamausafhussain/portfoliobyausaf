@@ -513,3 +513,20 @@ describe('payment failures and discount codes (spec 08 CO-3a, DC)', async () => 
     );
   });
 });
+
+describe('admin: shop function errors say what to do', async () => {
+  const { shopAdminFailure } = await import('../../src/admin/repository/supabaseRepository');
+  it('names the likely cause', () => {
+    expect(shopAdminFailure(400, { error: 'unknown_action' }, 'discounts')).toMatch(
+      /older than the site.*Redeploy/,
+    );
+    expect(
+      shopAdminFailure(404, { code: 'NOT_FOUND', message: 'Requested function was not found' }, 'status'),
+    ).toMatch(/isn’t deployed/);
+    expect(shopAdminFailure(503, { code: 'BOOT_ERROR' }, 'status')).toMatch(/couldn’t start/);
+    expect(shopAdminFailure(500, { error: 'db' }, 'sync')).toMatch(/migration 0010/);
+    expect(shopAdminFailure(500, { error: 'weird' }, 'x')).toBe(
+      'The shop function failed (status 500, weird). Supabase → Edge Functions → shop-admin → Logs shows the details.',
+    );
+  });
+});

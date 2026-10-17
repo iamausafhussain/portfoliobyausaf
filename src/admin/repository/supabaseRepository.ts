@@ -486,11 +486,17 @@ function shopError(error: DbErrorLike | null, what = 'the shop'): never {
 async function shopAdmin<T>(body: Record<string, unknown>): Promise<T> {
   const { data, error } = await getSupabase().functions.invoke('shop-admin', { body });
   if (!error) return data as T;
-  let detail: { error?: string; detail?: string; field?: string } = {};
+  const response = (error as { context?: Response }).context;
+  const status = response instanceof Response ? response.status : 0;
+  let detail: { error?: string; detail?: string; field?: string; code?: string; message?: string } = {};
   try {
-    detail = await (error as { context?: Response }).context?.json();
+    detail = (await response?.clone().json()) ?? {};
   } catch {
-    /* no body */
+    try {
+      detail = { message: (await response?.text())?.slice(0, 200) };
+    } catch {
+      /* no body */
+    }
   }
   if (detail?.error === 'provider')
     throw new RepoError(
@@ -511,7 +517,29 @@ async function shopAdmin<T>(body: Record<string, unknown>): Promise<T> {
       'network',
       'Couldn’t reach the shop functions. Are they deployed (supabase/README.md, step D3)?',
     );
-  throw new RepoError('unknown', `The shop function failed: ${error.message}`);
+  throw new RepoError('unknown', shopAdminFailure(status, detail, String(body.action)));
+}
+
+/** A readable reason for a shop-admin failure the cases above don't cover. */
+export function shopAdminFailure(
+  status: number,
+  detail: { error?: string; code?: string; message?: string },
+  action: string,
+): string {
+  const deploy = 'Redeploy the shop functions (supabase/README.md, step D3).';
+  // an older shop-admin that doesn't know this action yet
+  if (detail.error === 'unknown_action')
+    return `The deployed shop functions are older than the site (no “${action}”). ${deploy}`;
+  if (status === 404 && (detail.code === 'NOT_FOUND' || /not found/i.test(detail.message ?? '')))
+    return `The shop-admin function isn’t deployed. ${deploy}`;
+  if (detail.code === 'BOOT_ERROR' || /boot|worker/i.test(detail.code ?? ''))
+    return `The shop-admin function couldn’t start. ${deploy} Supabase → Edge Functions → shop-admin → Logs shows why.`;
+  if (detail.error === 'db')
+    return 'The database refused the change. Check that migration 0010 has been run (step D1).';
+  const what = [status && `status ${status}`, detail.error ?? detail.code ?? detail.message]
+    .filter(Boolean)
+    .join(', ');
+  return `The shop function failed${what ? ` (${what})` : ''}. Supabase → Edge Functions → shop-admin → Logs shows the details.`;
 }
 
 const shop: ShopAdminApi = {

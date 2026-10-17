@@ -17,7 +17,7 @@ import {
   validate,
   type Draft,
   type Field,
-} from './contactForm';
+} from './formRules';
 import { Slate } from './Slate';
 import { useContactDraft } from './useContactDraft';
 import styles from './contact.module.css';

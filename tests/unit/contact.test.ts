@@ -20,7 +20,7 @@ import {
   slateDate,
   validate,
   type Draft,
-} from '../../src/chapters/contact/contactForm';
+} from '../../src/chapters/contact/formRules';
 import {
   neighbours,
   preview,

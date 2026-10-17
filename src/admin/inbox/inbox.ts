@@ -1,5 +1,5 @@
 /** Inbox helpers (spec 07 §2.4). Pure, so they're unit-tested. */
-import { kindLabel } from '../../chapters/contact/contactForm';
+import { kindLabel } from '../../chapters/contact/formRules';
 import type { MessageKind, MessageRow, MessageStatus, MessageTab } from '../repository/types';
 
 export const PAGE_SIZE = 50;

@@ -124,3 +124,26 @@ describe('AC-1.24 no secrets committed', () => {
     });
   }
 });
+
+describe('file names work on case-insensitive disks (Windows, macOS)', () => {
+  // `import './ContactForm'` must not be able to pick `contactForm.ts` on Windows/macOS:
+  // two code files in one folder may not share a name that differs only in capitals.
+  const code = [
+    ...walk(path.join(root, 'src'), ['.ts', '.tsx', '.js', '.jsx']),
+    ...walk(path.join(root, 'tests'), ['.ts', '.tsx']),
+    ...walk(path.join(root, 'supabase'), ['.ts']),
+  ].filter((f) => !f.includes(`${path.sep}.results${path.sep}`));
+  it('no two code files in a folder differ only by capital letters', () => {
+    const seen = new Map<string, string>();
+    const clashes: string[] = [];
+    for (const f of code) {
+      const stem = path.basename(f).replace(/\.(d\.)?[jt]sx?$/, '');
+      const key = `${path.dirname(f)}/${stem}`.toLowerCase();
+      const prev = seen.get(key);
+      if (prev && path.basename(prev).replace(/\.(d\.)?[jt]sx?$/, '') !== stem)
+        clashes.push(`${rel(prev)} ↔ ${rel(f)}`);
+      seen.set(key, f);
+    }
+    expect(clashes).toEqual([]);
+  });
+});

@@ -3,7 +3,7 @@
  * Session storage only: it's gone when the tab closes, and cleared after sending.
  */
 import { useCallback, useEffect, useState } from 'react';
-import { emptyDraft, isEmpty, parseDraft, type Draft } from './contactForm';
+import { emptyDraft, isEmpty, parseDraft, type Draft } from './formRules';
 
 export const DRAFT_KEY = 'contact-draft';
 

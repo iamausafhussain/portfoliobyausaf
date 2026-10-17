@@ -174,7 +174,8 @@ describe('SY-1 tour stops and GL-6 formation', () => {
   it('formation runs as the chapter scrolls in', () => {
     expect(formationProgress(1000, 900)).toBe(0);
     expect(formationProgress(900, 900)).toBe(0);
-    expect(formationProgress(495, 900)).toBeCloseTo(0.5);
+    expect(formationProgress(585, 900)).toBeCloseTo(0.5);
+    expect(formationProgress(270, 900)).toBe(1); // done with the heading near the top
     expect(formationProgress(0, 900)).toBe(1);
     expect(formationProgress(-3000, 900)).toBe(1);
   });

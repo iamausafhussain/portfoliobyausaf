@@ -25,7 +25,7 @@ import {
 import type { GlobeApi, GlobeHandle, GlobeNode, ScreenPoint } from '../../chapters/system/globeHandle';
 import type { Tier } from '../../device/tier';
 import { themes } from '../../theme/tokens';
-import { getHeroCloud, setFormation } from '../hero/handoff';
+import { setFormation } from '../hero/handoff';
 import { seeded, toRgb } from '../hero/sampling';
 import type { FrameInfo, StageLayer } from '../stage/Stage';
 import { alongArc, arcPoints, formationProgress, HOME, latLngToVec3, type LandDots, type Vec3 } from './geo';
@@ -101,6 +101,7 @@ export class GlobeLayer implements StageLayer, GlobeApi {
   private focusId: string | null = null;
   private hoverId: string | null = null;
   private formation = 0;
+  private glow = 0;
   private screen = new Map<string, ScreenPoint>();
   private dragAt = 0;
   private visible = false;
@@ -343,32 +344,24 @@ export class GlobeLayer implements StageLayer, GlobeApi {
   }
 
   /** Where each dot starts its flight: the hero cloud, or a scatter if there isn't one (GL-6). */
+  /**
+   * Where each dot starts (GL-6): just above its own place on the globe, so as it appears it
+   * settles in rather than flying across the screen.
+   */
   private seedFormation() {
     const g = this.dots.geometry;
+    const pos = g.getAttribute('position') as BufferAttribute;
     const from = g.getAttribute('aFrom') as BufferAttribute;
     const fromColor = g.getAttribute('aFromColor') as BufferAttribute;
     const count = from.count;
-    const cloud = getHeroCloud();
-    // the depth of the globe's centre on screen: dots start in that plane
-    const centre = new Vector3(0, 0, 0).project(this.camera);
-    const v = new Vector3();
     const rnd = seeded(5);
-    const fallback = mixRgb(C.dotDark, C.accentDark, 0.3);
+    const col = mixRgb(C.dotLight, C.dotDark, this.glow);
+    const v = new Vector3();
+    this.group.updateMatrixWorld();
     for (let i = 0; i < count; i++) {
-      let nx: number;
-      let ny: number;
-      let col: Vec3;
-      if (cloud && cloud.count) {
-        const j = (i * 7919) % cloud.count;
-        nx = cloud.positions[j * 2]!;
-        ny = cloud.positions[j * 2 + 1]!;
-        col = [cloud.colors[j * 3]!, cloud.colors[j * 3 + 1]!, cloud.colors[j * 3 + 2]!];
-      } else {
-        nx = rnd() * 2.4 - 1.2;
-        ny = rnd() * 1.6 - 1.2;
-        col = fallback;
-      }
-      v.set(nx, ny, centre.z).unproject(this.camera);
+      const lift = 1.04 + rnd() * 0.06;
+      v.set(pos.getX(i) * lift, pos.getY(i) * lift, pos.getZ(i) * lift);
+      v.applyMatrix4(this.group.matrixWorld);
       from.setXYZ(i, v.x, v.y, v.z);
       fromColor.setXYZ(i, col[0], col[1], col[2]);
     }
@@ -393,6 +386,7 @@ export class GlobeLayer implements StageLayer, GlobeApi {
       this.o.canvas.dataset.globeForm = f.toFixed(2);
       return false;
     }
+    this.glow = info.glow;
     if (this.formation <= 0) this.seedFormation(); // a fresh flight each time it forms
     this.formation = f;
     this.visible = true;
@@ -403,7 +397,7 @@ export class GlobeLayer implements StageLayer, GlobeApi {
     this.group.updateMatrixWorld();
 
     const g = info.glow;
-    const solid = smooth(0.45, 0.95, f); // the sphere fades in as the dots arrive
+    const solid = smooth(0.6, 1, f); // the sphere fades in once most dots have arrived
     const extras = smooth(0.85, 1, f); // then nodes, routes and packets
     const bodyU = this.body.material.uniforms;
     bodyU.uGlow!.value = g;
@@ -476,6 +470,8 @@ export class GlobeLayer implements StageLayer, GlobeApi {
     const color = g.getAttribute('aColor') as BufferAttribute;
     const alpha = g.getAttribute('aAlpha') as BufferAttribute;
     const glowCol = mixRgb(C.routeLight, C.accentDark, info.glow);
+    const w = new Vector3();
+    const cam = this.camera.position.clone().normalize();
     let k = 0;
     this.routes.forEach((r, ri) => {
       const speed = 0.16 + (0.05 * ((ri * 37) % 5)) / 5;
@@ -484,9 +480,12 @@ export class GlobeLayer implements StageLayer, GlobeApi {
         if (ri % 2) t = 1 - t; // half the routes flow home, half flow out
         const p = alongArc(r.points, t);
         pos.setXYZ(k, p[0], p[1], p[2]);
+        // packets behind the globe fade out, like the routes
+        w.set(p[0], p[1], p[2]).applyMatrix4(this.group.matrixWorld).normalize();
+        const facing = Math.min(1, Math.max(0, (w.dot(cam) - 0.08) / 0.32));
         size.setX(k, this.o.tier === 'high' ? 16 : 10);
         color.setXYZ(k, glowCol[0], glowCol[1], glowCol[2]);
-        alpha.setX(k, Math.sin(Math.PI * t));
+        alpha.setX(k, Math.sin(Math.PI * t) * facing);
         k++;
       }
     });

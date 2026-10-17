@@ -1,7 +1,7 @@
 # Part 5 — The System: 3D Globe and Projects
 
 **Status:** Built (AC-5.13 to confirm on real devices)
-**Version:** 0.3 · 2026-10-15
+**Version:** 0.4 · 2026-10-17
 **Depends on:** Part 0 (tokens), Part 1 (`projects`), Part 2 (admin), Part 3 (shell, tiers, motion), Part 4 (hero particles and their hand-off)
 **Feeds:** Part 6 (other chapters reuse the shared 3D stage), Part 8 (performance pass)
 
@@ -40,7 +40,7 @@ The engineering half of "Director's Cut × Data in Transit" (master spec §1): a
 |---|---|
 | ST-1 | One WebGL canvas, fixed behind the home page content, created once and kept while you scroll. It loads after the first paint as a lazy chunk; until then (and on the low tier) the page reads normally without it. |
 | ST-2 | The stage holds layers that chapters switch on as they come into view: the hero particles (Part 4), the globe (Part 5), and later Part 6's scenes. Only visible layers draw, and the loop sleeps when nothing on screen is moving. |
-| ST-3 | The Part 4 particles move onto the stage with no visible change to the hero. Their final cloud (Part 4 PT-4) is the starting point of the globe's formation (GL-6). |
+| ST-3 | The Part 4 particles move onto the stage with no visible change to the hero, and fade out completely as the hero scrolls away (v0.4). |
 | ST-4 | The frame-time guard (Part 4 PT-6), theme tweening (600 ms) and WebGL-failure fallback apply to the whole stage. |
 | ST-5 | Pixel ratio capped at 2 (high) / 1.5 (mid); the canvas pauses while the tab is hidden. |
 
@@ -53,7 +53,7 @@ The engineering half of "Director's Cut × Data in Transit" (master spec §1): a
 | GL-3 | **Project nodes**: one per published project at its `globe` position. Projects without a position are placed automatically (GL-4). Featured projects are larger and pulse gently. |
 | GL-4 | **Auto-placement**: a project with no position gets a stable spot (it never moves between visits) spread around the globe, never on top of another node; the order follows `sort_order`. |
 | GL-5 | **Data packets**: glowing dots travel along curved arcs between home and each project node, a few at a time, at a calm pace, like messages moving through a pipeline. Dark theme: additive glow (`accent`, `accent-2`) with a soft halo (the "bloom"); light theme: no glow, ink-like packets in `accent-2-text` with a soft shadow. |
-| GL-6 | **Formation**: as The System scrolls into view, the scattered particles from the hero cloud fly in and settle into the globe's dots (about 1.2 s of scroll), then the nodes and arcs fade in. Scrolling back reverses it. With reduced motion: the globe simply fades in. |
+| GL-6 | **Formation**: as The System scrolls into view, the globe's dots appear in a quick wave, each settling onto its place from just above it; the shaded sphere fades in once most dots have arrived, then the nodes and arcs. Complete by the time the chapter heading is near the top. Scrolling back reverses it. With reduced motion: the globe simply fades in. (v0.4) |
 | GL-7 | The globe idles with a slow spin (about one turn a minute) when the visitor isn't driving it. |
 | GL-8 | Theme switch: matte dark globe ↔ porcelain light globe, glow ↔ shadow, tweened over 600 ms. |
 
@@ -242,3 +242,4 @@ Development only, for the data script: `world-atlas`, `topojson-client`. Nothing
 - 0.1 (2026-10-15) — Initial draft.
 - 0.2 (2026-10-15) — Approved by Ausaf with all defaults (Q1–Q7).
 - 0.3 (2026-10-15) — Built. Notes from building: pinning is CSS sticky; the globe follows a DOM slot (§3.2); reduced motion uses the still globe (TF-2); after the tour the globe scrolls away with the chapter (§3.3); the hero cloud lingers behind About as a soft ellipse; the cursor re-reads `data-cursor` changes while hovering (so the globe can switch between DRAG and OPEN); hash landing waits up to 10 s for content. Data file ≤ 64 KB, stills ≤ 60 KB.
+- 0.4 (2026-10-17) — Visual fixes after Ausaf's review: the hero cloud no longer lingers as an oval behind About (it fades out as the hero leaves); the globe is drawn in place instead of forming from the scattered cloud, so it never shows a ghost sphere covered in noise, and it finishes forming sooner; routes and packets on the far side of the globe fade out instead of showing past its edge.

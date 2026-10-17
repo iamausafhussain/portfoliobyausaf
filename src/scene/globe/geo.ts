@@ -191,5 +191,6 @@ export function stopAt(scrolled: number, span: number, stops: number): number {
 
 /** How far the globe has formed as its chapter scrolls in: 0 when the chapter's top is at the bottom of the screen, 1 once it's 90 % of the way up. */
 export function formationProgress(chapterTop: number, viewportHeight: number): number {
-  return Math.min(1, Math.max(0, (viewportHeight - chapterTop) / (viewportHeight * 0.9)));
+  // complete once the chapter's top has travelled 70 % of the window (heading near the top)
+  return Math.min(1, Math.max(0, (viewportHeight - chapterTop) / (viewportHeight * 0.7)));
 }

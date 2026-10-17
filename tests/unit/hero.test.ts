@@ -15,7 +15,6 @@ import {
 } from '../../src/chapters/hero/heroMedia';
 import type { HeroMedia } from '../../src/data/schemas';
 import { createFrameGuard } from '../../src/scene/stage/frameGuard';
-import { getHeroCloud, onHeroCloud, publishHeroCloud } from '../../src/scene/hero/handoff';
 import {
   CLOUD_FLOOR,
   cloudPoint,
@@ -214,34 +213,21 @@ describe('PT-1 – PT-4 particles', () => {
     }
   });
 
-  it('layer fades in as you scroll, settles to a quiet cloud, and hands over as the globe forms (spec 05 GL-6)', () => {
+  it('layer fades in as you scroll and is gone once the hero has left (no lingering cloud behind About)', () => {
+    expect(CLOUD_FLOOR).toBe(0);
     expect(layerAlpha(0)).toBe(0);
     expect(layerAlpha(0.03)).toBe(1);
-    expect(layerAlpha(0.5)).toBe(1);
-    expect(layerAlpha(1)).toBeCloseTo(CLOUD_FLOOR);
-    expect(layerAlpha(1, 0.5)).toBeCloseTo(CLOUD_FLOOR / 2);
-    expect(layerAlpha(1, 1)).toBe(0);
+    expect(layerAlpha(0.3)).toBe(1);
+    expect(layerAlpha(0.5)).toBeCloseTo(0.5);
+    expect(layerAlpha(0.65)).toBe(0);
+    expect(layerAlpha(1)).toBe(0);
+    expect(layerAlpha(0.5, 1)).toBe(0);
   });
 
   it('scroll progress covers the first 120 % of the hero (HL-3)', () => {
     expect(heroProgress(0, 0, 900)).toBe(0);
     expect(heroProgress(540, 0, 900)).toBe(0.5);
     expect(heroProgress(2000, 0, 900)).toBe(1);
-  });
-
-  it('hands the final cloud to Part 5 in viewport space', () => {
-    const px = new Uint8ClampedArray(4 * 4).fill(255);
-    const p = framePixelsToParticles(px, 2, 2, 100, 100);
-    const seen: (number | undefined)[] = [];
-    const off = onHeroCloud((c) => seen.push(c?.count));
-    publishHeroCloud(p);
-    const cloud = getHeroCloud()!;
-    expect(cloud.count).toBe(4);
-    for (const v of cloud.positions) expect(Math.abs(v)).toBeLessThanOrEqual(1);
-    publishHeroCloud(null);
-    expect(getHeroCloud()).toBeNull();
-    off();
-    expect(seen).toEqual([4, undefined]);
   });
 
   it('token colours go to the shader as raw sRGB', () => {

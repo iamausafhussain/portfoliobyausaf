@@ -8,7 +8,7 @@ import type { WebGLRenderer } from 'three';
 import type { StageMedia } from '../../chapters/hero/HeroVideo';
 import { heroProgress } from '../../chapters/hero/heroMedia';
 import type { FrameInfo, StageLayer } from '../stage/Stage';
-import { getFormation, publishHeroCloud } from './handoff';
+import { getFormation } from './handoff';
 import { frameReady, ParticleField, type FrameSource } from './ParticleField';
 import { layerAlpha } from './sampling';
 
@@ -51,7 +51,6 @@ export class HeroLayer implements StageLayer {
       try {
         this.field.sample(src, rect.width, rect.height);
         this.opts.canvas.dataset.count = String(this.field.count);
-        publishHeroCloud(this.field.data);
         this.opts.onSampled();
         return true;
       } catch {
@@ -96,6 +95,5 @@ export class HeroLayer implements StageLayer {
     delete c.max;
     delete c.count;
     delete c.progress;
-    publishHeroCloud(null);
   }
 }

@@ -119,17 +119,22 @@ export function cloudPoint(r1: number, r2: number, vw: number, vh: number): [num
 }
 
 /** How bright the cloud stays while it drifts behind About (spec 05 §3.3). */
-export const CLOUD_FLOOR = 0.3;
+/**
+ * How much of the particle cloud stays after the hero has scrolled away. It used to linger at
+ * 0.3 behind About as a quiet oval; that read as a smudge, so it now fades out completely.
+ */
+export const CLOUD_FLOOR = 0;
 
 /**
- * Overall opacity of the particle layer: fades in as soon as you scroll, settles to a
- * quiet cloud behind About, then hands over to the globe as it forms (`formation` 0–1,
- * spec 05 GL-6). Without a globe (`formation` stays 0) the cloud simply stays quiet.
+ * Overall opacity of the particle layer: fades in as soon as you scroll, then fades away as
+ * the hero leaves the screen (down to CLOUD_FLOOR), and is gone once the globe forms
+ * (`formation` 0–1, spec 05 GL-6).
  */
 export function layerAlpha(p: number, formation = 0): number {
   if (p <= 0) return 0;
   const fadeIn = Math.min(1, p / 0.03);
-  const settle = 1 - (1 - CLOUD_FLOOR) * Math.min(1, Math.max(0, (p - 0.6) / 0.32));
+  // gone by the time the next chapter's content is on screen
+  const settle = 1 - (1 - CLOUD_FLOOR) * Math.min(1, Math.max(0, (p - 0.35) / 0.3));
   return fadeIn * settle * (1 - Math.min(1, Math.max(0, formation)));
 }
 

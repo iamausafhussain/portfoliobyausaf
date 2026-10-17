@@ -112,6 +112,9 @@
 }
 
 .barTop {
+  /* after the intro the top bar closes completely: under the site's top bar a thin strip of
+     page colour only looked like a gap (most visible in the light theme) */
+  --bar-rest: 0;
   top: 0;
   transform-origin: top;
 }

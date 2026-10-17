@@ -1,7 +1,7 @@
 # Part 4 — Opening Scene (Hero) and Custom Cursor
 
 **Status:** Built
-**Version:** 0.4 · 2026-10-14
+**Version:** 0.5 · 2026-10-17
 **Depends on:** Part 0 (tokens), Part 1 (`hero_media`, `site_settings`), Part 3 (shell, tiers, motion)
 **Feeds:** Part 5 (the hero's particles hand over to the 3D globe)
 
@@ -225,3 +225,4 @@ src/
 - 0.2 (2026-10-14) — Approved. Q1–Q6 take the defaults; Q7: bundled sample clips (dusk/day) stand in until the real drone clip is uploaded (FG-1, AC-4.7).
 - 0.3 (2026-10-14) — Built. Refinements found while building and testing: PT-6 guard measures sustained slowness and also covers a failed 3D download; Data Saver skips particles; FG-3 source fallbacks; OS-3 skip click doesn't pause; heading label for screen readers; timecode backing and a slightly stronger scrim for AA; build notes (§3.5).
 - 0.4 (2026-10-14) — Fix: the cursor was hidden under the Chapters menu (modal dialogs sit on the browser's top layer). The cursor now lives on the top layer too and re-raises itself above any dialog; the difference blend is replaced by accent plus an outline, since top-layer content can't blend with the page (CU-2).
+- 0.5 (2026-10-17) — Fix: after the intro the top letterbox bar closes completely. It used to stay as a thin strip of page colour above the site's top bar, which showed as a stray bar in the light theme. The bottom bar keeps its thin frame line; the particle cloud fades out fully as the hero leaves (see spec 05 v0.4).

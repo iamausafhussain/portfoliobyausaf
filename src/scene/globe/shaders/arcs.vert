@@ -13,5 +13,8 @@ void main() {
   // fade the ends into the nodes; a slow shimmer travels along highlighted routes
   float ends = smoothstep(0.0, 0.08, aT) * smoothstep(1.0, 0.92, aT);
   float shimmer = 0.75 + 0.25 * sin(aT * 18.0 - uTime * 3.0);
-  vAlpha = ends * uOpacity * mix(0.18, 0.75 * shimmer, on);
+  // routes behind the globe fade out instead of showing past its edge
+  vec3 n = normalize(mat3(viewMatrix) * normalize(world.xyz));
+  float facing = smoothstep(0.08, 0.4, n.z);
+  vAlpha = ends * facing * uOpacity * mix(0.18, 0.75 * shimmer, on);
 }

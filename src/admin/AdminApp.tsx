@@ -17,6 +17,7 @@ import { builtInManagers } from './managers/configs';
 import { FormPage } from './managers/FormPage';
 import { ListPage } from './managers/ListPage';
 import type { ManagerConfig } from './managers/types';
+import { InboxPage } from './inbox/InboxPage';
 import { AccountPage } from './pages/AccountPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { MediaPage } from './pages/MediaPage';
@@ -83,6 +84,8 @@ export function Component() {
               >
                 <Route index element={<DashboardPage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                {/* one route, so the list keeps its state while you open messages */}
+                <Route path="inbox/:id?" element={<InboxPage />} />
                 {managers.map((m) => (
                   <Route key={m.path} path={m.path}>
                     <Route index element={<ListPage config={m} />} />

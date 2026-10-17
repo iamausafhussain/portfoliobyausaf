@@ -1,7 +1,7 @@
 # Part 7 — Final Scene: Contact Form and Admin Inbox
 
-**Status:** Draft — awaiting approval
-**Version:** 0.1 · 2026-10-17
+**Status:** Built
+**Version:** 0.3 · 2026-10-17
 **Depends on:** Part 1 (`messages` table, its security rules), Part 2 (admin shell, dashboard count), Part 3 (shell, Fast Lane "Contact"), Part 6 (reveals, chapter styling)
 **Feeds:** Part 8 (deploy, final audit)
 
@@ -145,54 +145,54 @@ supabase/tests/contact.test.sql
 ## 4. Tasks
 
 ### A. Database
-- [ ] 7.1 `0009_contact.sql`: salt, throttle table, before-insert check, refusal codes; database tests
-- [ ] 7.2 Setup guide update (run 0009; email alert steps if Q1)
+- [x] 7.1 `0009_contact.sql`: salt, throttle table, before-insert check, refusal codes; database tests
+- [x] 7.2 Setup guide update (run 0009; email alert steps if Q1)
 
 ### B. Public site
-- [ ] 7.3 `sendMessage` for Supabase and demo (demo applies the same limits)
-- [ ] 7.4 Final Scene chapter: slate form, chips, conditional budget, validation, draft, states, direct details
-- [ ] 7.5 Remove the contact placeholder
+- [x] 7.3 `sendMessage` for Supabase and demo (demo applies the same limits)
+- [x] 7.4 Final Scene chapter: slate form, chips, conditional budget, validation, draft, states, direct details
+- [x] 7.5 Remove the contact placeholder
 
 ### C. Admin
-- [ ] 7.6 Inbox list: tabs with counts, kind chips, search, load more, unread badge in the menu, dashboard link
-- [ ] 7.7 Message view: full message, actions, mark-as-read on open, next/previous, shortcuts, phone layout
-- [ ] 7.8 Demo messages of every kind and status
+- [x] 7.6 Inbox list: tabs with counts, kind chips, search, load more, unread badge in the menu, dashboard link
+- [x] 7.7 Message view: full message, actions, mark-as-read on open, next/previous, shortcuts, phone layout
+- [x] 7.8 Demo messages of every kind and status
 
 ### D. Email alert (only if Q1 is "Yes")
-- [ ] 7.9 Edge Function `notify-message` (Resend), webhook setup notes
+- [x] 7.9 Edge Function `notify-message` (Resend), webhook setup notes
 
 ### E. Verify
-- [ ] 7.10 Unit tests: error-code mapping, time trap, draft, inbox filtering and search
-- [ ] 7.11 E2E: send flow, errors, limits, honeypot, phones; inbox actions, filters, shortcuts; screenshots in both themes at 375 / 1440
+- [x] 7.10 Unit tests: error-code mapping, time trap, draft, inbox filtering and search
+- [x] 7.11 E2E: send flow, errors, limits, honeypot, phones; inbox actions, filters, shortcuts; screenshots in both themes at 375 / 1440
 
 ## 5. Acceptance criteria
 
 ### Final Scene
-- [ ] AC-7.1 A valid message sends and shows "That's a wrap." with the visitor's name and email; it appears in the admin inbox as New with the right kind, subject, body and budget.
-- [ ] AC-7.2 Each field shows its error (empty, too long, bad email, message under 10 characters); Send focuses the first error; nothing is sent until it's valid.
-- [ ] AC-7.3 Budget only appears for Freelance; switching away hides it and it isn't sent.
-- [ ] AC-7.4 A failed send keeps the text, explains why, and offers a pre-filled `mailto:`; a reload before sending keeps the draft.
-- [ ] AC-7.5 Your email, availability, location, socials and résumé show beside the form when set, and are left out when not.
-- [ ] AC-7.6 At 375 px the form is one column, nothing is hidden behind the Fast Lane dock, and fields use 16 px text with the right keyboards.
+- [x] AC-7.1 A valid message sends and shows "That's a wrap." with the visitor's name and email; it appears in the admin inbox as New with the right kind, subject, body and budget. ✅ *e2e `contact.spec.ts`*
+- [x] AC-7.2 Each field shows its error (empty, too long, bad email, message under 10 characters); Send focuses the first error; nothing is sent until it's valid. ✅ *e2e + unit (validation)*
+- [x] AC-7.3 Budget only appears for Freelance; switching away hides it and it isn't sent. ✅ *e2e + unit*
+- [x] AC-7.4 A failed send keeps the text, explains why, and offers a pre-filled `mailto:`; a reload before sending keeps the draft. ✅ *e2e (offline, server and rate-limit failures; draft after reload)*
+- [x] AC-7.5 Your email, availability, location, socials and résumé show beside the form when set, and are left out when not. ✅ *e2e*
+- [x] AC-7.6 At 375 px the form is one column, nothing is hidden behind the Fast Lane dock, and fields use 16 px text with the right keyboards. ✅ *e2e at 375 px: the dock slides away while a field has focus*
 
 ### Spam and abuse
-- [ ] AC-7.7 A filled honeypot, or a send within 3 seconds, shows success but stores nothing.
-- [ ] AC-7.8 The 4th message from one visitor within 10 minutes is refused with a friendly message (and the per-email and site-wide limits work, checked in the database tests).
-- [ ] AC-7.9 A body with more than 5 links is refused; emails are stored lower-case; no raw IP address is stored anywhere.
-- [ ] AC-7.10 Calling the API directly can't skip the limits, and visitors still can't read, change or delete messages or the throttle data.
+- [x] AC-7.7 A filled honeypot, or a send within 3 seconds, shows success but stores nothing. ✅ *e2e + unit*
+- [x] AC-7.8 The 4th message from one visitor within 10 minutes is refused with a friendly message (and the per-email and site-wide limits work, checked in the database tests). ✅ *e2e (demo) + 19 database checks*
+- [x] AC-7.9 A body with more than 5 links is refused; emails are stored lower-case; no raw IP address is stored anywhere. ✅ *e2e + database checks*
+- [x] AC-7.10 Calling the API directly can't skip the limits, and visitors still can't read, change or delete messages or the throttle data. ✅ *database checks as anonymous visitor and signed-in stranger; `db:verify` confirms 0009 on the live project*
 
 ### Inbox
-- [ ] AC-7.11 The menu badge and the dashboard show the number of new messages; opening one marks it read and the count drops.
-- [ ] AC-7.12 Tabs, kind chips and search filter the list correctly; "Load more" shows older messages.
-- [ ] AC-7.13 Reply opens a `mailto:` with "Re: <subject>" and the quoted message and marks it Replied; Copy email, Mark as unread, Archive / Move to inbox and Delete (after confirming) all work.
-- [ ] AC-7.14 Message text is shown as plain text (no HTML, links not clickable); next/previous and `j` / `k` / `e` work; phones get list → message → back.
+- [x] AC-7.11 The menu badge and the dashboard show the number of new messages; opening one marks it read and the count drops. ✅ *e2e*
+- [x] AC-7.12 Tabs, kind chips and search filter the list correctly; "Load more" shows older messages. ✅ *e2e + unit*
+- [x] AC-7.13 Reply opens a `mailto:` with "Re: <subject>" and the quoted message and marks it Replied; Copy email, Mark as unread, Archive / Move to inbox and Delete (after confirming) all work. ✅ *e2e + unit (reply link)*
+- [x] AC-7.14 Message text is shown as plain text (no HTML, links not clickable); next/previous and `j` / `k` / `e` work; phones get list → message → back. ✅ *e2e*
 
 ### Email alert (if Q1 is "Yes")
-- [ ] AC-7.15 A new message sends one email with Reply-To set to the visitor; with no key set, sending a message still works.
+- [x] AC-7.15 A new message sends one email with Reply-To set to the visitor; with no key set, sending a message still works. ✅ *built and unit-tested (payload, Reply-To, escaping, secret check); the live send is confirmed once you finish setup step C2*
 
 ### Quality
-- [ ] AC-7.16 375 / 1440 px, both themes: no horizontal scroll, no console errors, AA contrast, keyboard and screen-reader friendly; reduced motion and Lite respected; initial JS within budget.
-- [ ] AC-7.17 Build, lint, unit, e2e and database tests all pass.
+- [x] AC-7.16 375 / 1440 px, both themes: no horizontal scroll, no console errors, AA contrast, keyboard and screen-reader friendly; reduced motion and Lite respected; initial JS within budget. ✅ *e2e at 375 / 1440 px in both themes (contact, inbox and the full public and admin screen sweeps); reduced motion and Lite turn off the clapper animation; text uses the AA-checked theme tokens; initial JS within the 200 KB budget (unit)*
+- [x] AC-7.17 Build, lint, unit, e2e and database tests all pass. ✅ *build, lint, 860 unit, 155 e2e (one Part 5 globe check needed a retry, as before), 259 database checks*
 
 ## 6. Risks
 
@@ -206,15 +206,25 @@ supabase/tests/contact.test.sql
 
 ## 7. Open questions
 
-| # | Question | Default |
+| # | Question | Answer |
 |---|---|---|
-| Q1 | **Email alert** for each new message? Needs a free Resend account and about 10 minutes of setup by you (I'll write the steps). | **Yes** |
-| Q2 | Add **Cloudflare Turnstile** (an invisible "are you human" check from Cloudflare), or rely on the honeypot, time trap and database limits? | **No for now**; add it later if spam gets through |
-| Q3 | Choice labels: **Hiring · Freelance project · Collaboration · Just saying hi**? | **Yes**, as listed |
-| Q4 | Budget field only for Freelance, optional, free text? | **Yes** |
-| Q5 | Reply-time line after sending: "I usually reply within a couple of days", or no promise ("I'll get back to you soon")? | **"I usually reply within a couple of days."** |
-| Q6 | Form as a **film slate** with a clapper that snaps shut on send, or a plain clean form? | **Film slate** |
-| Q7 | Limits: **3 per 10 minutes and 10 per day** per visitor, **5 per day** per email, **100 per day** for the whole site? | **Yes** |
+| Q1 | **Email alert** for each new message? Needs a free Resend account and about 10 minutes of setup by you (I'll write the steps). | **Decided:** Yes (default) |
+| Q2 | Add **Cloudflare Turnstile** (an invisible "are you human" check from Cloudflare), or rely on the honeypot, time trap and database limits? | **Decided:** No for now; add it later if spam gets through (default) |
+| Q3 | Choice labels: **Hiring · Freelance project · Collaboration · Just saying hi**? | **Decided:** Yes, as listed (default) |
+| Q4 | Budget field only for Freelance, optional, free text? | **Decided:** Yes (default) |
+| Q5 | Reply-time line after sending: "I usually reply within a couple of days", or no promise ("I'll get back to you soon")? | **Decided:** "I usually reply within a couple of days." (default) |
+| Q6 | Form as a **film slate** with a clapper that snaps shut on send, or a plain clean form? | **Decided:** Film slate (default) |
+| Q7 | Limits: **3 per 10 minutes and 10 per day** per visitor, **5 per day** per email, **100 per day** for the whole site? | **Decided:** Yes (default) |
 
 ## Changelog
 - 0.1 (2026-10-17) — Initial draft.
+- 0.2 (2026-10-17) — Approved by Ausaf with all defaults (Q1–Q7).
+- 0.3 (2026-10-17) — Built. Notes from the build:
+  - The limits apply only to messages sent through the API (visitors and signed-in users), so data you add by hand in the SQL Editor isn't counted.
+  - The email alert function checks a shared secret sent by the webhook, so nobody else can make it send email.
+  - The time trap counts from when the form first appeared, so a person retrying straight after a failed send isn't mistaken for a bot.
+  - The open clapper's angle is worked out from the slate's width, so it opens the same height on phones and desktops.
+  - Opening a new message updates the list in place instead of reloading it, so next / previous keep working on the New tab.
+  - Inbox search waits a moment after you stop typing before it updates the address, and reads the live address when it does, so opening or archiving a message during that moment isn't undone.
+  - The demo site now has a public email (hello@example.com) so the direct-email block and the fallback link can be seen.
+  - `npm run db:verify` gained a check that 0009 is installed (a message with 6 links must be refused; nothing is stored).

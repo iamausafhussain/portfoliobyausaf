@@ -8,17 +8,22 @@ import { getSupabase, supabaseUrl } from '../../lib/supabase';
 import { mediaUrl } from '../../lib/media';
 import { conflictError, mapDbError, networkError, RepoError, type DbErrorLike } from './errors';
 import { checkFileForBucket } from './limits';
-import type {
-  AdminRepository,
-  AdminTable,
-  AuthApi,
-  AuthState,
-  Bucket,
-  DataApi,
-  FilesApi,
-  Row,
-  SettingsRow,
-  StoredFile,
+import { searchFilter } from './messages';
+import {
+  messageTabs,
+  type AdminRepository,
+  type AdminTable,
+  type AuthApi,
+  type AuthState,
+  type Bucket,
+  type DataApi,
+  type FilesApi,
+  type MessageRow,
+  type MessagesApi,
+  type MessageTab,
+  type Row,
+  type SettingsRow,
+  type StoredFile,
 } from './types';
 
 /**
@@ -391,4 +396,66 @@ const files: FilesApi = {
   },
 };
 
-export const supabaseRepository: AdminRepository = { kind: 'supabase', auth, data, files };
+/* ------------------------------------------------------------------ */
+/* Messages (spec 07 §2.4)                                             */
+/* ------------------------------------------------------------------ */
+
+function messageError(error: DbErrorLike): never {
+  if (/fetch|network/i.test(error.message ?? '') && !error.code) throw networkError(error);
+  throw new RepoError('unknown', 'Couldn’t update the inbox. Please try again.', undefined, { cause: error });
+}
+
+const tabCount = async (tab: MessageTab) => {
+  let q = db().from('messages').select('id', { count: 'exact', head: true });
+  q = tab === 'all' ? q.neq('status', 'archived') : q.eq('status', tab);
+  const { count, error } = await q;
+  if (error) messageError(error);
+  return count ?? 0;
+};
+
+const messages: MessagesApi = {
+  async list({ tab, kind, search, limit }) {
+    return guard(async () => {
+      let q = db()
+        .from('messages')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(0, Math.max(0, limit - 1));
+      q = tab === 'all' ? q.neq('status', 'archived') : q.eq('status', tab);
+      if (kind) q = q.eq('kind', kind);
+      const or = searchFilter(search);
+      if (or) q = q.or(or);
+      const { data: rows, count, error } = await q;
+      if (error) messageError(error);
+      return { rows: (rows ?? []) as MessageRow[], total: count ?? 0 };
+    });
+  },
+  async counts() {
+    return guard(async () => {
+      const entries = await Promise.all(messageTabs.map(async (t) => [t, await tabCount(t)] as const));
+      return Object.fromEntries(entries) as Record<MessageTab, number>;
+    });
+  },
+  async get(id) {
+    return guard(async () => {
+      const { data: row, error } = await db().from('messages').select('*').eq('id', id).maybeSingle();
+      if (error) messageError(error);
+      return (row as MessageRow | null) ?? null;
+    });
+  },
+  async setStatus(id, status) {
+    return guard(async () => {
+      const { data: rows, error } = await db().from('messages').update({ status }).eq('id', id).select('id');
+      if (error) messageError(error);
+      if (!rows?.length) throw new RepoError('not_found', 'This message no longer exists.');
+    });
+  },
+  async remove(id) {
+    return guard(async () => {
+      const { error } = await db().from('messages').delete().eq('id', id);
+      if (error) messageError(error);
+    });
+  },
+};
+
+export const supabaseRepository: AdminRepository = { kind: 'supabase', auth, data, files, messages };

@@ -90,6 +90,19 @@ for (const t of contentTables) {
   ok(!!error, 'cannot read messages');
 }
 {
+  // Part 7 (0009): the contact check is installed. A message with 6 links is refused before
+  // anything is stored, so this leaves no trace in your inbox.
+  const links = Array.from({ length: 6 }, (_, i) => `https://example.com/${i}`).join(' ');
+  const { error } = await anon
+    .from('messages')
+    .insert({ name: 'Verify', email: 'verify@example.com', body: `Link check: ${links}` });
+  ok(
+    error?.message === 'too_many_links',
+    'contact check is installed (0009)',
+    error ? error.message : 'message was accepted — run 0009_contact.sql',
+  );
+}
+{
   const { error } = await anon.from('app_owner').select('*');
   ok(!!error, 'cannot read app_owner');
 }

@@ -3,7 +3,8 @@
 This folder holds everything the database needs: the schema, the security rules, placeholder content and tests. The full design is in [`specs/01-data-model.md`](../specs/01-data-model.md).
 
 ```
-migrations/   run these in order (0001 → 0007)
+migrations/   run these in order (0001 → 0009)
+functions/    the email alert for new contact messages (Part 7)
 seed.sql      optional placeholder content (all unpublished)
 tests/        local security tests (npm run db:test); never run these on your project
 ```
@@ -114,6 +115,45 @@ Now run **`0008_require_mfa.sql`** in the SQL Editor. From this point a stolen p
 
    Then sign in straight away: the admin asks you to set up a new authenticator. Until you do, your password alone is enough to set one up, so do this only when you're ready to sign in yourself, and change your password if you think it may be known. Only someone with access to your Supabase dashboard can run this SQL, so protect that account with two-factor too.
 
+## Contact form and email alerts (Part 7)
+
+### C1 — Turn on the contact-form protection
+
+Run **`0009_contact.sql`** in the SQL Editor. It adds the limits on how many messages can be sent (3 per 10 minutes and 10 a day from one connection, 5 a day from one email address, 100 a day for the whole site) and the link limit. Visitors' IP addresses are only ever stored as a scrambled code and are deleted after 2 days. `npm run db:verify` (below) confirms it's in place.
+
+### C2 — Get an email for every new message (optional, about 10 minutes)
+
+Messages always land in the admin **Inbox**. These steps also send you an email for each one, and replying to that email answers the visitor directly.
+
+1. **Resend account.** Sign up at [resend.com](https://resend.com) (free: 100 emails a day) **with the email address you want the alerts sent to**. Until you verify a domain of your own, Resend can only deliver to that address. Then **API Keys → Create API key** (permission: _Sending access_) and copy it.
+2. **Make a webhook secret.** Any long random string, for example from a password manager. It stops anyone else from triggering the alert.
+3. **Add the secrets.** Supabase → **Edge Functions → Secrets**, add:
+
+   | Name             | Value                                                     |
+   | ---------------- | --------------------------------------------------------- |
+   | `RESEND_API_KEY` | the key from step 1                                       |
+   | `NOTIFY_TO`      | your email (the one you signed up to Resend with)         |
+   | `WEBHOOK_SECRET` | the string from step 2                                    |
+   | `SITE_URL`       | your site's address, e.g. `https://your-site.netlify.app` |
+
+4. **Deploy the function** from this project folder:
+
+   ```bash
+   npx supabase login
+   npx supabase functions deploy notify-message --no-verify-jwt --project-ref YOUR-PROJECT-ID
+   ```
+
+   (`--no-verify-jwt` is correct: the webhook secret does the checking.)
+
+5. **Create the webhook.** Supabase → **Database → Webhooks → Create a new hook**:
+   - Name: `notify-message`; Table: `messages`; Events: **Insert** only
+   - Type: **Supabase Edge Functions**, function `notify-message`, method `POST`
+   - HTTP headers: add `x-webhook-secret` with the string from step 2
+
+6. **Test it.** Send yourself a message from the site's contact form. The email arrives within a few seconds; check your spam folder the first time and mark it "not spam". If nothing arrives, Supabase → **Edge Functions → notify-message → Logs** shows why.
+
+If the alert ever fails, the message is still saved in your inbox. Nothing on the site changes.
+
 ## Check that it worked
 
 ```bash
@@ -136,7 +176,7 @@ It uploads three tiny test files and deletes them again. It never changes your c
 
 ## Local tests (developers)
 
-`npm run db:test` creates a throwaway Postgres, applies every migration twice, loads the seed twice and runs 223 schema and security checks as an anonymous visitor, a signed-in stranger and the owner. It needs PostgreSQL 15+ installed locally (set `PG_BIN` if `initdb` isn't on your PATH). Nothing touches your Supabase project.
+`npm run db:test` creates a throwaway Postgres, applies every migration twice, loads the seed twice and runs 259 schema and security checks as an anonymous visitor, a signed-in stranger and the owner. It needs PostgreSQL 15+ installed locally (set `PG_BIN` if `initdb` isn't on your PATH). Nothing touches your Supabase project.
 
 ## Regenerate TypeScript types
 

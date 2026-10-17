@@ -8,6 +8,8 @@ import { mediaUrl } from '../lib/media';
 import { PostgrestClient } from '@supabase/postgrest-js';
 import { readSupabaseEnv, supabaseUrl } from '../lib/env';
 import type { Database } from './database.types';
+import { SendError, sendErrorCode } from './contact';
+import type { MessageInsert } from './schemas';
 
 export type PublishedTable =
   'hero_media' | 'projects' | 'achievements' | 'experience' | 'skills' | 'testimonials' | 'custom_sections';
@@ -22,6 +24,8 @@ export interface PublicSource {
   itemsFor(sectionIds: string[]): Promise<unknown[]>;
   /** Browser-loadable URL for a stored path or an https URL. */
   mediaUrl(path: string): string;
+  /** Stores a contact message; throws SendError with a code on refusal (spec 07 §3.1). */
+  sendMessage(message: MessageInsert): Promise<void>;
 }
 
 /**
@@ -79,6 +83,16 @@ const supabaseSource: PublicSource = {
     return data ?? [];
   },
   mediaUrl: (path) => mediaUrl(path, supabaseUrl()),
+  async sendMessage(message) {
+    // visitors can't read messages back, so ask for nothing in return
+    let result;
+    try {
+      result = await db().from('messages').insert(message);
+    } catch {
+      throw new SendError('offline');
+    }
+    if (result.error) throw new SendError(sendErrorCode({ ...result.error, status: result.status }));
+  },
 };
 
 let resolved: PublicSource | null = null;

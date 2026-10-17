@@ -1,5 +1,5 @@
 /** Demo content for DemoRepository (dev only). Clearly fake; never shipped to production. */
-import type { AdminTable, Row, SettingsRow } from './types';
+import type { AdminTable, MessageRow, Row, SettingsRow } from './types';
 
 const t0 = Date.parse('2026-10-01T09:00:00Z');
 const ts = (minutes: number) => new Date(t0 + minutes * 60_000).toISOString();
@@ -62,7 +62,7 @@ export function demoSettings(): SettingsRow {
       height: 1000,
     },
     location: 'Bhubaneswar, India',
-    public_email: null,
+    public_email: 'hello@example.com',
     resume_path: null,
     socials: { github: 'https://github.com/iamausafhussain' },
     available_for_work: true,
@@ -456,4 +456,122 @@ export function demoRows(): Record<AdminTable, Row[]> {
   };
 }
 
-export const demoNewMessages = 2;
+/** Contact messages of every kind and status (spec 07 IB-8), newest first. */
+export function demoMessages(): MessageRow[] {
+  const m = (
+    n: number,
+    at: string,
+    status: MessageRow['status'],
+    kind: MessageRow['kind'],
+    name: string,
+    email: string,
+    subject: string,
+    body: string,
+    budget: string | null = null,
+  ): MessageRow => ({
+    id: `d0000000-0000-4000-8000-000000000${900 + n}`,
+    name,
+    email,
+    kind,
+    subject,
+    body,
+    budget,
+    status,
+    created_at: at,
+  });
+  return [
+    m(
+      1,
+      '2026-10-16T18:20:00Z',
+      'new',
+      'hire',
+      'Demo Recruiter',
+      'recruiter@example.com',
+      'Senior .NET role',
+      'Hi Ausaf,\n\nDemo — we are hiring a senior .NET engineer for our integrations team (Azure, Service Bus, EDI). Would you be open to a chat next week?\n\nThanks!',
+    ),
+    m(
+      2,
+      '2026-10-16T09:05:00Z',
+      'new',
+      'freelance',
+      'Demo Founder',
+      'founder@example.com',
+      'Dashboard for our warehouse',
+      'Demo — we need a small dashboard that reads our shipment files and shows delays. Timeline is about 6 weeks.',
+      '₹1–1.5L',
+    ),
+    m(
+      3,
+      '2026-10-15T14:40:00Z',
+      'new',
+      'collab',
+      'Demo Creator',
+      'creator@example.com',
+      'Drone shoot in Odisha?',
+      'Demo — loved the drone reel! Planning a coastal shoot in December, want to team up?',
+    ),
+    m(
+      4,
+      '2026-10-12T11:00:00Z',
+      'read',
+      'general',
+      'Demo Reader',
+      'reader@example.com',
+      '',
+      'Demo — just wanted to say the globe on your site is lovely. <b>This should show as plain text</b>, and so should https://example.com/link.',
+    ),
+    m(
+      5,
+      '2026-10-10T08:30:00Z',
+      'read',
+      'freelance',
+      'Demo Agency',
+      'agency@example.com',
+      'Website rebuild',
+      'Demo — a client of ours needs their booking site rebuilt in React. Are you taking projects?',
+      'Open',
+    ),
+    m(
+      6,
+      '2026-10-05T16:15:00Z',
+      'replied',
+      'hire',
+      'Demo Hiring Manager',
+      'manager@example.com',
+      'Backend engineer',
+      'Demo — thanks for applying, could you share your availability for a call?',
+    ),
+    m(
+      7,
+      '2026-09-28T10:00:00Z',
+      'replied',
+      'collab',
+      'Demo Filmmaker',
+      'filmmaker@example.com',
+      'Short film',
+      'Demo — would you like to collaborate on a short travel film?',
+    ),
+    m(
+      8,
+      '2026-09-20T07:45:00Z',
+      'archived',
+      'general',
+      'Demo Old Friend',
+      'friend@example.com',
+      'Long time',
+      'Demo — saw your site, looks great! Catch up soon.',
+    ),
+    m(
+      9,
+      '2026-09-02T12:00:00Z',
+      'archived',
+      'freelance',
+      'Demo Lead',
+      'lead@example.com',
+      'Small fix',
+      'Demo — a small fix to an old project, no rush.',
+      '₹10k',
+    ),
+  ];
+}

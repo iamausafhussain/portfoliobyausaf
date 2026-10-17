@@ -454,6 +454,11 @@ select tests.ok((select not ('image/gif' = any (allowed_mime_types)) from storag
 select tests.ok((select bool_and(public) from storage.buckets where id in ('images', 'videos', 'documents')), 'AC-1.19 buckets are public-read');
 
 -- ===========================================================================
+-- Contact-form protection (Part 7)
+-- ===========================================================================
+\ir contact.test.sql
+
+-- ===========================================================================
 \o
 \pset tuples_only on
 \pset format unaligned

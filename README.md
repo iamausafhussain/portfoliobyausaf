@@ -4,17 +4,17 @@ A cinematic, animated portfolio ("Director's Cut × Data in Transit") built with
 
 The project is built **spec-first**: read [`specs/`](specs/) before changing behaviour.
 
-| Spec                                                                      | Status                         |
-| ------------------------------------------------------------------------- | ------------------------------ |
-| [Part 0 — Master spec](specs/00-master-spec.md)                           | Built                          |
-| [Part 1 — Data model, security, auth](specs/01-data-model.md)             | Built, live                    |
-| [Part 2 — Admin panel](specs/02-admin-panel.md)                           | Built (live checklist pending) |
-| [Part 3 — App shell](specs/03-app-shell.md)                               | Built                          |
-| [Part 4 — Opening scene and cursor](specs/04-hero-and-cursor.md)          | Built                          |
-| [Part 5 — The System: globe and projects](specs/05-globe-and-projects.md) | Built                          |
-| [Part 6 — Content chapters](specs/06-content-chapters.md)                 | Built                          |
-| [Part 7 — Contact form and inbox](specs/07-contact-and-inbox.md)          | Spec in review                 |
-| Part 8                                                                    | Not started                    |
+| Spec                                                                      | Status                                      |
+| ------------------------------------------------------------------------- | ------------------------------------------- |
+| [Part 0 — Master spec](specs/00-master-spec.md)                           | Built                                       |
+| [Part 1 — Data model, security, auth](specs/01-data-model.md)             | Built, live                                 |
+| [Part 2 — Admin panel](specs/02-admin-panel.md)                           | Built (live checklist pending)              |
+| [Part 3 — App shell](specs/03-app-shell.md)                               | Built                                       |
+| [Part 4 — Opening scene and cursor](specs/04-hero-and-cursor.md)          | Built                                       |
+| [Part 5 — The System: globe and projects](specs/05-globe-and-projects.md) | Built                                       |
+| [Part 6 — Content chapters](specs/06-content-chapters.md)                 | Built                                       |
+| [Part 7 — Contact form and inbox](specs/07-contact-and-inbox.md)          | Built (run 0009; email alert setup pending) |
+| Part 8                                                                    | Not started                                 |
 
 ## Requirements
 
@@ -93,6 +93,12 @@ The `@font-face` rules, the size-matched fallback (prevents text jumping while t
 The System chapter's globe is built in code from map data, so there's no 3D model to edit. In the admin, each project has an **On the globe** section: tick **Featured** to give it a stop in the scroll tour (up to 6) and a larger node, and either leave **Place automatically** on or click the map, pick a city or type coordinates.
 
 The land dots and the admin's city list come from `npm run globe:data` (re-run only to change the dot density or the cities). Map data: Natural Earth (public domain); cities: GeoNames (CC BY 4.0).
+
+### Contact form and inbox
+
+Messages from the **Final Scene** form arrive in the admin **Inbox** (the number of new ones shows in the menu and on the dashboard). Open one to read it, then **Reply** (opens your mail app with the reply ready), archive or delete it. `j` / `k` move between messages and `e` archives.
+
+Before the form goes live, run `supabase/migrations/0009_contact.sql` in the Supabase SQL Editor: it adds the sending limits and the link check. To also get an email for each new message, follow **C2** in [`supabase/README.md`](supabase/README.md). The public email shown beside the form is the one in **Site settings**.
 
 ### Hero footage
 

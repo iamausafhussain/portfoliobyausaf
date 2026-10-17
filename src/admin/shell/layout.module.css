@@ -119,6 +119,20 @@
   background: var(--color-bg-elevated);
 }
 
+.badge {
+  margin-left: auto;
+  min-width: 1.375rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.375rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
 .navList a.active {
   color: var(--color-fg);
   background: var(--color-bg-elevated);

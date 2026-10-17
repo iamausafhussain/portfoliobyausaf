@@ -324,6 +324,12 @@
   transform: translate(-50%, calc(100% + var(--space-6)));
 }
 
+/* while typing in the contact form on a phone, the dock slides away so it never covers a
+   field or the Send button (spec 07 CT-10) */
+:global(body:has(form[data-contact] :focus)) .fastLaneFloating {
+  transform: translate(-50%, calc(100% + var(--space-6)));
+}
+
 .fastItem {
   display: inline-flex;
   align-items: center;

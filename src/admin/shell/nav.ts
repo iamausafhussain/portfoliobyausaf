@@ -5,10 +5,13 @@ export interface NavItem {
   label: string;
   icon: IconName;
   end?: boolean;
+  /** Show the number of new messages next to the label (spec 07 IB-1). */
+  badge?: 'newMessages';
 }
 
 export const contentNav: NavItem[] = [
   { to: '/admin', label: 'Dashboard', icon: 'grid', end: true },
+  { to: '/admin/inbox', label: 'Inbox', icon: 'mail', badge: 'newMessages' },
   { to: '/admin/settings', label: 'Site settings', icon: 'user' },
   { to: '/admin/hero', label: 'Hero media', icon: 'film' },
   { to: '/admin/projects', label: 'Projects', icon: 'image' },

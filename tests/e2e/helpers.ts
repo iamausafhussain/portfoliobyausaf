@@ -26,12 +26,14 @@ export async function signIn(page: Page, path = '/admin') {
 
 /** Client-side navigation through the sidebar (a full reload would reset the demo backend). */
 export async function go(page: Page, label: string) {
+  // a link may carry a count badge, e.g. "Inbox 3 new"
+  const name = new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}( \\d+ new)?$`);
   const viewport = page.viewportSize();
   if (viewport && viewport.width < 1024) {
     await page.getByRole('button', { name: 'Open menu' }).click();
-    await page.getByRole('dialog', { name: 'Menu' }).getByRole('link', { name: label, exact: true }).click();
+    await page.getByRole('dialog', { name: 'Menu' }).getByRole('link', { name }).click();
   } else {
-    await page.getByRole('complementary').getByRole('link', { name: label, exact: true }).click();
+    await page.getByRole('complementary').getByRole('link', { name }).click();
   }
 }
 

@@ -124,6 +124,42 @@ export interface FilesApi {
   url(path: string): string;
 }
 
+export type MessageStatus = 'new' | 'read' | 'replied' | 'archived';
+export type MessageKind = 'hire' | 'freelance' | 'collab' | 'general';
+/** Inbox tabs: a status, or "all" (everything except archived) (spec 07 IB-3). */
+export type MessageTab = MessageStatus | 'all';
+export const messageTabs: readonly MessageTab[] = ['new', 'read', 'replied', 'archived', 'all'];
+
+export interface MessageRow {
+  id: string;
+  name: string;
+  email: string;
+  kind: MessageKind;
+  subject: string;
+  body: string;
+  budget: string | null;
+  status: MessageStatus;
+  created_at: string;
+}
+
+export interface MessageQuery {
+  tab: MessageTab;
+  kind?: MessageKind | null;
+  /** Matched against name, email, subject and message, ignoring case. */
+  search?: string;
+  /** Newest first, this many (IB-2: 50 at a time). */
+  limit: number;
+}
+
+export interface MessagesApi {
+  list(query: MessageQuery): Promise<{ rows: MessageRow[]; total: number }>;
+  counts(): Promise<Record<MessageTab, number>>;
+  get(id: string): Promise<MessageRow | null>;
+  /** The only change the owner can make to a message (spec 01). */
+  setStatus(id: string, status: MessageStatus): Promise<void>;
+  remove(id: string): Promise<void>;
+}
+
 export interface AdminRepository {
   kind: 'supabase' | 'demo';
   /** Shown on the login screen (demo mode only). */
@@ -131,4 +167,5 @@ export interface AdminRepository {
   auth: AuthApi;
   data: DataApi;
   files: FilesApi;
+  messages: MessagesApi;
 }

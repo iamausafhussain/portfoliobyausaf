@@ -15,13 +15,16 @@ import {
   customSectionInsert,
   experienceInsert,
   heroMediaInsert,
+  messageInsert,
   projectInsert,
   siteSettingsUpdate,
   skillInsert,
   testimonialInsert,
 } from '../../data/schemas';
 import { conflictError, entityNames, labelFor, RepoError } from './errors';
-import { demoHeroFiles, demoImages, demoNewMessages, demoRows, demoSettings } from './demoSeed';
+import { demoHeroFiles, demoImages, demoMessages, demoRows, demoSettings } from './demoSeed';
+import { countTabs, filterMessages } from './messages';
+import { countLinks, MAX_LINKS, SendError, type SendErrorCode } from '../../data/contact';
 import { checkFileForBucket } from './limits';
 import { verifyTotp } from './totp';
 import type { PublicSource } from '../../data/source';
@@ -34,6 +37,8 @@ import type {
   Authenticator,
   DataApi,
   FilesApi,
+  MessageRow,
+  MessagesApi,
   Row,
   StoredFile,
   Values,
@@ -149,9 +154,17 @@ function blobUrl(blob: Blob, fallbackText?: string): string {
   return fallbackText ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(fallbackText)}` : '';
 }
 
-export function createDemoRepository(): AdminRepository & { publicSource: PublicSource } {
+export function createDemoRepository(): AdminRepository & {
+  publicSource: PublicSource;
+  failSends(code: SendErrorCode | null): void;
+  addMessages(count: number): void;
+} {
   let tables = demoRows();
   let settings = demoSettings();
+  let inbox: MessageRow[] = demoMessages();
+  /** Sends counted for the limits (spec 07 SP-3); in demo mode this browser is one visitor. */
+  const sends: { email: string; at: number }[] = [];
+  let sendFailure: SendErrorCode | null = null;
   const files = new Map<string, StoredFile & { url: string }>();
   demoImages.forEach((img, i) => {
     const svg = placeholderSvg(img.label, img.w, img.h, i);
@@ -398,7 +411,8 @@ export function createDemoRepository(): AdminRepository & { publicSource: Public
       return structuredClone(settings);
     },
     async countNewMessages() {
-      return demoNewMessages;
+      await delay(30);
+      return inbox.filter((m) => m.status === 'new').length;
     },
   };
 
@@ -438,6 +452,70 @@ export function createDemoRepository(): AdminRepository & { publicSource: Public
     },
   };
 
+  /* ---------------- messages ---------------- */
+  const messages: MessagesApi = {
+    async list(query) {
+      await delay(40);
+      await requireOwner();
+      const { rows, total } = filterMessages(inbox, query);
+      return { rows: structuredClone(rows), total };
+    },
+    async counts() {
+      await delay(30);
+      await requireOwner();
+      return countTabs(inbox);
+    },
+    async get(id) {
+      await delay(30);
+      await requireOwner();
+      const m = inbox.find((x) => x.id === id);
+      return m ? structuredClone(m) : null;
+    },
+    async setStatus(id, status) {
+      await delay();
+      await requireOwner();
+      if (!inbox.some((m) => m.id === id)) throw new RepoError('not_found', 'This message no longer exists.');
+      inbox = inbox.map((m) => (m.id === id ? { ...m, status } : m));
+    },
+    async remove(id) {
+      await delay();
+      await requireOwner();
+      inbox = inbox.filter((m) => m.id !== id);
+    },
+  };
+
+  /** The same rules as 0009_contact.sql, so the e2e tests can check them in demo mode. */
+  function acceptMessage(input: unknown): MessageRow {
+    const parsed = messageInsert.safeParse(input);
+    if (!parsed.success) throw new SendError('invalid');
+    const v = parsed.data;
+    const body = v.body.trim();
+    if (countLinks(body) > MAX_LINKS) throw new SendError('too_many_links');
+    const email = v.email.trim().toLowerCase();
+    const t = Date.now();
+    const within = (ms: number) => sends.filter((s) => t - s.at < ms);
+    const DAY = 86_400_000;
+    if (
+      within(10 * 60_000).length >= 3 ||
+      within(DAY).length >= 10 ||
+      within(DAY).filter((s) => s.email === email).length >= 5
+    ) {
+      throw new SendError('rate_limited');
+    }
+    sends.push({ email, at: t });
+    return {
+      id: crypto.randomUUID(),
+      name: v.name.trim(),
+      email,
+      kind: v.kind ?? 'general',
+      subject: (v.subject ?? '').trim(),
+      body,
+      budget: v.budget?.trim() || null,
+      status: 'new',
+      created_at: new Date(t).toISOString(),
+    };
+  }
+
   /** Read-only public view: published rows only, like RLS (spec 03 PD-1). */
   const publicSource: PublicSource = {
     kind: 'demo',
@@ -467,6 +545,11 @@ export function createDemoRepository(): AdminRepository & { publicSource: Public
       );
     },
     mediaUrl: (path) => filesApi.url(path),
+    async sendMessage(message) {
+      await delay(300);
+      if (sendFailure) throw new SendError(sendFailure);
+      inbox = [acceptMessage(message), ...inbox];
+    },
   };
 
   return {
@@ -476,6 +559,27 @@ export function createDemoRepository(): AdminRepository & { publicSource: Public
     auth,
     data,
     files: filesApi,
+    messages,
+    /** Test hook: make the next sends fail with this code (null to stop). */
+    failSends(code: SendErrorCode | null) {
+      sendFailure = code;
+    },
+    /** Test hook: older read messages, to fill the inbox past one page. */
+    addMessages(count: number) {
+      const start = Date.parse('2026-08-01T12:00:00Z');
+      const extra: MessageRow[] = Array.from({ length: count }, (_, i) => ({
+        id: crypto.randomUUID(),
+        name: `Demo Sender ${i + 1}`,
+        email: `sender${i + 1}@example.com`,
+        kind: 'general',
+        subject: `Older message ${i + 1}`,
+        body: 'Demo — an older message to fill the inbox.',
+        budget: null,
+        status: 'read',
+        created_at: new Date(start - i * 3_600_000).toISOString(),
+      }));
+      inbox = [...inbox, ...extra];
+    },
   };
 }
 

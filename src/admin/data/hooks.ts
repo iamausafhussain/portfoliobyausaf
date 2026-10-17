@@ -2,9 +2,23 @@
  * TanStack Query hooks for the admin. Every write invalidates the admin list and the
  * matching public queries, so the public site reflects changes immediately.
  */
-import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from '@tanstack/react-query';
 import { useRepository } from '../repository';
-import type { AdminTable, ListOptions, Row, Values } from '../repository/types';
+import type {
+  AdminTable,
+  ListOptions,
+  MessageQuery,
+  MessageRow,
+  MessageStatus,
+  Row,
+  Values,
+} from '../repository/types';
 
 export const adminKeys = {
   all: ['admin'] as const,
@@ -14,6 +28,11 @@ export const adminKeys = {
   row: (table: AdminTable, id: string) => ['admin', table, 'row', id] as const,
   settings: ['admin', 'settings'] as const,
   messages: ['admin', 'messages', 'new'] as const,
+  inbox: ['admin', 'messages'] as const,
+  inboxCounts: ['admin', 'messages', 'counts'] as const,
+  inboxList: (q: MessageQuery) =>
+    ['admin', 'messages', 'list', q.tab, q.kind ?? '', q.search ?? '', q.limit] as const,
+  inboxRow: (id: string) => ['admin', 'messages', 'row', id] as const,
   files: ['admin', 'files'] as const,
 };
 
@@ -54,9 +73,80 @@ export function useSettings() {
   return useQuery({ queryKey: adminKeys.settings, queryFn: () => repo.data.getSettings(), staleTime: 0 });
 }
 
+/** Refreshes when you come back to the tab and every minute while the admin is open (IB-1). */
 export function useNewMessageCount() {
   const repo = useRepository();
-  return useQuery({ queryKey: adminKeys.messages, queryFn: () => repo.data.countNewMessages() });
+  return useQuery({
+    queryKey: adminKeys.messages,
+    queryFn: () => repo.data.countNewMessages(),
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+  });
+}
+
+/* ---------------- inbox (spec 07 §2.4) ---------------- */
+
+export function useInboxCounts() {
+  const repo = useRepository();
+  return useQuery({
+    queryKey: adminKeys.inboxCounts,
+    queryFn: () => repo.messages.counts(),
+    refetchInterval: 60_000,
+  });
+}
+
+export function useInboxList(q: MessageQuery) {
+  const repo = useRepository();
+  return useQuery({
+    queryKey: adminKeys.inboxList(q),
+    queryFn: () => repo.messages.list(q),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useMessage(id: string | undefined) {
+  const repo = useRepository();
+  return useQuery({
+    queryKey: adminKeys.inboxRow(id ?? ''),
+    queryFn: () => repo.messages.get(id!),
+    enabled: !!id,
+  });
+}
+
+export function useSetMessageStatus() {
+  const repo = useRepository();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: MessageStatus; quiet?: boolean }) =>
+      repo.messages.setStatus(id, status),
+    onSuccess: (_r, { id, status, quiet }) => {
+      qc.setQueryData<MessageRow | null>(adminKeys.inboxRow(id), (m) => (m ? { ...m, status } : m));
+      // update the loaded lists in place, so the message keeps its place while you read it
+      qc.setQueriesData<{ rows: MessageRow[]; total: number }>(
+        { queryKey: [...adminKeys.inbox, 'list'] },
+        (d) => (d ? { ...d, rows: d.rows.map((m) => (m.id === id ? { ...m, status } : m)) } : d),
+      );
+      if (quiet) {
+        // opening a message: only the counts change; the list refreshes on its next fetch
+        void qc.invalidateQueries({ queryKey: adminKeys.inboxCounts });
+        void qc.invalidateQueries({ queryKey: adminKeys.messages });
+      } else {
+        void qc.invalidateQueries({ queryKey: adminKeys.inbox });
+      }
+    },
+  });
+}
+
+export function useDeleteMessage() {
+  const repo = useRepository();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => repo.messages.remove(id),
+    onSuccess: (_r, id) => {
+      qc.removeQueries({ queryKey: adminKeys.inboxRow(id) });
+      void qc.invalidateQueries({ queryKey: adminKeys.inbox });
+    },
+  });
 }
 
 export function useCreateRow(table: AdminTable) {

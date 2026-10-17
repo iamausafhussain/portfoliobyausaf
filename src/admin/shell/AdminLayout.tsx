@@ -3,13 +3,24 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../auth/AuthProvider';
-import { useAdminList } from '../data/hooks';
+import { useAdminList, useNewMessageCount } from '../data/hooks';
 import { useRepository } from '../repository';
 import { ThemeToggle } from '../../theme/ThemeToggle';
 import { Icon } from '../ui/Icon';
 import { IconButton, Notice } from '../ui/primitives';
 import { contentNav, toolsNav, type NavItem } from './nav';
 import styles from './layout.module.css';
+
+function NewMessagesBadge() {
+  const count = useNewMessageCount().data ?? 0;
+  if (!count) return null;
+  return (
+    <b className={styles.badge} data-badge>
+      {count}
+      <span className="sr-only"> new</span>
+    </b>
+  );
+}
 
 function NavLinks({ items }: { items: NavItem[] }) {
   return (
@@ -23,6 +34,7 @@ function NavLinks({ items }: { items: NavItem[] }) {
           >
             <Icon name={item.icon} />
             <span>{item.label}</span>
+            {item.badge === 'newMessages' && <NewMessagesBadge />}
           </NavLink>
         </li>
       ))}

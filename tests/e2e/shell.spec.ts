@@ -192,6 +192,8 @@ test('AC-3.9 / PD-1 a resume uploaded in the demo admin shows in the Fast Lane a
   await expect(page.getByRole('link', { name: 'Resume' })).toHaveCount(0);
   // client-side to the admin (a reload would reset the demo data)
   await page.getByRole('link', { name: 'Admin' }).click();
+  // wait for the sign-in page (the home page has an Email field of its own: the contact form)
+  await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
   await page.getByLabel('Email').fill(DEMO.email);
   await page.getByLabel('Password').fill('x');
   await page.getByRole('button', { name: 'Continue' }).click();
@@ -257,7 +259,12 @@ test('AC-3.11 a section with its own page renders its items by field type', asyn
   await expect(page.getByRole('heading', { level: 2, name: 'Scaling EDI on Azure' })).toBeVisible();
   await expect(page.getByRole('img', { name: 'Speaking on stage' })).toBeVisible();
   // a select field shows as a tag (spec 06 CS-2)
-  await expect(page.getByRole('main').getByRole('listitem').filter({ hasText: /^Talk$/ })).toBeVisible();
+  await expect(
+    page
+      .getByRole('main')
+      .getByRole('listitem')
+      .filter({ hasText: /^Talk$/ }),
+  ).toBeVisible();
   // and it's in the chapter menu as a page
   await page.getByRole('button', { name: 'Chapters' }).click();
   await expect(page.getByRole('dialog').getByRole('link', { name: 'Talks' })).toBeVisible();
@@ -265,7 +272,7 @@ test('AC-3.11 a section with its own page renders its items by field type', asyn
 
 test('AC-3.12 after a route change focus is on the h1 and the title is updated', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'Drone reel 2026' }).click();
+  await page.locator('#projects').getByRole('link', { name: 'Drone reel 2026', exact: true }).click();
   const h1 = page.getByRole('heading', { level: 1, name: 'Drone reel 2026' });
   await expect(h1).toBeFocused();
   await expect(page).toHaveTitle('Drone reel 2026 · Ausaf Hussain');

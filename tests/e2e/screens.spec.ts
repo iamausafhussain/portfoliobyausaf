@@ -7,6 +7,15 @@ import { go, signIn, watchErrors } from './helpers';
 
 const screens: { name: string; open: (p: import('@playwright/test').Page) => Promise<void> }[] = [
   { name: 'dashboard', open: (p) => go(p, 'Dashboard') },
+  { name: 'inbox', open: (p) => go(p, 'Inbox') },
+  {
+    name: 'inbox-message',
+    open: async (p) => {
+      await go(p, 'Inbox');
+      await p.locator('[data-row]').first().click();
+      await p.locator('[data-message-body]').waitFor();
+    },
+  },
   { name: 'settings', open: (p) => go(p, 'Site settings') },
   { name: 'hero', open: (p) => go(p, 'Hero media') },
   {

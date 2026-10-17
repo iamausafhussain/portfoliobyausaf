@@ -128,11 +128,13 @@ export function DashboardPage() {
             )}
           </div>
           <div className={styles.stat}>
-            <span className={styles.cardTitle}>New messages</span>
+            <Link to="/admin/inbox" className={styles.cardLink}>
+              <span className={styles.cardTitle}>New messages</span>
+            </Link>
             <p className={styles.counts}>
               <span className={styles.big}>{messages.data ?? '–'}</span> unread
             </p>
-            <span className={styles.drafts}>The inbox arrives with the contact form (Part 7).</span>
+            <span className={styles.drafts}>From the contact form on your site.</span>
           </div>
           <div className={styles.stat}>
             <Link to="/admin/media" className={styles.cardLink}>

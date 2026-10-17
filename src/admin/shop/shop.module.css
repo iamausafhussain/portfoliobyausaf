@@ -1,0 +1,256 @@
+/* Shop admin (spec 08 §2.4). Tokens only. */
+
+/* ---------- price ---------- */
+.price {
+  position: relative;
+  display: block;
+}
+
+.priceSymbol {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--space-3);
+  display: flex;
+  align-items: center;
+  color: var(--color-fg-muted);
+  pointer-events: none;
+}
+
+.price input {
+  padding-inline-start: calc(var(--space-3) + 1.25em);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- file ---------- */
+.fileField {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.fileText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.modeTabs {
+  display: inline-flex;
+  justify-self: start;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+}
+
+.modeTabs button {
+  min-height: 2.25rem;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-fg-muted);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.modeTabs button[aria-pressed='true'] {
+  background: var(--color-fg);
+  color: var(--color-bg);
+}
+
+.modeTabs button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.linkLabel {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+/* ---------- orders ---------- */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1 1 14rem;
+  max-width: 22rem;
+  min-height: 2.5rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-fg-muted);
+}
+
+.search:focus-within {
+  border-color: var(--color-accent);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-fg);
+  font: inherit;
+  font-size: max(16px, var(--font-size-sm));
+  outline: none;
+}
+
+.productFilter {
+  flex: 0 1 14rem;
+  min-width: 0;
+}
+
+.productFilter select {
+  width: 100%;
+}
+
+.skeletons {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.empty {
+  padding: var(--space-8) var(--space-5);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-fg-muted);
+  text-align: center;
+}
+
+.orders {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.orders[aria-busy='true'] {
+  opacity: 0.7;
+}
+
+.order {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-4);
+}
+
+.order + .order {
+  border-top: 1px solid var(--color-border);
+}
+
+.orderMain,
+.orderBuyer {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.orderEmail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--font-weight-medium);
+}
+
+.orderProduct {
+  font-family: var(--font-italic);
+  font-style: italic;
+}
+
+.orderMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.orderSide {
+  display: grid;
+  justify-items: end;
+  align-content: start;
+  gap: var(--space-1);
+}
+
+.orderAmount {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-medium);
+}
+
+.orderStatus {
+  padding: 1px var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.orderStatus[data-tone='paid'] {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.orderStatus[data-tone='refunded'],
+.orderStatus[data-tone='revoked'] {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.order[data-status='refunded'] .orderAmount,
+.order[data-status='revoked'] .orderAmount {
+  color: var(--color-fg-muted);
+  text-decoration: line-through;
+}
+
+.orderActions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.listFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* ---------- policies ---------- */
+.policyHead {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.viewLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-fg);
+  font-size: var(--font-size-sm);
+}

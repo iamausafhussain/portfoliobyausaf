@@ -3,7 +3,7 @@
  * the list and the active chapter. Adding a chapter needs no change to the shell.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { usePublishedCustomSections } from '../data/queries/public';
+import { usePublishedCustomSections, usePublishedProducts } from '../data/queries/public';
 import { orderChapters, type ChapterEntry } from './chapters';
 
 interface Registry {
@@ -61,10 +61,17 @@ export function useChapterRegistry(): Registry {
 /** The home page's chapters, from published sections (used by the home page and the menu). */
 export function useHomeChapters(): { chapters: ChapterEntry[]; loading: boolean } {
   const sections = usePublishedCustomSections();
-  // sections without published items stay off the home page and the menu (spec 06 CS-4)
+  const products = usePublishedProducts();
+  const hasProducts = (products.data?.length ?? 0) > 0;
+  // sections without published items stay off the home page and the menu (spec 06 CS-4);
+  // so does the Box Office with nothing for sale (spec 08 BX-1)
   const chapters = useMemo(
-    () => orderChapters((sections.data ?? []).filter((s) => s.items.length > 0).map((s) => s.section)),
-    [sections.data],
+    () =>
+      orderChapters(
+        (sections.data ?? []).filter((s) => s.items.length > 0).map((s) => s.section),
+        { shop: hasProducts },
+      ),
+    [sections.data, hasProducts],
   );
-  return { chapters, loading: sections.isPending };
+  return { chapters, loading: sections.isPending || products.isPending };
 }

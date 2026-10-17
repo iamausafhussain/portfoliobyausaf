@@ -8,7 +8,7 @@ import { getSupabase, supabaseUrl } from '../../lib/supabase';
 import { mediaUrl } from '../../lib/media';
 import { conflictError, mapDbError, networkError, RepoError, type DbErrorLike } from './errors';
 import { checkFileForBucket } from './limits';
-import { searchFilter } from './messages';
+import { cleanSearch, searchFilter } from './messages';
 import {
   messageTabs,
   type AdminRepository,
@@ -21,7 +21,11 @@ import {
   type MessageRow,
   type MessagesApi,
   type MessageTab,
+  type OrderRow,
+  type ProductFileRow,
   type Row,
+  type ShopAdminApi,
+  type ShopPageRow,
   type SettingsRow,
   type StoredFile,
 } from './types';
@@ -250,9 +254,19 @@ const data: DataApi = {
 
   async remove(table, id) {
     return guard(async () => {
+      // a product's private file goes with it (spec 08); its location row cascades
+      const file =
+        table === 'products'
+          ? (await db().from('product_files').select('file_path').eq('product_id', id).maybeSingle()).data
+          : null;
       const { data: rows, error } = await db().from(table).delete().eq('id', id).select('id');
       if (error) fail(error, table);
       if (!rows || rows.length === 0) throw mapDbError({ code: '42501' }, table);
+      if (file?.file_path) {
+        await getSupabase()
+          .storage.from('products')
+          .remove([String(file.file_path).replace(/^products\//, '')]);
+      }
     });
   },
 
@@ -458,4 +472,132 @@ const messages: MessagesApi = {
   },
 };
 
-export const supabaseRepository: AdminRepository = { kind: 'supabase', auth, data, files, messages };
+/* ------------------------------------------------------------------ */
+/* Shop (spec 08 §2.4)                                                 */
+/* ------------------------------------------------------------------ */
+
+function shopError(error: DbErrorLike | null, what = 'the shop'): never {
+  if (error && /fetch|network/i.test(error.message ?? '') && !error.code) throw networkError(error);
+  throw new RepoError('unknown', `Couldn’t update ${what}. Please try again.`, undefined, { cause: error });
+}
+
+/** Calls the owner-only shop function with your signed-in session. */
+async function shopAdmin<T>(body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await getSupabase().functions.invoke('shop-admin', { body });
+  if (!error) return data as T;
+  let detail: { error?: string; detail?: string } = {};
+  try {
+    detail = await (error as { context?: Response }).context?.json();
+  } catch {
+    /* no body */
+  }
+  if (detail?.error === 'provider')
+    throw new RepoError(
+      'unknown',
+      `The payment provider refused the change: ${detail.detail ?? 'no details'}. Check the API key and try Sync again.`,
+    );
+  if (detail?.error === 'not_owner') throw new RepoError('auth', 'Your session has expired — sign in again.');
+  if (/fetch|network|Failed to send/i.test(error.message))
+    throw new RepoError(
+      'network',
+      'Couldn’t reach the shop functions. Are they deployed (supabase/README.md, step D3)?',
+    );
+  throw new RepoError('unknown', `The shop function failed: ${error.message}`);
+}
+
+const shop: ShopAdminApi = {
+  status: () => shopAdmin({ action: 'status' }),
+  async getFile(productId) {
+    return guard(async () => {
+      const { data: row, error } = await db()
+        .from('product_files')
+        .select('product_id, file_path, external_url, file_name')
+        .eq('product_id', productId)
+        .maybeSingle();
+      if (error) shopError(error, 'the product file');
+      return (row as ProductFileRow | null) ?? null;
+    });
+  },
+  async setFile(productId, file) {
+    return guard(async () => {
+      if (!file.file_path && !file.external_url) {
+        const { error } = await db().from('product_files').delete().eq('product_id', productId);
+        if (error) shopError(error, 'the product file');
+        return;
+      }
+      const { error } = await db()
+        .from('product_files')
+        .upsert({ product_id: productId, ...file }, { onConflict: 'product_id' });
+      if (error) {
+        if (error.code === '23514')
+          throw new RepoError('invalid', 'The link must start with https://', 'external_url');
+        shopError(error, 'the product file');
+      }
+    });
+  },
+  async sync(productId) {
+    const { product } = await shopAdmin<{ product: Row }>({ action: 'sync', product_id: productId });
+    return product;
+  },
+  async orders({ status, productId, search, limit }) {
+    return guard(async () => {
+      let q = db()
+        .from('orders')
+        .select(
+          'id, product_id, product_title, email, buyer_name, amount, currency, status, provider, provider_payment_id, downloads_used, download_limit, expires_at, refresh_count, created_at',
+          { count: 'exact' },
+        )
+        .order('created_at', { ascending: false })
+        .range(0, Math.max(0, limit - 1));
+      if (status) q = q.eq('status', status);
+      if (productId) q = q.eq('product_id', productId);
+      const s = cleanSearch(search);
+      if (s) q = q.or(`email.ilike."*${s}*",buyer_name.ilike."*${s}*"`);
+      const { data: rows, count, error } = await q;
+      if (error) shopError(error, 'orders');
+      return { rows: (rows ?? []) as OrderRow[], total: count ?? 0 };
+    });
+  },
+  async updateOrder(id, values) {
+    return guard(async () => {
+      const { data: rows, error } = await db().from('orders').update(values).eq('id', id).select('id');
+      if (error) shopError(error, 'the order');
+      if (!rows?.length) throw new RepoError('not_found', 'This order no longer exists.');
+    });
+  },
+  resend: (orderId) => shopAdmin({ action: 'resend', order_id: orderId }),
+  async sales(days) {
+    return guard(async () => {
+      const since = new Date(Date.now() - days * 86_400_000).toISOString();
+      const { data: rows, error } = await db()
+        .from('orders')
+        .select('amount, currency')
+        .eq('status', 'paid')
+        .gte('created_at', since);
+      if (error) shopError(error, 'sales');
+      const revenue: Record<string, number> = {};
+      for (const r of rows ?? [])
+        revenue[r.currency as string] = (revenue[r.currency as string] ?? 0) + Number(r.amount);
+      return { orders: rows?.length ?? 0, revenue };
+    });
+  },
+  async pages() {
+    return guard(async () => {
+      const { data: rows, error } = await db().from('shop_pages').select('*').order('slug');
+      if (error) shopError(error, 'the policy pages');
+      return (rows ?? []) as ShopPageRow[];
+    });
+  },
+  async updatePage(slug, values, expectedUpdatedAt) {
+    return guard(async () => {
+      let q = db().from('shop_pages').update(values).eq('slug', slug);
+      if (expectedUpdatedAt) q = q.eq('updated_at', expectedUpdatedAt);
+      const { data: rows, error } = await q.select('*');
+      if (error) shopError(error, 'the page');
+      if (!rows?.length) throw conflictError();
+      return rows[0] as ShopPageRow;
+    });
+  },
+};
+
+export const supabaseRepository: AdminRepository = { kind: 'supabase', auth, data, files, messages, shop };

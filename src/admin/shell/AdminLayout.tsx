@@ -8,7 +8,7 @@ import { useRepository } from '../repository';
 import { ThemeToggle } from '../../theme/ThemeToggle';
 import { Icon } from '../ui/Icon';
 import { IconButton, Notice } from '../ui/primitives';
-import { contentNav, toolsNav, type NavItem } from './nav';
+import { contentNav, shopNav, toolsNav, type NavItem } from './nav';
 import styles from './layout.module.css';
 
 function NewMessagesBadge() {
@@ -22,9 +22,9 @@ function NewMessagesBadge() {
   );
 }
 
-function NavLinks({ items }: { items: NavItem[] }) {
+function NavLinks({ items, labelledBy }: { items: NavItem[]; labelledBy?: string }) {
   return (
-    <ul className={styles.navList}>
+    <ul className={styles.navList} aria-labelledby={labelledBy}>
       {items.map((item) => (
         <li key={item.to}>
           <NavLink
@@ -73,6 +73,10 @@ function Navigation({ onSignOut }: { onSignOut: () => void }) {
           </NavLink>
         </li>
       </ul>
+      <p className={`label ${styles.navHeading}`} id="nav-shop">
+        Shop
+      </p>
+      <NavLinks items={shopNav} labelledBy="nav-shop" />
       <div className={styles.navFooter}>
         <NavLinks items={toolsNav} />
         <ul className={styles.navList}>

@@ -204,6 +204,7 @@ export function ListPage({
         }
       />
       <PageBody>
+        {config.ListNotice && <config.ListNotice />}
         {list.isError && (
           <Notice
             tone="error"

@@ -154,6 +154,66 @@ Messages always land in the admin **Inbox**. These steps also send you an email 
 
 If the alert ever fails, the message is still saved in your inbox. Nothing on the site changes.
 
+## Shop: Box Office (Part 8)
+
+The shop takes payments through **Dodo Payments**, which acts as the seller of record: it charges the buyer (cards, UPI and more), handles sales tax and VAT abroad, sends receipts and pays you out. The site never sees card details. Do everything below in Dodo's **test mode** first; nothing is charged there.
+
+### D1 — Run the shop migration
+
+Run **`0010_shop.sql`** in the SQL Editor. It adds the products, orders and policy-page tables, the private `products` storage bucket (50 MB per file, only you can upload; buyers only ever get a 60-second link) and the security rules. If you ever re-run `0005` or `0007`, run `0010` again afterwards, because it extends the reordering function they define.
+
+### D2 — Dodo account and keys (test mode)
+
+1. Sign up at [dodopayments.com](https://dodopayments.com) and stay in **Test mode** (the switch in the dashboard). Business verification for live mode can run in the background.
+2. **API key:** in the dashboard's developer settings, create an API key and copy it.
+3. **Webhook:** in the same developer settings, add a webhook endpoint:
+   - URL: `https://YOUR-PROJECT-ID.supabase.co/functions/v1/shop-webhook`
+   - Events: `payment.succeeded`, `refund.succeeded`, `dispute.lost`
+   - Copy its **signing secret** (it starts with `whsec_`).
+
+   Menu names in Dodo's dashboard may differ slightly from these; the two things you need are the API key and the webhook signing secret.
+
+4. **Download-link secret:** make a random string of at least 32 characters (a password manager is fine). It signs buyers' download links; changing it later makes every existing link stop working.
+5. **Email (Resend):** the buyer's download link is emailed through Resend, as in C2. Resend only delivers to other people's addresses **from a domain you've verified** there (Resend → Domains). Until you have one, buyers still get their download on the thank-you page, but the email won't reach them, so verify a domain before going live.
+
+### D3 — Secrets and deploy
+
+Supabase → **Edge Functions → Secrets**, add:
+
+| Name                  | Value                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| `DODO_API_KEY`        | the API key from D2                                                                   |
+| `DODO_WEBHOOK_SECRET` | the webhook signing secret from D2 (`whsec_…`)                                        |
+| `DODO_MODE`           | `test` (change to `live` in D5)                                                       |
+| `SHOP_TOKEN_SECRET`   | the random string from D2 step 4                                                      |
+| `SITE_URL`            | your site's address, e.g. `https://your-site.netlify.app` (already set if you did C2) |
+| `RESEND_API_KEY`      | your Resend key (already set if you did C2)                                           |
+| `SHOP_FROM`           | the sender, e.g. `Ausaf Hussain <shop@your-domain.com>` (a verified Resend domain)    |
+
+Then deploy the six shop functions from this project folder:
+
+```bash
+npx supabase login
+npx supabase functions deploy shop-checkout shop-webhook shop-order-status shop-download shop-claim shop-admin --no-verify-jwt --project-ref YOUR-PROJECT-ID
+```
+
+(`--no-verify-jwt` is correct: visitors aren't signed in, the webhook checks Dodo's signature, and `shop-admin` checks that the caller is you.)
+
+The admin's **Products** and **Orders** pages show which mode is active and list any secret that's still missing.
+
+### D4 — Add a product and make a test purchase
+
+1. Admin → **Products → New product**: title, price, cover, then **Save**. Saving creates the matching product in Dodo for you. Then add the file (upload up to 50 MB, or an external link for bigger files), and publish.
+2. Admin → **Shop policies**: read the three templates, change what doesn't fit, remove the "Review before publishing" line and publish them. Dodo asks for these pages when it reviews your shop.
+3. Open the product on your site, **Buy**, and pay with one of Dodo's test cards (listed in Dodo's docs under testing). You land on the thank-you page, the Download button appears within a few seconds, the order shows in Admin → **Orders**, and the email arrives (D2 step 5).
+4. Refund that test payment in Dodo's dashboard: the order turns **Refunded** and its link stops working.
+
+If the thank-you page keeps saying "Confirming your payment…", check Supabase → **Edge Functions → shop-webhook → Logs** (usually a wrong webhook secret or URL).
+
+### D5 — Going live
+
+Once Dodo has approved your business: switch the dashboard to **Live mode**, create a live API key and a live webhook (same URL and events), put both in the secrets from D3, set `DODO_MODE` to `live`, and **save each paid product once** in the admin so it's created in your live Dodo account. Then make one real small purchase and refund it.
+
 ## Check that it worked
 
 ```bash
@@ -176,7 +236,7 @@ It uploads three tiny test files and deletes them again. It never changes your c
 
 ## Local tests (developers)
 
-`npm run db:test` creates a throwaway Postgres, applies every migration twice, loads the seed twice and runs 259 schema and security checks as an anonymous visitor, a signed-in stranger and the owner. It needs PostgreSQL 15+ installed locally (set `PG_BIN` if `initdb` isn't on your PATH). Nothing touches your Supabase project.
+`npm run db:test` creates a throwaway Postgres, applies every migration twice, loads the seed twice and runs 310 schema and security checks as an anonymous visitor, a signed-in stranger and the owner. It needs PostgreSQL 15+ installed locally (set `PG_BIN` if `initdb` isn't on your PATH). Nothing touches your Supabase project.
 
 ## Regenerate TypeScript types
 
@@ -195,7 +255,7 @@ This needs the Supabase CLI and `supabase login`. It writes `src/data/database.t
 | Logged in but can't save anything                   | Step S6 wasn't run, or used a different email. Run it again.                                                                                                  |
 | `relation "auth.users" does not exist`              | You're running the SQL somewhere other than your Supabase project.                                                                                            |
 | Locked out                                          | Use "Forgot password" on the admin login, or reset the password in Authentication → Users.                                                                    |
-| Project paused                                      | Free projects pause after a period of inactivity. Click **Restore** in the dashboard. Part 8 adds an automatic keep-alive.                                    |
+| Project paused                                      | Free projects pause after a period of inactivity. Click **Restore** in the dashboard. Part 9 adds an automatic keep-alive.                                    |
 | Admin signs in but nothing saves after running 0008 | The session was password-only. Sign out and back in with your code. If you ran 0008 before setting up an authenticator, follow A2, or re-run 0002 to undo it. |
 | Reset email link goes to the wrong site             | Add the reset URL under Authentication → URL Configuration (A1).                                                                                              |
 | "Two-factor isn't enforced" banner in the admin     | Run `0008_require_mfa.sql` (A3).                                                                                                                              |

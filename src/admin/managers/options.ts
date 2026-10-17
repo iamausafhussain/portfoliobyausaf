@@ -55,6 +55,7 @@ export const chapterOptions: Option[] = [
   { value: 'credits', label: 'Achievements (Credits Roll)' },
   { value: 'timeline', label: 'Experience (Timeline)' },
   { value: 'reviews', label: 'Testimonials (Reviews)' },
+  { value: 'shop', label: 'Shop (Box Office)' },
 ];
 
 export const labelOf = (options: Option[], value: unknown) =>

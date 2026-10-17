@@ -297,6 +297,180 @@ export type Database = {
         };
         Relationships: [];
       };
+      orders: {
+        Row: {
+          amount: number;
+          buyer_name: string;
+          created_at: string;
+          currency: string;
+          download_limit: number;
+          downloads_used: number;
+          email: string;
+          expires_at: string;
+          id: string;
+          product_id: string | null;
+          product_title: string;
+          provider: string;
+          provider_payment_id: string | null;
+          provider_session_id: string | null;
+          status: Database['public']['Enums']['order_status'];
+          ref_hash: string | null;
+          refresh_count: number;
+          token_hash: string;
+          token_version: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          amount?: number;
+          buyer_name?: string;
+          created_at?: string;
+          currency?: string;
+          download_limit?: number;
+          downloads_used?: number;
+          email: string;
+          expires_at?: string;
+          id?: string;
+          product_id?: string | null;
+          product_title: string;
+          provider?: string;
+          provider_payment_id?: string | null;
+          provider_session_id?: string | null;
+          status: Database['public']['Enums']['order_status'];
+          ref_hash?: string | null;
+          refresh_count?: number;
+          token_hash: string;
+          token_version?: number;
+          updated_at?: string;
+        };
+        Update: {
+          amount?: number;
+          buyer_name?: string;
+          created_at?: string;
+          currency?: string;
+          download_limit?: number;
+          downloads_used?: number;
+          email?: string;
+          expires_at?: string;
+          id?: string;
+          product_id?: string | null;
+          product_title?: string;
+          provider?: string;
+          provider_payment_id?: string | null;
+          provider_session_id?: string | null;
+          status?: Database['public']['Enums']['order_status'];
+          ref_hash?: string | null;
+          refresh_count?: number;
+          token_hash?: string;
+          token_version?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      product_files: {
+        Row: {
+          external_url: string | null;
+          file_name: string;
+          file_path: string | null;
+          product_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          external_url?: string | null;
+          file_name?: string;
+          file_path?: string | null;
+          product_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          external_url?: string | null;
+          file_name?: string;
+          file_path?: string | null;
+          product_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      products: {
+        Row: {
+          cover: Json | null;
+          created_at: string;
+          description: string;
+          file_format: string;
+          file_size: number | null;
+          gallery: Json;
+          id: string;
+          included: string[];
+          is_featured: boolean;
+          is_free: boolean;
+          is_published: boolean;
+          kind: Database['public']['Enums']['product_kind'];
+          price_inr: number | null;
+          price_usd: number | null;
+          provider_product_id: string | null;
+          provider_product_id_inr: string | null;
+          requirements: string;
+          slug: string;
+          sort_order: number;
+          tagline: string;
+          title: string;
+          updated_at: string;
+          version: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          cover?: Json | null;
+          created_at?: string;
+          description?: string;
+          file_format?: string;
+          file_size?: number | null;
+          gallery?: Json;
+          id?: string;
+          included?: string[];
+          is_featured?: boolean;
+          is_free?: boolean;
+          is_published?: boolean;
+          kind?: Database['public']['Enums']['product_kind'];
+          price_inr?: number | null;
+          price_usd?: number | null;
+          provider_product_id?: string | null;
+          provider_product_id_inr?: string | null;
+          requirements?: string;
+          slug: string;
+          sort_order?: number;
+          tagline?: string;
+          title: string;
+          updated_at?: string;
+          version?: string;
+        };
+        Update: {
+          cover?: Json | null;
+          created_at?: string;
+          description?: string;
+          file_format?: string;
+          file_size?: number | null;
+          gallery?: Json;
+          id?: string;
+          included?: string[];
+          is_featured?: boolean;
+          is_free?: boolean;
+          is_published?: boolean;
+          kind?: Database['public']['Enums']['product_kind'];
+          price_inr?: number | null;
+          price_usd?: number | null;
+          provider_product_id?: string | null;
+          provider_product_id_inr?: string | null;
+          requirements?: string;
+          slug?: string;
+          sort_order?: number;
+          tagline?: string;
+          title?: string;
+          updated_at?: string;
+          version?: string;
+        };
+        Relationships: [];
+      };
       projects: {
         Row: {
           body: string;
@@ -361,6 +535,31 @@ export type Database = {
           title?: string;
           updated_at?: string;
           year?: number | null;
+        };
+        Relationships: [];
+      };
+      shop_pages: {
+        Row: {
+          body: string;
+          is_published: boolean;
+          slug: string;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          body?: string;
+          is_published?: boolean;
+          slug: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          body?: string;
+          is_published?: boolean;
+          slug?: string;
+          title?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -534,12 +733,14 @@ export type Database = {
     };
     Enums: {
       achievement_kind: 'award' | 'certification' | 'title' | 'recognition' | 'publication' | 'other';
-      chapter_key: 'hero' | 'about' | 'projects' | 'credits' | 'timeline' | 'reviews' | 'contact';
+      chapter_key: 'hero' | 'about' | 'projects' | 'credits' | 'timeline' | 'reviews' | 'shop' | 'contact';
       employment_type: 'full_time' | 'part_time' | 'contract' | 'freelance' | 'internship';
       hero_playback: 'single' | 'sequence' | 'random';
       hero_source: 'upload' | 'url';
       message_kind: 'hire' | 'freelance' | 'collab' | 'general';
       message_status: 'new' | 'read' | 'replied' | 'archived';
+      order_status: 'paid' | 'free' | 'refunded' | 'revoked';
+      product_kind: 'pdf' | 'tool' | 'bundle';
       project_category: 'work' | 'freelance' | 'personal';
       section_layout: 'grid' | 'list' | 'timeline' | 'carousel' | 'gallery';
       theme_scope: 'dark' | 'light' | 'both';
@@ -654,12 +855,14 @@ export const Constants = {
   public: {
     Enums: {
       achievement_kind: ['award', 'certification', 'title', 'recognition', 'publication', 'other'],
-      chapter_key: ['hero', 'about', 'projects', 'credits', 'timeline', 'reviews', 'contact'],
+      chapter_key: ['hero', 'about', 'projects', 'credits', 'timeline', 'reviews', 'shop', 'contact'],
       employment_type: ['full_time', 'part_time', 'contract', 'freelance', 'internship'],
       hero_playback: ['single', 'sequence', 'random'],
       hero_source: ['upload', 'url'],
       message_kind: ['hire', 'freelance', 'collab', 'general'],
       message_status: ['new', 'read', 'replied', 'archived'],
+      order_status: ['paid', 'free', 'refunded', 'revoked'],
+      product_kind: ['pdf', 'tool', 'bundle'],
       project_category: ['work', 'freelance', 'personal'],
       section_layout: ['grid', 'list', 'timeline', 'carousel', 'gallery'],
       theme_scope: ['dark', 'light', 'both'],

@@ -14,7 +14,9 @@ import {
   customSectionRow,
   experienceRow,
   heroMediaRow,
+  productRow,
   projectRow,
+  shopPageRow,
   siteSettingsRow,
   skillRow,
   testimonialRow,
@@ -27,6 +29,8 @@ export const queryKeys = {
   published: (table: PublishedTable) => ['published', table] as const,
   project: (slug: string) => ['published', 'projects', slug] as const,
   customSections: ['published', 'custom_sections', 'with_items'] as const,
+  product: (slug: string) => ['published', 'products', slug] as const,
+  shopPage: (slug: string) => ['published', 'shop_pages', slug] as const,
 };
 
 async function fetchPublished(table: PublishedTable) {
@@ -123,5 +127,31 @@ export function usePublishedCustomSections() {
         return { section, items: valid };
       });
     },
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Shop (spec 08)                                                      */
+/* ------------------------------------------------------------------ */
+
+export function usePublishedProducts() {
+  return useQuery({
+    queryKey: queryKeys.published('products'),
+    queryFn: async () => parseRows(productRow, await fetchPublished('products'), 'products'),
+  });
+}
+
+export function useProduct(slug: string) {
+  return useQuery({
+    queryKey: queryKeys.product(slug),
+    queryFn: async () =>
+      parseRow(productRow, await (await getPublicSource()).productBySlug(slug), 'products'),
+  });
+}
+
+export function useShopPage(slug: 'terms' | 'refunds' | 'privacy') {
+  return useQuery({
+    queryKey: queryKeys.shopPage(slug),
+    queryFn: async () => parseRow(shopPageRow, await (await getPublicSource()).shop.page(slug), 'shop_pages'),
   });
 }

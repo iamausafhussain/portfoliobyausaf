@@ -11,6 +11,7 @@ export const builtInChapters = [
   'credits',
   'timeline',
   'reviews',
+  'shop',
   'contact',
 ] as const;
 export type BuiltInChapter = (typeof builtInChapters)[number];
@@ -23,6 +24,7 @@ export const chapterTitles: Record<BuiltInChapter, string> = {
   credits: 'Credits Roll',
   timeline: 'Timeline',
   reviews: 'Reviews',
+  shop: 'Box Office',
   contact: 'Final Scene',
 };
 
@@ -34,6 +36,7 @@ export const chapterPlainNames: Record<BuiltInChapter, string> = {
   credits: 'Achievements',
   timeline: 'Experience & skills',
   reviews: 'Testimonials',
+  shop: 'Shop',
   contact: 'Contact',
 };
 
@@ -55,14 +58,25 @@ export const sectionAnchor = (slug: string) => `s-${slug}`;
  * Built-in chapters in fixed order; each published section with "show on home page" goes
  * after its `insert_after` chapter, ordered by sort_order then name; contact is always last.
  */
-export function orderChapters(sections: readonly CustomSection[]): ChapterEntry[] {
+export function orderChapters(
+  sections: readonly CustomSection[],
+  /** the Box Office shows only when there's something to sell (spec 08 BX-1) */
+  options: { shop?: boolean } = {},
+): ChapterEntry[] {
   const onHome = sections
     .filter((s) => s.is_published && s.show_on_home)
     .sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name));
 
   const out: Omit<ChapterEntry, 'number'>[] = [];
   for (const key of builtInChapters) {
-    out.push({ id: key, title: chapterTitles[key], subtitle: chapterPlainNames[key], kind: 'built-in', key });
+    if (key !== 'shop' || options.shop)
+      out.push({
+        id: key,
+        title: chapterTitles[key],
+        subtitle: chapterPlainNames[key],
+        kind: 'built-in',
+        key,
+      });
     if (key === 'contact') break;
     for (const s of onHome.filter((x) => x.insert_after === key)) {
       out.push({ id: sectionAnchor(s.slug), title: s.name, subtitle: s.intro, kind: 'custom', section: s });

@@ -67,7 +67,7 @@ function useUploader() {
   };
 }
 
-function Dropzone({
+export function Dropzone({
   accept,
   multiple,
   onFiles,
@@ -126,7 +126,7 @@ function Dropzone({
   );
 }
 
-function UploadProgress({ progress, onCancel }: { progress: number; onCancel: () => void }) {
+export function UploadProgress({ progress, onCancel }: { progress: number; onCancel: () => void }) {
   return (
     <div className={styles.uploading}>
       <ProgressBar value={progress} label="Upload progress" />

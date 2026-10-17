@@ -16,13 +16,24 @@ import {
   experienceInsert,
   heroMediaInsert,
   messageInsert,
+  productInsert,
   projectInsert,
   siteSettingsUpdate,
   skillInsert,
   testimonialInsert,
 } from '../../data/schemas';
 import { conflictError, entityNames, labelFor, RepoError } from './errors';
-import { demoHeroFiles, demoImages, demoMessages, demoRows, demoSettings } from './demoSeed';
+import {
+  demoHeroFiles,
+  demoImages,
+  demoMessages,
+  demoOrders,
+  demoProductFiles,
+  demoProductId,
+  demoRows,
+  demoSettings,
+} from './demoSeed';
+import { createDemoShop } from './demoShop';
 import { countTabs, filterMessages } from './messages';
 import { countLinks, MAX_LINKS, SendError, type SendErrorCode } from '../../data/contact';
 import { checkFileForBucket } from './limits';
@@ -60,6 +71,7 @@ const schemas: Record<AdminTable, z.ZodType> = {
   testimonials: testimonialInsert,
   custom_sections: customSectionInsert,
   custom_items: customItemInsert,
+  products: productInsert,
 };
 
 /** Database column defaults (supabase/migrations/0003_tables.sql). */
@@ -114,6 +126,24 @@ const defaults: Record<AdminTable, Values> = {
     show_in_nav: false,
   },
   custom_items: { data: {} },
+  products: {
+    kind: 'pdf',
+    tagline: '',
+    description: '',
+    included: [],
+    requirements: '',
+    version: '',
+    file_format: '',
+    file_size: null,
+    is_free: false,
+    price_usd: null,
+    price_inr: null,
+    cover: null,
+    gallery: [],
+    is_featured: false,
+    provider_product_id: null,
+    provider_product_id_inr: null,
+  },
 };
 
 const serverFields = ['id', 'created_at', 'updated_at'];
@@ -158,6 +188,7 @@ export function createDemoRepository(): AdminRepository & {
   publicSource: PublicSource;
   failSends(code: SendErrorCode | null): void;
   addMessages(count: number): void;
+  shopDemo: ReturnType<typeof createDemoShop>;
 } {
   let tables = demoRows();
   let settings = demoSettings();
@@ -184,6 +215,18 @@ export function createDemoRepository(): AdminRepository & {
       contentType: f.contentType,
       updatedAt: '2026-10-01T09:00:00Z',
       url: `${import.meta.env.BASE_URL}hero-sample/${f.file}`,
+    });
+  }
+
+  for (const f of demoProductFiles) {
+    if (!f.file_path) continue;
+    const body = `Demo product file: ${f.file_name}\n`;
+    files.set(f.file_path, {
+      path: f.file_path,
+      size: 18_000_000,
+      contentType: f.file_path.endsWith('.pdf') ? 'application/pdf' : 'application/zip',
+      updatedAt: '2026-10-01T09:00:00Z',
+      url: blobUrl(new Blob([body], { type: 'application/octet-stream' })),
     });
   }
 
@@ -289,7 +332,7 @@ export function createDemoRepository(): AdminRepository & {
   };
 
   const checkUnique = (table: AdminTable, row: Values, selfId?: string) => {
-    if ('slug' in row && (table === 'projects' || table === 'custom_sections')) {
+    if ('slug' in row && (table === 'projects' || table === 'custom_sections' || table === 'products')) {
       if (tables[table].some((r) => r.id !== selfId && r.slug === row.slug)) {
         throw new RepoError(
           'unique',
@@ -378,6 +421,8 @@ export function createDemoRepository(): AdminRepository & {
           ),
         };
       }
+      // a product's private file goes with it (spec 08)
+      if (table === 'products') shop.removeProduct(id);
     },
     async reorder(table, ids) {
       await delay(40);
@@ -516,6 +561,26 @@ export function createDemoRepository(): AdminRepository & {
     };
   }
 
+  /* ---------------- shop (spec 08) ---------------- */
+  const shop = createDemoShop(
+    {
+      products: () => tables.products,
+      updateProduct(id, values) {
+        const next = { ...tables.products.find((r) => r.id === id)!, ...values, updated_at: now() } as Row;
+        tables = { ...tables, products: tables.products.map((r) => (r.id === id ? next : r)) };
+        return next;
+      },
+      files,
+      requireOwner,
+      delay,
+      now,
+    },
+    {
+      files: demoProductFiles.map(({ product, ...f }) => ({ productId: demoProductId(product), ...f })),
+      orders: demoOrders(),
+    },
+  );
+
   /** Read-only public view: published rows only, like RLS (spec 03 PD-1). */
   const publicSource: PublicSource = {
     kind: 'demo',
@@ -550,6 +615,12 @@ export function createDemoRepository(): AdminRepository & {
       if (sendFailure) throw new SendError(sendFailure);
       inbox = [acceptMessage(message), ...inbox];
     },
+    async productBySlug(slug) {
+      await delay(30);
+      const row = tables.products.find((r) => r.slug === slug && r.is_published);
+      return row ? structuredClone(row) : null;
+    },
+    shop: shop.publicApi,
   };
 
   return {
@@ -560,6 +631,9 @@ export function createDemoRepository(): AdminRepository & {
     data,
     files: filesApi,
     messages,
+    shop: shop.adminApi,
+    /** Test hooks for the shop: sent emails, webhook timing, refunds. */
+    shopDemo: shop,
     /** Test hook: make the next sends fail with this code (null to stop). */
     failSends(code: SendErrorCode | null) {
       sendFailure = code;

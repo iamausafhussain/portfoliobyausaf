@@ -10,9 +10,17 @@ import { readSupabaseEnv, supabaseUrl } from '../lib/env';
 import type { Database } from './database.types';
 import { SendError, sendErrorCode } from './contact';
 import type { MessageInsert } from './schemas';
+import { shopErrorFrom, ShopError, type ShopPublicApi } from './shop';
 
 export type PublishedTable =
-  'hero_media' | 'projects' | 'achievements' | 'experience' | 'skills' | 'testimonials' | 'custom_sections';
+  | 'hero_media'
+  | 'projects'
+  | 'achievements'
+  | 'experience'
+  | 'skills'
+  | 'testimonials'
+  | 'custom_sections'
+  | 'products';
 
 export interface PublicSource {
   kind: 'supabase' | 'demo';
@@ -26,7 +34,48 @@ export interface PublicSource {
   mediaUrl(path: string): string;
   /** Stores a contact message; throws SendError with a code on refusal (spec 07 §3.1). */
   sendMessage(message: MessageInsert): Promise<void>;
+  /** A published product by its web address (spec 08 BX-3). */
+  productBySlug(slug: string): Promise<unknown>;
+  /** The shop's server side (spec 08 §3.1). */
+  shop: ShopPublicApi;
 }
+
+/** Calls one of the shop's Edge Functions with the public key; errors become ShopErrors. */
+async function callFunction<T>(name: string, body: Record<string, unknown>): Promise<T> {
+  const { url, anonKey } = readSupabaseEnv(import.meta.env);
+  let res: Response;
+  try {
+    res = await fetch(`${url}/functions/v1/${name}`, {
+      method: 'POST',
+      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new ShopError('offline');
+  }
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw shopErrorFrom(res.status, data);
+  return data as T;
+}
+
+const supabaseShop: ShopPublicApi = {
+  checkout: (productId, currency) => callFunction('shop-checkout', { product_id: productId, currency }),
+  orderStatus: (ref) => callFunction('shop-order-status', { ref }),
+  downloadInfo: (token) => callFunction('shop-download', { token, action: 'info' }),
+  download: (token) => callFunction('shop-download', { token, action: 'download' }),
+  refresh: (token) => callFunction('shop-download', { token, action: 'refresh' }),
+  claimFree: (productId, email, name) => callFunction('shop-claim', { product_id: productId, email, name }),
+  async page(slug) {
+    const { data, error } = await db()
+      .from('shop_pages')
+      .select('*')
+      .eq('slug', slug)
+      .eq('is_published', true)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+};
 
 /**
  * Public reads need only the database REST API, not the full Supabase client (auth,
@@ -83,6 +132,17 @@ const supabaseSource: PublicSource = {
     return data ?? [];
   },
   mediaUrl: (path) => mediaUrl(path, supabaseUrl()),
+  async productBySlug(slug) {
+    const { data, error } = await db()
+      .from('products')
+      .select('*')
+      .eq('slug', slug)
+      .eq('is_published', true)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+  shop: supabaseShop,
   async sendMessage(message) {
     // visitors can't read messages back, so ask for nothing in return
     let result;

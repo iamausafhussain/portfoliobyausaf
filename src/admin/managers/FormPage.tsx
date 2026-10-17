@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { FormProvider, useForm, type FieldErrors, type Resolver } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 import { droppedFiles, fileRefs, removeIfUnused } from '../data/files';
-import { useAdminRow, useCreateRow, useRemoveRow, useUpdateRow } from '../data/hooks';
+import { useQueryClient } from '@tanstack/react-query';
+import { invalidateTable, useAdminRow, useCreateRow, useRemoveRow, useUpdateRow } from '../data/hooks';
 import { MediaSessionProvider, useMediaSession } from '../media/MediaSession';
 import { useRepository } from '../repository';
 import { isRepoError, labelFor } from '../repository/errors';
@@ -88,6 +89,7 @@ function Editor({ config, row, basePath, header, onSaved }: EditorProps) {
   const confirm = useConfirm();
   const navigate = useNavigate();
   const media = useMediaSession();
+  const qc = useQueryClient();
   const create = useCreateRow(config.table);
   const update = useUpdateRow(config.table);
   const remove = useRemoveRow(config.table);
@@ -154,11 +156,22 @@ function Editor({ config, row, basePath, header, onSaved }: EditorProps) {
         result = await create.mutateAsync(payload);
       }
       media.commit();
+      let warning: string | null = null;
+      if (config.afterSave) {
+        try {
+          const newer = await config.afterSave({ row: result, previous: saved, repo });
+          if (newer) result = newer;
+        } catch (e) {
+          warning = isRepoError(e) ? e.message : 'Something went wrong after saving.';
+        }
+        invalidateTable(qc, config.table);
+      }
       setConflict(false);
       setSaved(result);
       reset(toFormValues(result));
       setBaseline(toFormValues(result));
-      toast.success(publish ? 'Saved and published.' : 'Saved.');
+      if (warning) toast.error(`Saved, but: ${warning}`);
+      else toast.success(publish ? 'Saved and published.' : 'Saved.');
       onSaved?.(result);
       if (!saved) {
         allowNextNavigation();

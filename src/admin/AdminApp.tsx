@@ -18,6 +18,9 @@ import { FormPage } from './managers/FormPage';
 import { ListPage } from './managers/ListPage';
 import type { ManagerConfig } from './managers/types';
 import { InboxPage } from './inbox/InboxPage';
+import { OrdersPage } from './shop/OrdersPage';
+import { PoliciesPage } from './shop/PoliciesPage';
+import { productsConfig } from './shop/products';
 import { AccountPage } from './pages/AccountPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { MediaPage } from './pages/MediaPage';
@@ -37,7 +40,7 @@ function ManagerForm({ config }: { config: ManagerConfig }) {
   return <FormPage config={config} id={id} basePath={`/admin/${config.path}`} />;
 }
 
-const managers: ManagerConfig[] = [...Object.values(builtInManagers), sectionsConfig];
+const managers: ManagerConfig[] = [...Object.values(builtInManagers), sectionsConfig, productsConfig];
 
 export function Component() {
   const [repo, setRepo] = useState<AdminRepository | null>(null);
@@ -96,6 +99,8 @@ export function Component() {
                 <Route path="sections/:id/items" element={<SectionItemsPage />} />
                 <Route path="sections/:id/items/new" element={<SectionItemFormPage />} />
                 <Route path="sections/:id/items/:itemId" element={<SectionItemFormPage />} />
+                <Route path="orders" element={<OrdersPage />} />
+                <Route path="policies" element={<PoliciesPage />} />
                 <Route path="media" element={<MediaPage />} />
                 <Route path="account" element={<AccountPage />} />
                 <Route path="*" element={<DashboardPage />} />

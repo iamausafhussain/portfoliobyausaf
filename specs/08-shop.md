@@ -1,7 +1,7 @@
 # Part 8 — Box Office: Shop for Digital Products
 
-**Status:** Draft — awaiting approval
-**Version:** 0.1 · 2026-10-17
+**Status:** Built — Dodo account, migration 0010 and one real test-mode purchase pending (Ausaf)
+**Version:** 0.3 · 2026-10-17
 **Depends on:** Part 1 (database, storage, security rules), Part 2 (admin), Part 3 (shell, routes), Part 6 (chapter styling, reveals), Part 7 (Edge Functions, Resend email)
 **Feeds:** Part 9 (performance, SEO, accessibility audit, Netlify deploy; previously Part 8)
 
@@ -74,7 +74,7 @@ Stripe has accepted new accounts from India **by invitation only** since May 202
 | AD-8.1 | **Products** manager, like the other managers: title, slug, type (PDF, Tool, Bundle), short line, description (markdown), what's included (list), requirements, version, price USD, optional price INR, free (yes/no), cover, gallery (up to 8), the file (upload to the private bucket, or an external link), featured, published, order. |
 | AD-8.2 | When a product is saved with a price, the admin creates or updates the matching product on the provider (through an Edge Function), so you never have to copy IDs between dashboards. |
 | AD-8.3 | **Orders** list, newest first: date, buyer email, product, amount and currency, status (Paid, Refunded, Free), downloads used. Filter by product and status; search by email. |
-| AD-8.4 | Order actions: **Re-send link** (new email, same token), **Reset downloads** (back to 5 for 30 days), **Revoke** (link stops working; use after a refund done outside the provider). |
+| AD-8.4 | Order actions: **Re-send link** (new email with a fresh link; the old one stops working), **Reset downloads** (back to 5 for 30 days), **Revoke** (link stops working; use after a refund done outside the provider). |
 | AD-8.5 | Dashboard: a "Sales" card with orders and revenue for the last 30 days, linking to Orders. |
 | AD-8.6 | **Shop policies**: Terms, Refund policy and Privacy as editable markdown pages, published at `/terms`, `/refunds`, `/privacy` and linked in the footer and on every product page. They start from short templates clearly marked "Review before publishing" (Q8). |
 
@@ -131,16 +131,19 @@ One module per provider with three jobs: create a checkout session, verify and r
 src/chapters/shop/
   BoxOfficeChapter.tsx    home chapter (featured posters)
   ShopPage.tsx            /shop
-  ProductPage.tsx         /shop/:slug
-  ThanksPage.tsx          /shop/thanks
+  ProductPage.tsx         /shop/:slug (USD / INR, free claim, gallery)
+  ThanksPage.tsx          /shop/thanks?ref=…
   DownloadPage.tsx        /d/:token
-  Poster.tsx, shop.module.css
-src/chapters/PolicyPage.tsx   /terms, /refunds, /privacy
+  PolicyPage.tsx          /terms, /refunds, /privacy
+  DemoCheckoutPage.tsx    demo mode only: stands in for Dodo's checkout
+  Poster.tsx, Ticket.tsx, PolicyLinks.tsx, shop.module.css
 src/admin/shop/
-  ProductsManager (built on the Part 2 manager), OrdersPage.tsx, PoliciesPage.tsx
+  products.tsx            Products manager (built on the Part 2 manager), file field, price fields
+  OrdersPage.tsx, PoliciesPage.tsx, SalesCard.tsx, ShopModeNotice.tsx
+src/admin/repository/demoShop.ts   demo provider, same rules via the shared helpers
 supabase/functions/
-  shop-checkout/  shop-webhook/  shop-order-status/  shop-download/  shop-sync-product/
-  _shared/provider/<chosen>.ts, demo.ts
+  shop-checkout/  shop-webhook/  shop-order-status/  shop-download/  shop-claim/  shop-admin/
+  _shared/  shop.ts (tokens, limits, webhooks, emails)  dodo.ts (adapter)  runtime.ts
 supabase/migrations/0010_shop.sql
 supabase/tests/shop.test.sql
 ```
@@ -154,52 +157,52 @@ supabase/tests/shop.test.sql
 ## 4. Tasks
 
 ### A. Database and storage
-- [ ] 8.1 `0010_shop.sql`: tables, security rules, private bucket; database tests
-- [ ] 8.2 Setup guide: provider account (test mode first), secrets, webhook, going live
+- [x] 8.1 `0010_shop.sql`: tables, security rules, private bucket; database tests
+- [x] 8.2 Setup guide: provider account (test mode first), secrets, webhook, going live
 
 ### B. Server (Edge Functions)
-- [ ] 8.3 Provider adapter (Q1) and demo adapter
-- [ ] 8.4 `shop-checkout`, `shop-webhook` (signature, once-only), `shop-order-status`
-- [ ] 8.5 `shop-download` (limits, 60-second links, fresh-link email), free-product claim
-- [ ] 8.6 `shop-sync-product` (admin saves → provider product)
+- [x] 8.3 Provider adapter (Q1) and demo adapter
+- [x] 8.4 `shop-checkout`, `shop-webhook` (signature, once-only), `shop-order-status`
+- [x] 8.5 `shop-download` (limits, 60-second links, fresh-link email), free-product claim
+- [x] 8.6 Provider sync on save (`shop-admin` action `sync`)
 
 ### C. Public site
-- [ ] 8.7 Box Office chapter, `/shop`, product page, gallery
-- [ ] 8.8 Thank-you page (polling, slow-confirmation message), download page
-- [ ] 8.9 Policy pages and footer links
+- [x] 8.7 Box Office chapter, `/shop`, product page, gallery
+- [x] 8.8 Thank-you page (polling, slow-confirmation message), download page
+- [x] 8.9 Policy pages and footer links
 
 ### D. Admin
-- [ ] 8.10 Products manager (file upload to the private bucket or external link)
-- [ ] 8.11 Orders list and actions; dashboard Sales card; Policies editor
-- [ ] 8.12 Demo products and orders
+- [x] 8.10 Products manager (file upload to the private bucket or external link)
+- [x] 8.11 Orders list and actions; dashboard Sales card; Policies editor
+- [x] 8.12 Demo products and orders
 
 ### E. Verify
-- [ ] 8.13 Unit tests: adapter (signature checks with real test vectors), limits, token handling, price display
-- [ ] 8.14 E2E (demo provider): browse → buy → thanks → download; limits; refund; free product; admin products and orders; phones; both themes
+- [x] 8.13 Unit tests: adapter (signature checks with real test vectors), limits, token handling, price display
+- [x] 8.14 E2E (demo provider): browse → buy → thanks → download; limits; refund; free product; admin products and orders; phones; both themes
 - [ ] 8.15 A real purchase in the provider's **test mode** on the live Supabase project, after you've created the account
 
 ## 5. Acceptance criteria
 
 ### Box Office
-- [ ] AC-8.1 Featured products appear in the Box Office chapter (max 3 + "See all"); `/shop` lists all published products; drafts never appear; the chapter is hidden with no products.
-- [ ] AC-8.2 The product page shows everything from the admin (gallery, included list, format and size, version, requirements, price; INR note when set); Buy opens the provider checkout for that product and price.
+- [x] AC-8.1 Featured products appear in the Box Office chapter (max 3 + "See all"); `/shop` lists all published products; drafts never appear; the chapter is hidden with no products.
+- [x] AC-8.2 The product page shows everything from the admin (gallery, included list, format and size, version, requirements, price; INR note when set); Buy opens the provider checkout for that product and price.
 
 ### Checkout and delivery
-- [ ] AC-8.3 After a successful test payment, the order is recorded once (even if the webhook arrives twice), the thank-you page shows the Download button within seconds, and the buyer receives the email with the link.
-- [ ] AC-8.4 The download link works 5 times within 30 days, then offers a fresh link by email; each download is a storage link that expires after 60 seconds.
-- [ ] AC-8.5 A webhook with a bad signature is refused and changes nothing; changing the price or product in the browser can't change what's charged or delivered.
-- [ ] AC-8.6 A refund in the provider's dashboard marks the order Refunded and its link stops working.
-- [ ] AC-8.7 A free product is delivered by email link without checkout, within the contact-form limits.
-- [ ] AC-8.8 Product files can't be listed or downloaded without a valid paid order; visitors can't read orders or file locations (database tests).
+- [ ] AC-8.3 *(demo provider: passes; real test-mode purchase pending)* After a successful test payment, the order is recorded once (even if the webhook arrives twice), the thank-you page shows the Download button within seconds, and the buyer receives the email with the link.
+- [x] AC-8.4 The download link works 5 times within 30 days, then offers a fresh link by email; each download is a storage link that expires after 60 seconds.
+- [x] AC-8.5 A webhook with a bad signature is refused and changes nothing; changing the price or product in the browser can't change what's charged or delivered.
+- [x] AC-8.6 A refund in the provider's dashboard marks the order Refunded and its link stops working.
+- [x] AC-8.7 A free product is delivered by email link without checkout, within the contact-form limits.
+- [x] AC-8.8 Product files can't be listed or downloaded without a valid paid order; visitors can't read orders or file locations (database tests).
 
 ### Admin
-- [ ] AC-8.9 Adding a product with a file and price makes it buyable without visiting the provider's dashboard; editing the price updates the provider.
-- [ ] AC-8.10 Orders list, filters and search work; Re-send link, Reset downloads and Revoke work; the dashboard Sales card shows the last 30 days.
-- [ ] AC-8.11 Policy pages are editable, published at their addresses and linked from the footer and product pages.
+- [ ] AC-8.9 *(demo provider: passes; against Dodo's test mode pending)* Adding a product with a file and price makes it buyable without visiting the provider's dashboard; editing the price updates the provider.
+- [x] AC-8.10 Orders list, filters and search work; Re-send link, Reset downloads and Revoke work; the dashboard Sales card shows the last 30 days.
+- [x] AC-8.11 Policy pages are editable, published at their addresses and linked from the footer and product pages.
 
 ### Quality
-- [ ] AC-8.12 375 / 1440 px, both themes: no horizontal scroll, no console errors, AA contrast, keyboard and screen-reader friendly; the shop adds nothing to the home page's first download beyond the chapter itself.
-- [ ] AC-8.13 Build, lint, unit, e2e and database tests pass; one real test-mode purchase succeeds end to end.
+- [x] AC-8.12 375 / 1440 px, both themes: no horizontal scroll, no console errors, AA contrast, keyboard and screen-reader friendly; the shop adds nothing to the home page's first download beyond the chapter itself.
+- [ ] AC-8.13 *(build, lint, unit, e2e and database tests pass; real test-mode purchase pending)* Build, lint, unit, e2e and database tests pass; one real test-mode purchase succeeds end to end.
 
 ## 6. Risks
 
@@ -214,18 +217,30 @@ supabase/tests/shop.test.sql
 
 ## 7. Open questions
 
-| # | Question | Default |
+| # | Question | Answer |
 |---|---|---|
-| Q1 | **Payment provider.** (a) **Dodo Payments**: merchant of record (it's the legal seller and handles VAT/GST abroad), built with Indian sellers in mind, UPI and cards; third-party reviews put fees around 4% + $0.40 per sale, plus 1.5% for international cards. (b) **Lemon Squeezy**: merchant of record, 5% + 50¢; Indian sellers without a Stripe account are paid out through PayPal only. (c) **Razorpay**: a payment gateway, not a merchant of record; lower fees (about 3% for international cards, less for Indian UPI/cards), but you handle GST and export paperwork yourself. (d) **Stripe**, only if you already have an invite. Please confirm fees and payout terms on the provider's own pricing page when you sign up. | **(a) Dodo Payments** |
-| Q2 | Prices in **USD**, with an optional **INR** price for buyers in India? | **Yes** |
-| Q3 | Download limits: **5 downloads within 30 days**, then a fresh link by email? | **Yes** |
-| Q4 | Files over 50 MB: by **external link** (Google Drive / Dropbox) revealed only after purchase, or upgrade Supabase to the Pro plan (bigger files, about $25 a month)? | **External link** |
-| Q5 | **Free products** (for example a free LUT to build your email list): delivered by email link, so you collect the email? | **Yes** |
-| Q6 | Chapter name and place: **Box Office**, after Reviews, with up to 3 featured posters? | **Yes** |
-| Q7 | Show the shop in the top bar / Fast Lane (e.g. a "Shop" link), or only through the chapter, the menu and `/shop`? | **Chapter menu and `/shop` only** |
-| Q8 | Policy pages: start from short templates I write, which **you must review** (I'm not a lawyer), or will you provide your own text? | **Templates, marked "Review before publishing"** |
-| Q9 | Discount codes: use the provider's built-in codes on its checkout? | **Yes** |
-| Q10 | Numbering: the shop becomes **Part 8** and performance / SEO / deploy moves to **Part 9**? | **Yes** |
+| Q1 | **Payment provider.** (a) **Dodo Payments**: merchant of record (it's the legal seller and handles VAT/GST abroad), built with Indian sellers in mind, UPI and cards; third-party reviews put fees around 4% + $0.40 per sale, plus 1.5% for international cards. (b) **Lemon Squeezy**: merchant of record, 5% + 50¢; Indian sellers without a Stripe account are paid out through PayPal only. (c) **Razorpay**: a payment gateway, not a merchant of record; lower fees (about 3% for international cards, less for Indian UPI/cards), but you handle GST and export paperwork yourself. (d) **Stripe**, only if you already have an invite. Please confirm fees and payout terms on the provider's own pricing page when you sign up. | **Decided:** (a) Dodo Payments (default) |
+| Q2 | Prices in **USD**, with an optional **INR** price for buyers in India? | **Decided:** Yes (default) |
+| Q3 | Download limits: **5 downloads within 30 days**, then a fresh link by email? | **Decided:** Yes (default) |
+| Q4 | Files over 50 MB: by **external link** (Google Drive / Dropbox) revealed only after purchase, or upgrade Supabase to the Pro plan (bigger files, about $25 a month)? | **Decided:** External link (default) |
+| Q5 | **Free products** (for example a free LUT to build your email list): delivered by email link, so you collect the email? | **Decided:** Yes (default) |
+| Q6 | Chapter name and place: **Box Office**, after Reviews, with up to 3 featured posters? | **Decided:** Yes (default) |
+| Q7 | Show the shop in the top bar / Fast Lane (e.g. a "Shop" link), or only through the chapter, the menu and `/shop`? | **Decided:** Chapter menu and `/shop` only (default) |
+| Q8 | Policy pages: start from short templates I write, which **you must review** (I'm not a lawyer), or will you provide your own text? | **Decided:** Templates, marked "Review before publishing" (default) |
+| Q9 | Discount codes: use the provider's built-in codes on its checkout? | **Decided:** Yes (default) |
+| Q10 | Numbering: the shop becomes **Part 8** and performance / SEO / deploy moves to **Part 9**? | **Decided:** Yes (default) |
 
 ## Changelog
 - 0.1 (2026-10-17) — Initial draft, after checking payment providers available to a seller in India.
+- 0.2 (2026-10-17) — Approved by Ausaf with all defaults (Q1–Q10). Design details from Dodo's API docs:
+  - Dodo switches currency only through its own "adaptive pricing", so a product with an INR price gets a second Dodo product; the product page offers **USD / INR**, defaulting to INR for visitors on Indian time (BX-5).
+  - Download links are signed with a server secret (order id + signature) instead of storing a token; they can always be re-sent and can't be forged (CO-5, SH-4).
+  - Webhooks follow the Standard Webhooks scheme (`webhook-id`, `webhook-timestamp`, `webhook-signature`, HMAC-SHA256, 5-minute tolerance); events used: `payment.succeeded`, `refund.succeeded`, `dispute.lost`.
+  - The thank-you page proves it belongs to the buyer with a one-time secret kept in the buyer's tab (its hash travels in the checkout metadata), so a leaked payment id alone can't reveal the download.
+- 0.3 (2026-10-17) — Built. Notes from the build:
+  - Functions: `shop-claim` (free products) and `shop-admin` (status, provider sync, re-send) replace the planned `shop-sync-product`; the adapter is `_shared/dodo.ts`, the demo provider lives in the admin's demo backend.
+  - **Every save of a paid product** updates Dodo (not only price changes), and an id Dodo doesn't know is created afresh, so going live means saving each paid product once (setup guide D5).
+  - **Re-send link** sends a fresh link and the old one stops working (links are signed, so the same link can't be re-derived once replaced) (AD-8.4).
+  - Buyer emails need a domain verified in Resend; without one, buyers still get the download on the thank-you page (setup guide D2).
+  - Order: custom sections you place after Reviews stay right after Reviews, then the Box Office (CH 09 with the demo data), then sections placed after the shop, then Final Scene (BX-1).
+  - The policy pages' footer links appear only for published pages.

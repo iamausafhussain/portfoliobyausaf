@@ -459,6 +459,12 @@ select tests.ok((select bool_and(public) from storage.buckets where id in ('imag
 \ir contact.test.sql
 
 -- ===========================================================================
+-- Shop (Part 8)
+-- ===========================================================================
+\ir shop.test.sql
+
+
+-- ===========================================================================
 \o
 \pset tuples_only on
 \pset format unaligned

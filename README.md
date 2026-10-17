@@ -4,18 +4,18 @@ A cinematic, animated portfolio ("Director's Cut × Data in Transit") built with
 
 The project is built **spec-first**: read [`specs/`](specs/) before changing behaviour.
 
-| Spec                                                                      | Status                                      |
-| ------------------------------------------------------------------------- | ------------------------------------------- |
-| [Part 0 — Master spec](specs/00-master-spec.md)                           | Built                                       |
-| [Part 1 — Data model, security, auth](specs/01-data-model.md)             | Built, live                                 |
-| [Part 2 — Admin panel](specs/02-admin-panel.md)                           | Built (live checklist pending)              |
-| [Part 3 — App shell](specs/03-app-shell.md)                               | Built                                       |
-| [Part 4 — Opening scene and cursor](specs/04-hero-and-cursor.md)          | Built                                       |
-| [Part 5 — The System: globe and projects](specs/05-globe-and-projects.md) | Built                                       |
-| [Part 6 — Content chapters](specs/06-content-chapters.md)                 | Built                                       |
-| [Part 7 — Contact form and inbox](specs/07-contact-and-inbox.md)          | Built (run 0009; email alert setup pending) |
-| [Part 8 — Box Office: shop for digital products](specs/08-shop.md)        | Spec in review                              |
-| Part 9 — Performance, SEO, accessibility, deploy                          | Not started                                 |
+| Spec                                                                      | Status                                                   |
+| ------------------------------------------------------------------------- | -------------------------------------------------------- |
+| [Part 0 — Master spec](specs/00-master-spec.md)                           | Built                                                    |
+| [Part 1 — Data model, security, auth](specs/01-data-model.md)             | Built, live                                              |
+| [Part 2 — Admin panel](specs/02-admin-panel.md)                           | Built (live checklist pending)                           |
+| [Part 3 — App shell](specs/03-app-shell.md)                               | Built                                                    |
+| [Part 4 — Opening scene and cursor](specs/04-hero-and-cursor.md)          | Built                                                    |
+| [Part 5 — The System: globe and projects](specs/05-globe-and-projects.md) | Built                                                    |
+| [Part 6 — Content chapters](specs/06-content-chapters.md)                 | Built                                                    |
+| [Part 7 — Contact form and inbox](specs/07-contact-and-inbox.md)          | Built (run 0009; email alert setup pending)              |
+| [Part 8 — Box Office: shop for digital products](specs/08-shop.md)        | Built (run 0010; Dodo account and test purchase pending) |
+| Part 9 — Performance, SEO, accessibility, deploy                          | Not started                                              |
 
 ## Requirements
 
@@ -134,7 +134,7 @@ tests/            unit/ (Vitest) and e2e/ (Playwright, runs against demo mode)
 
 ## Deploying
 
-Netlify reads [`netlify.toml`](netlify.toml). In Netlify → Site configuration → Environment variables, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Full steps arrive in Part 8.
+Netlify reads [`netlify.toml`](netlify.toml). In Netlify → Site configuration → Environment variables, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Full steps arrive in Part 9.
 
 ## Fonts licence
 

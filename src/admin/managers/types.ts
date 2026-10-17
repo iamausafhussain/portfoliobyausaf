@@ -39,6 +39,13 @@ export interface ManagerConfig {
     repo: AdminRepository;
     confirm: (o: ConfirmOptions) => Promise<boolean>;
   }): Promise<boolean>;
+  /**
+   * Runs after every successful save, e.g. to update the payment provider (spec 08 AD-8.2).
+   * May return a newer row. If it throws, the save still stands and its message is shown.
+   */
+  afterSave?(args: { row: Row; previous: Row | null; repo: AdminRepository }): Promise<Row | void>;
+  /** Shown above the list (e.g. the shop's payment mode). */
+  ListNotice?: ComponentType;
   /** Extra links shown on each list row (e.g. "Items" for sections). */
   rowLinks?(row: Row): { label: string; to: string }[];
   /** Extra text for the delete confirmation (e.g. "4 items will be deleted", AD-56). */

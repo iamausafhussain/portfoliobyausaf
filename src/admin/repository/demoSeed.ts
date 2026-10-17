@@ -1,5 +1,5 @@
 /** Demo content for DemoRepository (dev only). Clearly fake; never shipped to production. */
-import type { AdminTable, MessageRow, Row, SettingsRow } from './types';
+import type { AdminTable, MessageRow, OrderRow, Row, SettingsRow } from './types';
 
 const t0 = Date.parse('2026-10-01T09:00:00Z');
 const ts = (minutes: number) => new Date(t0 + minutes * 60_000).toISOString();
@@ -25,6 +25,9 @@ export const demoImages: { path: string; label: string; w: number; h: number }[]
   { path: 'images/frames/demo-market.webp', label: 'Market', w: 1600, h: 900 },
   { path: 'images/frames/demo-ridge.webp', label: 'Ridge', w: 1600, h: 900 },
   { path: 'images/frames/demo-road.webp', label: 'Road', w: 1600, h: 900 },
+  { path: 'images/shop/demo-luts.webp', label: 'Drone LUTs', w: 1000, h: 1500 },
+  { path: 'images/shop/demo-playbook.webp', label: 'Playbook', w: 1000, h: 1500 },
+  { path: 'images/shop/demo-golden.webp', label: 'Golden hour', w: 1000, h: 1500 },
   { path: 'images/unused/demo-orphan.webp', label: 'Unused', w: 800, h: 600 },
 ];
 
@@ -453,6 +456,121 @@ export function demoRows(): Record<AdminTable, Row[]> {
         },
       })),
     ],
+    products: [
+      {
+        ...base(901, 0),
+        slug: 'cinematic-drone-luts',
+        title: 'Demo Cinematic Drone LUTs',
+        kind: 'tool',
+        tagline: 'Demo — twelve looks for aerial footage, from dawn haze to neon nights.',
+        description:
+          'Demo product. **Twelve colour looks** built on my own drone footage.\n\nDrop a LUT on a log clip, adjust exposure, done.',
+        included: ['12 .cube LUTs (log and Rec.709)', 'Quick-start PDF', 'Before / after reference stills'],
+        requirements: 'DaVinci Resolve 18+, Premiere Pro or Final Cut Pro',
+        version: '1.2',
+        file_format: 'ZIP',
+        file_size: 19_293_798,
+        is_free: false,
+        price_usd: 1900,
+        price_inr: 149_900,
+        cover: {
+          path: 'images/shop/demo-luts.webp',
+          alt: 'Demo cover: drone LUTs',
+          width: 1000,
+          height: 1500,
+        },
+        gallery: [
+          {
+            path: 'images/frames/demo-lake.webp',
+            alt: 'Demo before and after: lake',
+            width: 1600,
+            height: 900,
+          },
+          {
+            path: 'images/frames/demo-ridge.webp',
+            alt: 'Demo before and after: ridge',
+            width: 1600,
+            height: 900,
+          },
+        ],
+        is_featured: true,
+        provider_product_id: 'pdt_demo_luts',
+        provider_product_id_inr: 'pdt_demo_luts_inr',
+      },
+      {
+        ...base(902, 1),
+        slug: 'travel-film-playbook',
+        title: 'Demo Travel Film Playbook',
+        kind: 'pdf',
+        tagline: 'Demo — plan, shoot and cut a travel film in a weekend.',
+        description: 'Demo product. A practical guide with shot lists and an edit checklist.',
+        included: ['64-page PDF', 'Printable shot list'],
+        requirements: '',
+        version: '2026',
+        file_format: 'PDF',
+        file_size: 6_501_171,
+        is_free: false,
+        price_usd: 900,
+        price_inr: null,
+        cover: {
+          path: 'images/shop/demo-playbook.webp',
+          alt: 'Demo cover: playbook',
+          width: 1000,
+          height: 1500,
+        },
+        gallery: [],
+        is_featured: true,
+        provider_product_id: 'pdt_demo_playbook',
+        provider_product_id_inr: null,
+      },
+      {
+        ...base(903, 2),
+        slug: 'golden-hour-lut',
+        title: 'Demo Golden Hour LUT',
+        kind: 'tool',
+        tagline: 'Demo — a free warm look to try the pack.',
+        description: 'Demo product. One LUT from the pack, free.',
+        included: ['1 .cube LUT'],
+        requirements: 'Any editor that reads .cube files',
+        version: '1.0',
+        file_format: 'CUBE',
+        file_size: 1_081_344,
+        is_free: true,
+        price_usd: null,
+        price_inr: null,
+        cover: {
+          path: 'images/shop/demo-golden.webp',
+          alt: 'Demo cover: golden hour',
+          width: 1000,
+          height: 1500,
+        },
+        gallery: [],
+        is_featured: true,
+        provider_product_id: null,
+        provider_product_id_inr: null,
+      },
+      {
+        ...base(904, 3, false),
+        slug: 'editing-bundle',
+        title: 'Demo Editing Bundle',
+        kind: 'bundle',
+        tagline: 'Demo — draft, not published.',
+        description: '',
+        included: [],
+        requirements: '',
+        version: '',
+        file_format: '',
+        file_size: null,
+        is_free: false,
+        price_usd: 3900,
+        price_inr: null,
+        cover: null,
+        gallery: [],
+        is_featured: false,
+        provider_product_id: null,
+        provider_product_id_inr: null,
+      },
+    ],
   };
 }
 
@@ -572,6 +690,111 @@ export function demoMessages(): MessageRow[] {
       'Small fix',
       'Demo — a small fix to an old project, no rush.',
       '₹10k',
+    ),
+  ];
+}
+
+/** Where each demo product's file is (owner only), and a stand-in file body. */
+export const demoProductFiles: {
+  product: number;
+  file_path: string | null;
+  external_url: string | null;
+  file_name: string;
+}[] = [
+  { product: 901, file_path: 'products/demo-luts.zip', external_url: null, file_name: 'Demo-Drone-LUTs.zip' },
+  {
+    product: 902,
+    file_path: 'products/demo-playbook.pdf',
+    external_url: null,
+    file_name: 'Demo-Travel-Film-Playbook.pdf',
+  },
+  {
+    product: 903,
+    file_path: null,
+    external_url: 'https://example.com/demo-golden-hour.cube',
+    file_name: 'Golden-Hour.cube',
+  },
+];
+export const demoProductId = id;
+
+/** Orders of every status, for the admin (spec 08 AD-8.3). Tokens are made at start-up. */
+export function demoOrders(): Omit<OrderRow, 'expires_at'>[] {
+  const o = (
+    n: number,
+    at: string,
+    product: number,
+    title: string,
+    email: string,
+    name: string,
+    amount: number,
+    currency: string,
+    status: OrderRow['status'],
+    used = 0,
+  ): Omit<OrderRow, 'expires_at'> => ({
+    id: `d0000000-0000-4000-8000-000000000${950 + n}`,
+    product_id: id(product),
+    product_title: title,
+    email,
+    buyer_name: name,
+    amount,
+    currency,
+    status,
+    provider: status === 'free' ? 'free' : 'demo',
+    provider_payment_id: status === 'free' ? null : `pay_demo_${n}`,
+    downloads_used: used,
+    download_limit: 5,
+    refresh_count: 0,
+    created_at: at,
+  });
+  return [
+    o(
+      1,
+      '2026-10-16T15:10:00Z',
+      901,
+      'Demo Cinematic Drone LUTs',
+      'editor@example.com',
+      'Demo Editor',
+      1900,
+      'USD',
+      'paid',
+      2,
+    ),
+    o(
+      2,
+      '2026-10-15T08:45:00Z',
+      901,
+      'Demo Cinematic Drone LUTs',
+      'creator.in@example.com',
+      'Demo Creator',
+      149_900,
+      'INR',
+      'paid',
+      1,
+    ),
+    o(
+      3,
+      '2026-10-12T19:20:00Z',
+      902,
+      'Demo Travel Film Playbook',
+      'traveller@example.com',
+      'Demo Traveller',
+      900,
+      'USD',
+      'paid',
+      5,
+    ),
+    o(4, '2026-10-10T11:00:00Z', 903, 'Demo Golden Hour LUT', 'fan@example.com', '', 0, 'USD', 'free', 1),
+    o(
+      5,
+      '2026-09-28T10:30:00Z',
+      902,
+      'Demo Travel Film Playbook',
+      'refund@example.com',
+      'Demo Refund',
+      900,
+      'USD',
+      'refunded',
+      0,
     ),
   ];
 }

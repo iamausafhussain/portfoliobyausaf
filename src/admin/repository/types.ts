@@ -13,7 +13,8 @@ export type AdminTable =
   | 'skills'
   | 'testimonials'
   | 'custom_sections'
-  | 'custom_items';
+  | 'custom_items'
+  | 'products';
 
 export const adminTables: readonly AdminTable[] = [
   'hero_media',
@@ -24,9 +25,11 @@ export const adminTables: readonly AdminTable[] = [
   'testimonials',
   'custom_sections',
   'custom_items',
+  'products',
 ];
 
-export type Bucket = 'images' | 'videos' | 'documents';
+export type Bucket = 'images' | 'videos' | 'documents' | 'products';
+/** The public media buckets (the media library); `products` is private (spec 08 CO-7). */
 export const buckets: readonly Bucket[] = ['images', 'videos', 'documents'];
 
 /** A database row as the admin sees it. Typed views are produced with the Zod schemas. */
@@ -160,6 +163,86 @@ export interface MessagesApi {
   remove(id: string): Promise<void>;
 }
 
+/* ------------------------------------------------------------------ */
+/* Shop (spec 08 §2.4)                                                 */
+/* ------------------------------------------------------------------ */
+
+export type OrderStatus = 'paid' | 'free' | 'refunded' | 'revoked';
+
+export interface OrderRow {
+  id: string;
+  product_id: string | null;
+  product_title: string;
+  email: string;
+  buyer_name: string;
+  amount: number;
+  currency: string;
+  status: OrderStatus;
+  provider: string;
+  provider_payment_id: string | null;
+  downloads_used: number;
+  download_limit: number;
+  expires_at: string;
+  refresh_count: number;
+  created_at: string;
+}
+
+export interface OrderQuery {
+  status?: OrderStatus | null;
+  productId?: string | null;
+  /** matched against the buyer's email and name */
+  search?: string;
+  limit: number;
+}
+
+/** Where a product's file is: in the private bucket, or an external link (owner only). */
+export interface ProductFileRow {
+  product_id: string;
+  file_path: string | null;
+  external_url: string | null;
+  file_name: string;
+}
+
+export interface ShopStatus {
+  provider: 'dodo' | 'demo';
+  mode: 'test' | 'live';
+  configured: { provider: boolean; webhook: boolean; tokens: boolean; email: boolean; site: boolean };
+}
+
+export interface ShopPageRow {
+  slug: 'terms' | 'refunds' | 'privacy';
+  title: string;
+  body: string;
+  is_published: boolean;
+  updated_at: string;
+}
+
+export interface ShopAdminApi {
+  /** Which payment mode is active and which secrets are set (CO-10). */
+  status(): Promise<ShopStatus>;
+  getFile(productId: string): Promise<ProductFileRow | null>;
+  /** Stores the file location; pass both null to remove it. */
+  setFile(productId: string, file: Omit<ProductFileRow, 'product_id'>): Promise<void>;
+  /** Creates / updates the product on the payment provider; returns the updated row (AD-8.2). */
+  sync(productId: string): Promise<Row>;
+  orders(query: OrderQuery): Promise<{ rows: OrderRow[]; total: number }>;
+  /** Revoke, reset downloads (AD-8.4). */
+  updateOrder(
+    id: string,
+    values: Partial<Pick<OrderRow, 'status' | 'downloads_used' | 'expires_at' | 'refresh_count'>>,
+  ): Promise<void>;
+  /** A new link to the buyer (the old one stops working). */
+  resend(orderId: string): Promise<{ sent: boolean }>;
+  /** Paid orders and revenue per currency over the last `days` (AD-8.5). */
+  sales(days: number): Promise<{ orders: number; revenue: Record<string, number> }>;
+  pages(): Promise<ShopPageRow[]>;
+  updatePage(
+    slug: ShopPageRow['slug'],
+    values: Partial<Pick<ShopPageRow, 'title' | 'body' | 'is_published'>>,
+    expectedUpdatedAt: string | null,
+  ): Promise<ShopPageRow>;
+}
+
 export interface AdminRepository {
   kind: 'supabase' | 'demo';
   /** Shown on the login screen (demo mode only). */
@@ -168,4 +251,5 @@ export interface AdminRepository {
   data: DataApi;
   files: FilesApi;
   messages: MessagesApi;
+  shop: ShopAdminApi;
 }

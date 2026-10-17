@@ -15,6 +15,7 @@ import { CreditsChapter } from './credits/CreditsChapter';
 import { CustomSectionChapter } from './custom/CustomSectionChapter';
 import { ContactChapter } from './contact/ContactChapter';
 import { ReviewsChapter } from './reviews/ReviewsChapter';
+import { BoxOfficeChapter } from './shop/BoxOfficeChapter';
 import { TimelineChapter } from './timeline/TimelineChapter';
 
 const bodies = {
@@ -23,6 +24,7 @@ const bodies = {
   credits: CreditsChapter,
   timeline: TimelineChapter,
   reviews: ReviewsChapter,
+  shop: BoxOfficeChapter,
   contact: ContactChapter,
 } as const;
 

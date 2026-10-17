@@ -1,6 +1,7 @@
-/** Footer: socials, availability, Lite mode, small admin link (spec 03 NV-5). */
+/** Footer: socials, availability, shop policies, Lite mode, small admin link (spec 03 NV-5). */
 import { Link } from 'react-router';
-import { useSiteSettings } from '../data/queries/public';
+import { PolicyLinks } from '../chapters/shop/PolicyLinks';
+import { usePublishedProducts, useSiteSettings } from '../data/queries/public';
 import { LiteSwitch } from './LiteSwitch';
 import styles from './shell.module.css';
 
@@ -15,6 +16,8 @@ export const socialNames: Record<string, string> = {
 export function Footer() {
   const settings = useSiteSettings();
   const s = settings.data;
+  // the shop's Terms / Refunds / Privacy links, once there's a shop (spec 08 AD-8.6)
+  const hasShop = (usePublishedProducts().data?.length ?? 0) > 0;
   const name = s?.display_name ?? 'Ausaf Hussain';
   const socials = Object.entries(s?.socials ?? {}).filter(
     (e): e is [string, string] => typeof e[1] === 'string',
@@ -44,6 +47,7 @@ export function Footer() {
           </ul>
         )}
 
+        {hasShop && <PolicyLinks />}
         <div className={styles.footerBottom}>
           <LiteSwitch />
           <p className={styles.footerSmall}>

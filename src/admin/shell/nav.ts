@@ -21,6 +21,13 @@ export const contentNav: NavItem[] = [
   { to: '/admin/testimonials', label: 'Testimonials', icon: 'copy' },
 ];
 
+/** The shop (spec 08 §2.4), under its own heading. */
+export const shopNav: NavItem[] = [
+  { to: '/admin/products', label: 'Products', icon: 'ticket' },
+  { to: '/admin/orders', label: 'Orders', icon: 'receipt' },
+  { to: '/admin/policies', label: 'Shop policies', icon: 'file' },
+];
+
 export const toolsNav: NavItem[] = [
   { to: '/admin/media', label: 'Media library', icon: 'upload' },
   { to: '/admin/account', label: 'Account', icon: 'user' },

@@ -30,6 +30,7 @@ export const entityNames: Record<AdminTable | 'site_settings', string> = {
   testimonials: 'testimonial',
   custom_sections: 'section',
   custom_items: 'item',
+  products: 'product',
   site_settings: 'settings',
 };
 
@@ -49,6 +50,9 @@ const fieldLabels: Record<string, string> = {
   socials: 'Social links',
   links: 'Links',
   globe: 'Globe position',
+  price_usd: 'Price (USD)',
+  price_inr: 'Price (INR)',
+  included: 'What’s included',
 };
 
 /** Named constraints that don't follow the <table>_<column>_check pattern. */
@@ -59,6 +63,8 @@ const constraintFields: Record<string, string> = {
   projects_slug_key: 'slug',
   custom_sections_slug_key: 'slug',
   skills_name_unique_ci: 'name',
+  products_slug_key: 'slug',
+  products_price_set: 'price_usd',
 };
 
 export function labelFor(field: string): string {

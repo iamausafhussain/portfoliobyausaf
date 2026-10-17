@@ -121,7 +121,8 @@ test('AC-3.7 the timecode names the chapter in the middle of the screen, includi
     ['reviews', 'CH 06', 'Reviews'],
     ['s-talks', 'CH 07', 'Talks'],
     ['s-frames', 'CH 08', 'Frames'],
-    ['contact', 'CH 09', 'Final Scene'],
+    ['shop', 'CH 09', 'Box Office'],
+    ['contact', 'CH 10', 'Final Scene'],
   ];
   for (const [id, code, title] of expected) {
     // re-scroll while polling: late images or data above can still shift the layout
@@ -152,6 +153,7 @@ test('AC-3.8 chapter menu: lists everything, jumps and focuses the heading, Esc 
     'Reviews',
     'Talks',
     'Frames',
+    'Box Office',
     'Final Scene',
   ]) {
     await expect(menu.getByRole('button', { name: new RegExp(t) })).toBeVisible();

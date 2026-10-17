@@ -11,8 +11,11 @@ import pageStyles from '../pages.module.css';
 import styles from './shop.module.css';
 
 interface DemoShop {
-  demoCheckout(ref: string): { productId: string; currency: 'USD' | 'INR' } | null;
+  demoCheckout(
+    ref: string,
+  ): { productId: string; currency: 'USD' | 'INR'; code: string | null; percent: number } | null;
   demoPay(ref: string, email: string, name: string): Promise<void>;
+  demoFail(ref: string): Promise<string>;
 }
 
 export function Component() {
@@ -33,13 +36,21 @@ export function Component() {
     };
   }, [ref]);
   const product = products.data?.find((p) => p.id === session?.productId);
-  const amount = session?.currency === 'INR' ? product?.price_inr : product?.price_usd;
+  const full = session?.currency === 'INR' ? product?.price_inr : product?.price_usd;
+  const amount = full != null && session ? Math.round(full * (1 - session.percent / 100)) : full;
 
   async function pay(e: FormEvent) {
     e.preventDefault();
     const shop = (await getPublicSource()).shop as unknown as DemoShop;
     await shop.demoPay(ref, email || 'buyer@example.com', name);
-    navigate(`/shop/thanks?ref=${ref}`);
+    // Dodo adds the payment id and its status to the return address
+    navigate(`/shop/thanks?ref=${ref}&payment_id=pay_demo&status=succeeded`);
+  }
+
+  async function fail() {
+    const shop = (await getPublicSource()).shop as unknown as DemoShop;
+    const paymentId = await shop.demoFail(ref);
+    navigate(`/shop/thanks?ref=${ref}&payment_id=${paymentId}&status=failed`);
   }
 
   return (
@@ -63,6 +74,11 @@ export function Component() {
               <span data-demo-amount>{formatPrice(amount, session.currency)}</span>
             )}
           </p>
+          {session?.code && (
+            <p data-demo-code>
+              Discount {session.code}: {session.percent}% off
+            </p>
+          )}
           <label>
             Email
             <input
@@ -78,6 +94,9 @@ export function Component() {
           </label>
           <button type="submit" className={styles.buy}>
             Pay (demo)
+          </button>
+          <button type="button" className={styles.codeRemove} onClick={() => void fail()} data-demo-fail>
+            Simulate a failed payment
           </button>
           {product && <Link to={`/shop/${product.slug}`}>Cancel</Link>}
         </form>

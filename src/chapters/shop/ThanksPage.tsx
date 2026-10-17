@@ -1,7 +1,8 @@
 /**
- * /shop/thanks?ref=… — after checkout (spec 08 CO-3). Waits for the payment to be confirmed
- * (the provider's webhook), then offers the download. The ref is the buyer's private
- * reference from their return address.
+ * /shop/thanks?ref=…&payment_id=…&status=… — after checkout (spec 08 CO-3, CO-3a). Waits for
+ * the payment to be confirmed (the provider's webhook), then offers the download; a payment
+ * that didn't go through says so and offers to try again. The ref is the buyer's private
+ * reference from their return address; Dodo adds payment_id and status.
  */
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
@@ -16,11 +17,17 @@ export const POLL_MS = 1500;
 /** After this long the page stops waiting and points to the email (about a minute). */
 export const POLL_TRIES = 40;
 
+/** Dodo's own verdict in the return address; display only (the server decides about money). */
+export const FAILED_RETURN_STATUSES = ['failed', 'cancelled', 'requires_payment_method'];
+
 export function Component() {
   const [params] = useSearchParams();
   const ref = params.get('ref') ?? '';
   const validRef = /^[A-Za-z0-9_-]{43}$/.test(ref);
+  const paymentId = params.get('payment_id');
+  const returnedFailed = FAILED_RETURN_STATUSES.includes(params.get('status') ?? '');
   const [reply, setReply] = useState<OrderStatusReply | null>(null);
+  const [failed, setFailed] = useState<OrderStatusReply['product'] | false>(false);
   const [slow, setSlow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,13 +41,23 @@ export function Component() {
     const poll = async () => {
       tries += 1;
       try {
-        const r = await (await getPublicSource()).shop.orderStatus(ref);
+        const r = await (await getPublicSource()).shop.orderStatus(ref, paymentId);
         if (stopped) return;
         if (r.ready || r.expired) {
           setReply(r);
           return;
         }
+        // a failed payment never turns into a paid one: stop waiting
+        if (r.failed || returnedFailed) {
+          setFailed(r.product ?? null);
+          return;
+        }
       } catch {
+        if (stopped) return;
+        if (returnedFailed) {
+          setFailed(null);
+          return;
+        }
         /* keep waiting; the email is the fallback */
       }
       if (stopped) return;
@@ -52,7 +69,7 @@ export function Component() {
       stopped = true;
       clearTimeout(timer);
     };
-  }, [ref, validRef]);
+  }, [ref, validRef, paymentId, returnedFailed]);
 
   async function download() {
     if (!reply?.token) return;
@@ -105,6 +122,30 @@ export function Component() {
         <p className={styles.buyNote}>The same link is in your email, along with your receipt.</p>
       </Ticket>
     );
+  } else if (failed !== false) {
+    const again = failed?.slug ? `/shop/${failed.slug}` : '/shop';
+    body = (
+      <Ticket
+        title={failed?.title ?? 'Your order'}
+        eyebrow="Not paid"
+        cover={failed?.cover ?? null}
+        state="failed"
+        label="Payment"
+      >
+        <p>Your payment didn&rsquo;t go through, so nothing was bought. Please try again.</p>
+        <p className={pageStyles.muted}>
+          If your bank shows a deduction for this attempt, it&rsquo;s reversed automatically by your bank.
+        </p>
+        <div className={styles.ticketActions}>
+          <Link to={again} className={styles.buy} data-try-again>
+            Try again
+          </Link>
+          <Link to="/shop" className={styles.secondaryLink}>
+            Back to the shop
+          </Link>
+        </div>
+      </Ticket>
+    );
   } else if (slow || reply?.expired) {
     body = (
       <Ticket title="Your payment is being confirmed" eyebrow="Almost there" state="slow">
@@ -132,7 +173,7 @@ export function Component() {
     <article className={pageStyles.page}>
       <header className={pageStyles.head}>
         <p className="label">Box Office</p>
-        <h1 className={pageStyles.title}>Thank you</h1>
+        <h1 className={pageStyles.title}>{failed !== false ? 'Payment failed' : 'Thank you'}</h1>
       </header>
       {body}
     </article>

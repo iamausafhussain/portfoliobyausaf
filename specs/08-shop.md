@@ -1,7 +1,7 @@
 # Part 8 — Box Office: Shop for Digital Products
 
 **Status:** Built — Dodo account, migration 0010 and one real test-mode purchase pending (Ausaf)
-**Version:** 0.3 · 2026-10-17
+**Version:** 0.4 · 2026-10-17
 **Depends on:** Part 1 (database, storage, security rules), Part 2 (admin), Part 3 (shell, routes), Part 6 (chapter styling, reveals), Part 7 (Edge Functions, Resend email)
 **Feeds:** Part 9 (performance, SEO, accessibility audit, Netlify deploy; previously Part 8)
 
@@ -59,6 +59,7 @@ Stripe has accepted new accounts from India **by invitation only** since May 202
 | CO-1 | **Start checkout**: an Edge Function `shop-checkout` creates a checkout session with the provider for that product (price taken from the database, never from the browser) and returns the provider's checkout address. The provider API key lives only in Supabase secrets. |
 | CO-2 | **Confirm payment**: an Edge Function `shop-webhook` receives the provider's events, **checks their signature**, and on a successful payment records the order (once, even if the event arrives twice). The redirect back to the site is never trusted on its own. |
 | CO-3 | **Thank-you page** `/shop/thanks`: shows "Confirming your payment…" until the order is recorded (a few seconds), then the product with a **Download** button. If it takes longer than about a minute: "Your payment is being confirmed; the download link is on its way to your email." |
+| CO-3a | **Failed payment**: when the buyer comes back from a payment that didn't go through (Dodo's return address says `failed` / `cancelled`, confirmed with Dodo's payment record for this buyer), the page says **Payment failed**, that nothing was bought, and offers **Try again** (the product page) instead of waiting. Dodo's checkout also gets a back button to the product page. |
 | CO-4 | **Email**: the buyer gets "Your download: <product>" with their personal download link (sent through Resend, as in Part 7). The provider sends its own receipt. |
 | CO-5 | **Download link**: `/d/<token>`, a long random token per order. Each download goes through an Edge Function `shop-download` that checks the order is paid and within limits, then hands out a storage link valid for 60 seconds. Limits: **5 downloads within 30 days** (Q3); after that the page offers "Send me a fresh link" (to the same email). |
 | CO-6 | **Refunds** made in the provider's dashboard arrive as webhook events: the order becomes Refunded and its link stops working. |
@@ -77,6 +78,16 @@ Stripe has accepted new accounts from India **by invitation only** since May 202
 | AD-8.4 | Order actions: **Re-send link** (new email with a fresh link; the old one stops working), **Reset downloads** (back to 5 for 30 days), **Revoke** (link stops working; use after a refund done outside the provider). |
 | AD-8.5 | Dashboard: a "Sales" card with orders and revenue for the last 30 days, linking to Orders. |
 | AD-8.6 | **Shop policies**: Terms, Refund policy and Privacy as editable markdown pages, published at `/terms`, `/refunds`, `/privacy` and linked in the footer and on every product page. They start from short templates clearly marked "Review before publishing" (Q8). |
+
+### 2.4a Discount codes (DC) — added in 0.4
+
+| ID | Requirement |
+|---|---|
+| DC-1 | Admin → **Discount codes** lists every code on Dodo: code, % off, times used (of the limit), expiry, which products, and Active / Expired / Used up. |
+| DC-2 | **New code**: code (or empty for a random one), percent off (1–100), optional total uses, optional last day, all products or chosen ones. It's created on Dodo; a code that already exists is refused on the field. Flat-amount codes can be made in Dodo's dashboard and are listed too. |
+| DC-3 | **Delete** a code (with confirmation); it stops working at checkout. |
+| DC-4 | **Code links**: `/shop/<slug>?code=CODE` shows "Code CODE is applied at checkout" (with Remove) and passes the code to the checkout, which applies it for the buyer. The site checks the code with Dodo first; an expired, used-up or unknown code, or one for other products, shows a message with **Buy without the code**. **Copy link** in the admin makes these links per product. |
+| DC-5 | Buyers can still type any code into Dodo's checkout themselves (BX-4). |
 
 ### 2.5 Security (SH)
 
@@ -179,6 +190,7 @@ supabase/tests/shop.test.sql
 ### E. Verify
 - [x] 8.13 Unit tests: adapter (signature checks with real test vectors), limits, token handling, price display
 - [x] 8.14 E2E (demo provider): browse → buy → thanks → download; limits; refund; free product; admin products and orders; phones; both themes
+- [x] 8.16 Failed-payment page, discount codes in the admin, code links (0.4)
 - [ ] 8.15 A real purchase in the provider's **test mode** on the live Supabase project, after you've created the account
 
 ## 5. Acceptance criteria
@@ -196,6 +208,7 @@ supabase/tests/shop.test.sql
 - [x] AC-8.8 Product files can't be listed or downloaded without a valid paid order; visitors can't read orders or file locations (database tests).
 
 ### Admin
+- [x] AC-8.14 *(0.4)* After a failed payment the return page says "Payment failed" with Try again, never "being confirmed"; codes can be created, listed, linked and deleted in the admin; a code link applies the discount, and a bad code says so and can be dropped (demo provider and unit tests; real test-mode check pending).
 - [ ] AC-8.9 *(demo provider: passes; against Dodo's test mode pending)* Adding a product with a file and price makes it buyable without visiting the provider's dashboard; editing the price updates the provider.
 - [x] AC-8.10 Orders list, filters and search work; Re-send link, Reset downloads and Revoke work; the dashboard Sales card shows the last 30 days.
 - [x] AC-8.11 Policy pages are editable, published at their addresses and linked from the footer and product pages.
@@ -244,3 +257,7 @@ supabase/tests/shop.test.sql
   - Buyer emails need a domain verified in Resend; without one, buyers still get the download on the thank-you page (setup guide D2).
   - Order: custom sections you place after Reviews stay right after Reviews, then the Box Office (CH 09 with the demo data), then sections placed after the shop, then Final Scene (BX-1).
   - The policy pages' footer links appear only for published pages.
+- 0.4 (2026-10-17) — From Ausaf's first test-mode tries: a failed payment showed "being confirmed" forever, and discount codes could only be made in Dodo's dashboard.
+  - **CO-3a** failed payments: the thank-you page reads Dodo's `payment_id` and `status` from the return address; `shop-order-status` confirms with Dodo (`GET /payments/{id}`, only when its metadata carries this buyer's ref hash) and the page shows **Payment failed** with Try again. Checkouts get a `cancel_url` back to the product.
+  - **DC** discount codes (Ausaf chose: managed in the admin, plus code links): `shop-admin` actions `discounts`, `create_discount`, `delete_discount` (Dodo `/discounts`); percentage codes only from the admin. `shop-checkout` takes an optional `code`, checks it (`GET /discounts/code/{code}`) and passes it as `discount_codes`.
+  - Redeploy `shop-checkout`, `shop-order-status` and `shop-admin` (setup guide D3).

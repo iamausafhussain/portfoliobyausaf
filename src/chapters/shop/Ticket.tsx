@@ -10,15 +10,17 @@ export function Ticket({
   eyebrow = 'Admit one',
   children,
   state,
+  label = 'Your download',
 }: {
   title: string;
   cover?: ImageRef | null;
   eyebrow?: string;
   children: ReactNode;
   state?: string;
+  label?: string;
 }) {
   return (
-    <section className={styles.ticket} data-ticket={state} aria-label="Your download">
+    <section className={styles.ticket} data-ticket={state} aria-label={label}>
       {cover && <Img image={cover} className={styles.ticketCover} />}
       <div className={styles.ticketBody}>
         <p className={`label ${styles.ticketEyebrow}`}>{eyebrow}</p>

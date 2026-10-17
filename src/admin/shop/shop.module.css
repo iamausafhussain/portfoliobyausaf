@@ -254,3 +254,130 @@
   color: var(--color-fg);
   font-size: var(--font-size-sm);
 }
+
+/* ---------- discount codes ---------- */
+.discountForm {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-elevated);
+}
+
+.formTitle {
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-size: var(--font-size-xl);
+}
+
+.formGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+
+.percent {
+  position: relative;
+  display: block;
+}
+
+.percent input {
+  padding-inline-end: calc(var(--space-3) + 1.25em);
+}
+
+.percentSign {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: var(--space-3);
+  display: flex;
+  align-items: center;
+  color: var(--color-fg-muted);
+  pointer-events: none;
+}
+
+.productPick {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2rem;
+  font-size: var(--font-size-sm);
+}
+
+.radio input {
+  accent-color: var(--color-accent);
+}
+
+.checkList {
+  display: grid;
+  gap: var(--space-1);
+  padding-inline-start: var(--space-5);
+}
+
+.fieldError {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.discount {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.discount + .discount {
+  border-top: 1px solid var(--color-border);
+}
+
+.discountMain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.discountCode {
+  padding: 2px var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent-text);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.04em;
+  word-break: break-all;
+}
+
+.discountOff {
+  font-weight: var(--font-weight-medium);
+}
+
+.discount[data-state='expired'] .discountCode,
+.discount[data-state='used_up'] .discountCode {
+  border-color: var(--color-border);
+  color: var(--color-fg-muted);
+}
+
+.linkFor {
+  flex: 0 1 14rem;
+  min-width: 0;
+}
+
+.linkFor select {
+  width: 100%;
+  min-height: 2.25rem;
+}

@@ -510,6 +510,49 @@
   color: var(--color-accent-text);
 }
 
+.ticket[data-ticket='failed'] .ticketEyebrow {
+  color: var(--color-danger);
+}
+
+a.buy {
+  text-decoration: none;
+}
+
+/* a discount code from a code link (spec 08 DC-4) */
+.codeNote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-sm);
+}
+
+.codeChip {
+  padding: 1px var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent-text);
+  letter-spacing: 0.04em;
+}
+
+.codeRemove {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-fg-muted);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.codeRemove:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 .ticketTitle {
   font-family: var(--font-italic);
   font-style: italic;

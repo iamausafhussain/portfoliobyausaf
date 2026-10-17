@@ -217,6 +217,31 @@ export interface ShopPageRow {
   updated_at: string;
 }
 
+/** A discount code, as kept on the payment provider (spec 08 DC-1). */
+export interface DiscountRow {
+  id: string;
+  code: string;
+  kind: 'percentage' | 'flat';
+  /** whole percent (0 for flat codes) */
+  percent: number;
+  timesUsed: number;
+  usageLimit: number | null;
+  expiresAt: string | null;
+  /** provider product ids; empty = every product */
+  restrictedTo: string[];
+  createdAt: string;
+}
+
+export interface NewDiscountInput {
+  /** empty → a random code */
+  code: string;
+  percent: number;
+  usage_limit: number | null;
+  expires_at: string | null;
+  /** provider product ids; empty = every product */
+  restricted_to: string[];
+}
+
 export interface ShopAdminApi {
   /** Which payment mode is active and which secrets are set (CO-10). */
   status(): Promise<ShopStatus>;
@@ -235,6 +260,10 @@ export interface ShopAdminApi {
   resend(orderId: string): Promise<{ sent: boolean }>;
   /** Paid orders and revenue per currency over the last `days` (AD-8.5). */
   sales(days: number): Promise<{ orders: number; revenue: Record<string, number> }>;
+  /** Discount codes (spec 08 DC). */
+  discounts(): Promise<DiscountRow[]>;
+  createDiscount(input: NewDiscountInput): Promise<DiscountRow>;
+  deleteDiscount(id: string): Promise<void>;
   pages(): Promise<ShopPageRow[]>;
   updatePage(
     slug: ShopPageRow['slug'],

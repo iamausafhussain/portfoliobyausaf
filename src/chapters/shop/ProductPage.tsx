@@ -1,12 +1,13 @@
 /** /shop/:slug — one product (spec 08 BX-3 – BX-6, CO-1, CO-9). */
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { NotFoundPage } from '../../app/NotFoundPage';
 import { Img } from '../../components/Img';
 import { LazyMarkdown } from '../../components/markdown/LazyMarkdown';
 import { useProduct } from '../../data/queries/public';
 import { getPublicSource } from '../../data/source';
 import {
+  codeFromSearch,
   DOWNLOAD_DAYS,
   DOWNLOAD_LIMIT,
   formatPrice,
@@ -96,6 +97,12 @@ export function Component() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [viewer, setViewer] = useState<number | null>(null);
+  // a code link (?code=…) applies its discount at checkout (spec 08 DC-4)
+  const { search } = useLocation();
+  const linkCode = codeFromSearch(search);
+  const [codeRemoved, setCodeRemoved] = useState(false);
+  const [codeRejected, setCodeRejected] = useState(false);
+  const code = linkCode && !codeRemoved ? linkCode : null;
 
   if (q.isPending) {
     return (
@@ -110,17 +117,20 @@ export function Component() {
   const price = currency === 'INR' && p.price_inr != null ? p.price_inr : (p.price_usd ?? 0);
   const shownCurrency: Currency = currency === 'INR' && p.price_inr != null ? 'INR' : 'USD';
 
-  async function buy() {
+  async function buy(withCode = code) {
     if (!p) return;
     setBusy(true);
     setError(null);
+    setCodeRejected(false);
     try {
-      const { url } = await (await getPublicSource()).shop.checkout(p.id, shownCurrency);
+      const { url } = await (await getPublicSource()).shop.checkout(p.id, shownCurrency, withCode);
       // the demo's stand-in checkout is a page of this site; the real one is the provider's
       if (url.startsWith('/')) navigate(url);
       else window.location.assign(url);
     } catch (err) {
-      setError(shopErrorText[err instanceof ShopError ? err.code : 'server']);
+      const why = err instanceof ShopError ? err.code : 'server';
+      setError(shopErrorText[why]);
+      setCodeRejected(why === 'code_invalid');
       setBusy(false);
     }
   }
@@ -202,10 +212,26 @@ export function Component() {
                     </div>
                   )}
                 </div>
+                {code && (
+                  <p className={styles.codeNote} data-code={code}>
+                    Code <span className={styles.codeChip}>{code}</span> is applied at checkout.
+                    <button
+                      type="button"
+                      className={styles.codeRemove}
+                      onClick={() => {
+                        setCodeRemoved(true);
+                        setError(null);
+                        setCodeRejected(false);
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </p>
+                )}
                 <button
                   type="button"
                   className={styles.buy}
-                  onClick={buy}
+                  onClick={() => void buy()}
                   aria-busy={busy || undefined}
                   disabled={busy}
                   data-buy
@@ -215,10 +241,27 @@ export function Component() {
                 {error && (
                   <p className={styles.error} role="alert">
                     {error}
+                    {codeRejected && (
+                      <>
+                        {' '}
+                        <button
+                          type="button"
+                          className={styles.codeRemove}
+                          onClick={() => {
+                            setCodeRemoved(true);
+                            void buy(null);
+                          }}
+                          data-buy-without-code
+                        >
+                          Buy without the code
+                        </button>
+                      </>
+                    )}
                   </p>
                 )}
                 <p className={styles.buyNote}>
                   Secure checkout on our payment partner&rsquo;s page; you&rsquo;ll get a receipt by email.
+                  Have a discount code? Enter it there.
                   {shownCurrency === 'INR' ? ' Prices in INR are for buyers in India.' : ''}
                 </p>
               </>

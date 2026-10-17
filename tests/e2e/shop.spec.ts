@@ -274,3 +274,85 @@ for (const [width, theme] of [
     expect(errors).toEqual([]);
   });
 }
+
+test('a failed payment says so and offers to try again (CO-3a)', async ({ page }) => {
+  const errors = watchErrors(page);
+  await open(page, '/shop');
+  await nav(page, '/shop/cinematic-drone-luts');
+  await page.locator('[data-buy]').click();
+  await page.locator('[data-demo-checkout]').waitFor();
+  await page.locator('[data-demo-fail]').click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Payment failed' })).toBeVisible();
+  await expect(page.locator('[data-ticket="failed"]')).toContainText('Demo Cinematic Drone LUTs');
+  await expect(page.getByText('Confirming your payment…')).toHaveCount(0);
+  expect(await outbox(page)).toEqual([]);
+  await page.locator('[data-try-again]').click();
+  await expect(page).toHaveURL(/\/shop\/cinematic-drone-luts$/);
+  await expect(page.locator('[data-buy]')).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('Dodo’s "failed" in the return address alone also stops the waiting', async ({ page }) => {
+  await open(page, `/shop/thanks?ref=${'a'.repeat(43)}&payment_id=pay_unknown1&status=failed`);
+  await expect(page.getByRole('heading', { level: 1, name: 'Payment failed' })).toBeVisible();
+  await expect(page.locator('[data-try-again]')).toHaveAttribute('href', '/shop');
+});
+
+test('a code link applies its discount; a bad code can be dropped (DC-4)', async ({ page }) => {
+  await open(page, '/shop');
+  await shop(page, 'setWebhookDelay', 0);
+  await nav(page, '/shop/cinematic-drone-luts?code=launch20');
+  await expect(page.locator('[data-code="LAUNCH20"]')).toBeVisible();
+  await page.locator('[data-buy]').click();
+  await expect(page.locator('[data-demo-amount]')).toHaveText('$15.20');
+  await page.getByRole('button', { name: 'Pay (demo)' }).click();
+  await expect(page.locator('[data-download]')).toBeVisible();
+
+  await nav(page, '/shop/cinematic-drone-luts?code=NOPE99');
+  await page.locator('[data-buy]').click();
+  await expect(page.getByRole('alert')).toContainText('isn’t valid any more');
+  await page.locator('[data-buy-without-code]').click();
+  await expect(page.locator('[data-demo-amount]')).toHaveText('$19');
+});
+
+test('admin: create a discount code for one product, copy its link, delete it (DC-1 – DC-3)', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await signIn(page);
+  await go(page, 'Discount codes');
+  await expect(page.locator('[data-discount="LAUNCH20"]')).toContainText('Used 2 of 50');
+  await page.getByRole('button', { name: 'New code' }).click();
+  const form = page.locator('[data-new-discount]');
+  await form.getByRole('button', { name: 'Create code' }).click();
+  await expect(form).toContainText('Enter a whole number from 1 to 100.');
+  await form.getByLabel('Code').fill('diwali25');
+  await form.getByLabel(/Percent off/).fill('25');
+  await form.getByLabel(/Uses allowed/).fill('100');
+  await form.getByLabel('Only some products').check();
+  await form.getByRole('checkbox', { name: 'Demo Travel Film Playbook' }).check();
+  await form.getByRole('button', { name: 'Create code' }).click();
+  await expectToast(page, 'Code DIWALI25 created.');
+  const row = page.locator('[data-discount="DIWALI25"]');
+  await expect(row).toContainText('25% off');
+  await expect(row).toContainText('Demo Travel Film Playbook');
+  await row.locator('[data-copy-link]').click();
+  await expectToast(page, 'Link copied.');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(
+    /\/shop\/travel-film-playbook\?code=DIWALI25$/,
+  );
+
+  // a duplicate code is refused on the field
+  await page.getByRole('button', { name: 'New code' }).click();
+  await form.getByLabel('Code').fill('LAUNCH20');
+  await form.getByLabel(/Percent off/).fill('10');
+  await form.getByRole('button', { name: 'Create code' }).click();
+  await expect(form).toContainText('That code already exists');
+  await form.getByRole('button', { name: 'Cancel' }).click();
+
+  await row.getByRole('button', { name: 'Delete' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
+  await expectToast(page, 'Deleted DIWALI25.');
+  await expect(row).toHaveCount(0);
+});

@@ -347,3 +347,169 @@ describe('admin: prices, provider sync and order text', async () => {
     expect(downloadsText({ ...o, status: 'refunded' })).toBe('Link stopped');
   });
 });
+
+describe('payment failures and discount codes (spec 08 CO-3a, DC)', async () => {
+  const dodo = await import('../../supabase/functions/_shared/dodo');
+  const { codeFromSearch } = await import('../../src/data/shop');
+  const { discountState, productsFor, codeLink, endOfDay } =
+    await import('../../src/admin/shop/DiscountsPage');
+
+  it('applies a code and adds the back button to the checkout', () => {
+    expect(
+      dodo.checkoutBody({
+        providerProductId: 'pdt_1',
+        siteProductId: 'p1',
+        refHash: 'h',
+        returnUrl: 'r',
+        cancelUrl: 'https://site/shop/luts',
+        discountCode: 'DIWALI20',
+      }),
+    ).toMatchObject({ cancel_url: 'https://site/shop/luts', discount_codes: ['DIWALI20'] });
+    expect(
+      dodo.checkoutBody({ providerProductId: 'p', siteProductId: 's', refHash: 'h', returnUrl: 'r' }),
+    ).not.toHaveProperty('discount_codes');
+  });
+
+  it('knows which payment statuses mean "failed"', () => {
+    for (const s of ['failed', 'cancelled', 'requires_payment_method'])
+      expect(dodo.paymentFailed(s)).toBe(true);
+    for (const s of ['succeeded', 'processing', 'requires_customer_action', null])
+      expect(dodo.paymentFailed(s)).toBe(false);
+  });
+
+  it('reads payments and discounts with GET requests that carry no body', async () => {
+    const calls: { method: string; url: string; body: unknown }[] = [];
+    const fetch = (async (url: string, init: RequestInit) => {
+      calls.push({ method: init.method!, url, body: init.body });
+      if (url.includes('/payments/'))
+        return new Response(JSON.stringify({ status: 'failed', metadata: { ref_hash: 'h' } }));
+      if (url.includes('/discounts/code/GONE')) return new Response('expired', { status: 422 });
+      if (url.includes('/discounts/code/')) return new Response('{}');
+      if (url.includes('/discounts?'))
+        return new Response(
+          JSON.stringify({
+            items: [
+              {
+                discount_id: 'd1',
+                code: 'A20',
+                type: 'percentage',
+                amount: 2000,
+                times_used: 3,
+                created_at: 'x',
+              },
+              { discount_id: 'd2', code: 'FLAT', type: 'flat', amount: 1, created_at: 'y' },
+            ],
+          }),
+        );
+      if (init.method === 'DELETE') return new Response('', { status: 404 });
+      return new Response('nope', { status: 500 });
+    }) as unknown as typeof globalThis.fetch;
+    const env = { apiKey: 'k', mode: 'test' as const, fetch };
+    expect(await dodo.getPayment(env, 'pay_1')).toEqual({ status: 'failed', metadata: { ref_hash: 'h' } });
+    expect(await dodo.discountUsable(env, 'ok20')).toBe(true);
+    expect(await dodo.discountUsable(env, 'gone')).toBe(false);
+    const list = await dodo.listDiscounts(env);
+    expect(list.map((d) => [d.code, d.kind, d.percent, d.timesUsed])).toEqual([
+      ['A20', 'percentage', 20, 3],
+      ['FLAT', 'flat', 0, 0],
+    ]);
+    await dodo.deleteDiscount(env, 'd1'); // 404 = already gone, fine
+    expect(calls.filter((c) => c.method !== 'POST').every((c) => c.body === undefined)).toBe(true);
+  });
+
+  it('checks a new code and turns it into Dodo’s body', () => {
+    const future = new Date(Date.now() + 86_400_000).toISOString();
+    const ok = dodo.parseNewDiscount({
+      code: 'diwali20',
+      percent: 20,
+      usage_limit: 50,
+      expires_at: future,
+      restricted_to: ['pdt_1'],
+    });
+    expect(ok).toMatchObject({ code: 'diwali20', percent: 20, usageLimit: 50, restrictedTo: ['pdt_1'] });
+    expect(dodo.discountBody(ok as never)).toEqual({
+      type: 'percentage',
+      amount: 2000,
+      code: 'DIWALI20',
+      usage_limit: 50,
+      expires_at: future,
+      restricted_to: ['pdt_1'],
+    });
+    expect(
+      dodo.discountBody({ code: '', percent: 5, usageLimit: null, expiresAt: null, restrictedTo: [] }),
+    ).toEqual({
+      type: 'percentage',
+      amount: 500,
+      usage_limit: null,
+      expires_at: null,
+      restricted_to: null,
+    });
+    expect(dodo.parseNewDiscount({ code: 'a b', percent: 10 })).toEqual({ invalid: 'code' });
+    expect(dodo.parseNewDiscount({ percent: 0 })).toEqual({ invalid: 'percent' });
+    expect(dodo.parseNewDiscount({ percent: 101 })).toEqual({ invalid: 'percent' });
+    expect(dodo.parseNewDiscount({ percent: 10.5 })).toEqual({ invalid: 'percent' });
+    expect(dodo.parseNewDiscount({ percent: 10, usage_limit: 0 })).toEqual({ invalid: 'usage_limit' });
+    expect(dodo.parseNewDiscount({ percent: 10, expires_at: '2020-01-01T00:00:00Z' })).toEqual({
+      invalid: 'expires_at',
+    });
+    expect(dodo.parseNewDiscount({ percent: 10, restricted_to: ['bad id!'] })).toEqual({
+      invalid: 'restricted_to',
+    });
+  });
+
+  it('reads a code from a code link', () => {
+    expect(codeFromSearch('?code=diwali20')).toBe('DIWALI20');
+    expect(codeFromSearch('?code=%20x%20')).toBeNull();
+    expect(codeFromSearch('?code=<script>')).toBeNull();
+    expect(codeFromSearch('')).toBeNull();
+  });
+
+  it('admin: state, products and links of a code', () => {
+    const d = {
+      id: 'd',
+      code: 'A20',
+      kind: 'percentage' as const,
+      percent: 20,
+      timesUsed: 1,
+      usageLimit: 2,
+      expiresAt: null,
+      restrictedTo: [] as string[],
+      createdAt: '',
+    };
+    expect(discountState(d)).toBe('active');
+    expect(discountState({ ...d, timesUsed: 2 })).toBe('used_up');
+    expect(discountState({ ...d, expiresAt: '2020-01-01T00:00:00Z' })).toBe('expired');
+    const products = [
+      {
+        id: '1',
+        updated_at: '',
+        slug: 'luts',
+        is_free: false,
+        provider_product_id: 'pdt_a',
+        provider_product_id_inr: 'pdt_a_inr',
+      },
+      {
+        id: '2',
+        updated_at: '',
+        slug: 'guide',
+        is_free: false,
+        provider_product_id: 'pdt_b',
+        provider_product_id_inr: null,
+      },
+      {
+        id: '3',
+        updated_at: '',
+        slug: 'free',
+        is_free: true,
+        provider_product_id: null,
+        provider_product_id_inr: null,
+      },
+    ];
+    expect(productsFor(d, products).map((p) => p.slug)).toEqual(['luts', 'guide']);
+    expect(productsFor({ ...d, restrictedTo: ['pdt_a_inr'] }, products).map((p) => p.slug)).toEqual(['luts']);
+    expect(codeLink('https://site', 'luts', 'A20')).toBe('https://site/shop/luts?code=A20');
+    expect(Date.parse(endOfDay('2026-12-31'))).toBeGreaterThan(
+      Date.parse('2026-12-31T00:00:00Z') - 86_400_000,
+    );
+  });
+});

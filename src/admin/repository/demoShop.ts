@@ -15,9 +15,18 @@ import {
   randomRef,
   sha256Hex,
 } from '../../../supabase/functions/_shared/shop.ts';
+import { parseNewDiscount } from '../../../supabase/functions/_shared/dodo.ts';
 import { ShopError, type ShopPublicApi } from '../../data/shop';
 import { RepoError } from './errors';
-import type { OrderRow, ProductFileRow, Row, ShopAdminApi, ShopPageRow, StoredFile } from './types';
+import type {
+  DiscountRow,
+  OrderRow,
+  ProductFileRow,
+  Row,
+  ShopAdminApi,
+  ShopPageRow,
+  StoredFile,
+} from './types';
 
 const SECRET = 'demo-shop-secret-demo-shop-secret-0123456789';
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -60,7 +69,35 @@ export function createDemoShop(
     ref_hash: null,
   }));
   const outbox: DemoMail[] = [];
-  const pending = new Map<string, { productId: string; currency: 'USD' | 'INR' }>();
+  const pending = new Map<
+    string,
+    { productId: string; currency: 'USD' | 'INR'; code: string | null; percent: number }
+  >();
+  /** payments that failed on the simulated checkout: payment id → its checkout */
+  const failedPayments = new Map<string, { refHash: string; productId: string }>();
+  // one code to try in demo mode (spec 08 DC)
+  let discounts: DiscountRow[] = [
+    {
+      id: 'dsc_demo_launch',
+      code: 'LAUNCH20',
+      kind: 'percentage',
+      percent: 20,
+      timesUsed: 2,
+      usageLimit: 50,
+      expiresAt: null,
+      restrictedTo: [],
+      createdAt: '2026-10-01T09:00:00Z',
+    },
+  ];
+  /** A code that can be used now for this provider product, or null. */
+  const usableDiscount = (code: string, providerId: string) =>
+    discounts.find(
+      (d) =>
+        d.code === code.toUpperCase() &&
+        (!d.expiresAt || Date.parse(d.expiresAt) > Date.now()) &&
+        (d.usageLimit == null || d.timesUsed < d.usageLimit) &&
+        (!d.restrictedTo.length || d.restrictedTo.includes(providerId)),
+    ) ?? null;
   let webhookDelay = 1200;
   let pages: ShopPageRow[] = (['terms', 'refunds', 'privacy'] as const).map((slug) => ({
     slug,
@@ -117,17 +154,28 @@ export function createDemoShop(
   const publicApi: ShopPublicApi & {
     /** The simulated provider checkout page calls this when "Pay" is pressed. */
     demoPay(ref: string, email: string, name: string): Promise<void>;
-    demoCheckout(ref: string): { productId: string; currency: 'USD' | 'INR' } | null;
+    /** …and this when "Fail" is pressed; returns the payment id Dodo would add to the address. */
+    demoFail(ref: string): Promise<string>;
+    demoCheckout(
+      ref: string,
+    ): { productId: string; currency: 'USD' | 'INR'; code: string | null; percent: number } | null;
   } = {
-    async checkout(productId, currency) {
+    async checkout(productId, currency, code) {
       await ctx.delay(150);
       const p = product(productId);
       if (!p || !p.is_published || p.is_free) throw new ShopError('not_for_sale');
       const providerId = currency === 'INR' ? p.provider_product_id_inr : p.provider_product_id;
       if (!providerId || (currency === 'INR' ? p.price_inr == null : p.price_usd == null))
         throw new ShopError('not_ready');
+      const discount = code ? usableDiscount(code, String(providerId)) : null;
+      if (code && !discount) throw new ShopError('code_invalid');
       const ref = randomRef();
-      pending.set(ref, { productId, currency });
+      pending.set(ref, {
+        productId,
+        currency,
+        code: discount?.code ?? null,
+        percent: discount?.percent ?? 0,
+      });
       return { url: `/shop/demo-checkout?ref=${ref}` };
     },
     demoCheckout: (ref) => pending.get(ref) ?? null,
@@ -143,7 +191,9 @@ export function createDemoShop(
           product_id: p.id,
           email: email.trim().toLowerCase(),
           buyer_name: name.trim(),
-          amount: Number(c.currency === 'INR' ? p.price_inr : p.price_usd),
+          amount: Math.round(
+            Number(c.currency === 'INR' ? p.price_inr : p.price_usd) * (1 - c.percent / 100),
+          ),
           currency: c.currency,
           status: 'paid',
           provider_payment_id: `pay_demo_${Math.random().toString(36).slice(2, 10)}`,
@@ -151,14 +201,36 @@ export function createDemoShop(
         });
         await mail(o, 'purchase');
       };
+      if (c.code)
+        discounts = discounts.map((d) => (d.code === c.code ? { ...d, timesUsed: d.timesUsed + 1 } : d));
       if (webhookDelay > 0) setTimeout(() => void record(), webhookDelay);
       else await record();
     },
-    async orderStatus(ref) {
+    async demoFail(ref) {
+      const c = pending.get(ref);
+      if (!c) throw new ShopError('not_found');
+      pending.delete(ref);
+      const id = `pay_demo${Math.random().toString(36).slice(2, 12)}`;
+      failedPayments.set(id, { refHash: await sha256Hex(ref), productId: c.productId });
+      return id;
+    },
+    async orderStatus(ref, paymentId) {
       await ctx.delay(80);
       const h = await sha256Hex(ref);
       const o = orders.find((x) => x.ref_hash === h);
-      if (!o) return { ready: false };
+      if (!o) {
+        // like the Edge Function: only report on a payment that belongs to this ref
+        const f = paymentId ? failedPayments.get(paymentId) : undefined;
+        if (!f || f.refHash !== h) return { ready: false };
+        const p = product(f.productId);
+        return {
+          ready: false,
+          failed: true,
+          product: p
+            ? { title: String(p.title), slug: String(p.slug), cover: (p.cover as never) ?? null }
+            : null,
+        };
+      }
       if (o.status !== 'paid') return { ready: false, expired: true };
       const p = product(o.product_id);
       return {
@@ -327,6 +399,38 @@ export function createDemoShop(
       for (const o of paid) revenue[o.currency] = (revenue[o.currency] ?? 0) + o.amount;
       return { orders: paid.length, revenue };
     },
+    async discounts() {
+      await ctx.delay(60);
+      await ctx.requireOwner();
+      return structuredClone(discounts);
+    },
+    async createDiscount(input) {
+      await ctx.delay();
+      await ctx.requireOwner();
+      const d = parseNewDiscount(input as unknown as Record<string, unknown>);
+      if ('invalid' in d) throw new RepoError('invalid', 'Check the highlighted field.', d.invalid);
+      const code = (d.code || Math.random().toString(36).slice(2, 10)).toUpperCase();
+      if (discounts.some((x) => x.code === code))
+        throw new RepoError('unique', 'That code already exists. Pick another.', 'code');
+      const row: DiscountRow = {
+        id: `dsc_demo_${Math.random().toString(36).slice(2, 10)}`,
+        code,
+        kind: 'percentage',
+        percent: d.percent,
+        timesUsed: 0,
+        usageLimit: d.usageLimit,
+        expiresAt: d.expiresAt,
+        restrictedTo: d.restrictedTo,
+        createdAt: ctx.now(),
+      };
+      discounts = [row, ...discounts];
+      return structuredClone(row);
+    },
+    async deleteDiscount(id) {
+      await ctx.delay();
+      await ctx.requireOwner();
+      discounts = discounts.filter((d) => d.id !== id);
+    },
     async pages() {
       await ctx.delay(40);
       await ctx.requireOwner();
@@ -364,9 +468,9 @@ export function createDemoShop(
       if (f?.file_path) ctx.files.delete(f.file_path);
       productFiles.delete(productId);
     },
-    /** A download token for an order (tests only). */
     /** The newest order's id (tests only). */
     latestOrderId: () => [...orders].sort((a, b) => b.created_at.localeCompare(a.created_at))[0]?.id ?? null,
+    /** A download token for an order (tests only). */
     tokenFor: async (orderId: string) => tokenOf(orders.find((o) => o.id === orderId)!),
     /** Simulates the provider's refund webhook (tests only). */
     refund(orderId: string) {

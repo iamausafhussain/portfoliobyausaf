@@ -22,6 +22,7 @@ import {
   type MessagesApi,
   type MessageTab,
   type OrderRow,
+  type DiscountRow,
   type ProductFileRow,
   type Row,
   type ShopAdminApi,
@@ -485,7 +486,7 @@ function shopError(error: DbErrorLike | null, what = 'the shop'): never {
 async function shopAdmin<T>(body: Record<string, unknown>): Promise<T> {
   const { data, error } = await getSupabase().functions.invoke('shop-admin', { body });
   if (!error) return data as T;
-  let detail: { error?: string; detail?: string } = {};
+  let detail: { error?: string; detail?: string; field?: string } = {};
   try {
     detail = await (error as { context?: Response }).context?.json();
   } catch {
@@ -494,7 +495,15 @@ async function shopAdmin<T>(body: Record<string, unknown>): Promise<T> {
   if (detail?.error === 'provider')
     throw new RepoError(
       'unknown',
-      `The payment provider refused the change: ${detail.detail ?? 'no details'}. Check the API key and try Sync again.`,
+      `The payment provider refused the change: ${detail.detail ?? 'no details'}. Check the API key and try again.`,
+    );
+  if (detail?.error === 'code_taken')
+    throw new RepoError('unique', 'That code already exists. Pick another.', 'code');
+  if (detail?.error === 'invalid')
+    throw new RepoError(
+      'invalid',
+      'Check the highlighted field.',
+      typeof detail.field === 'string' ? detail.field : undefined,
     );
   if (detail?.error === 'not_owner') throw new RepoError('auth', 'Your session has expired — sign in again.');
   if (/fetch|network|Failed to send/i.test(error.message))
@@ -566,6 +575,15 @@ const shop: ShopAdminApi = {
     });
   },
   resend: (orderId) => shopAdmin({ action: 'resend', order_id: orderId }),
+  async discounts() {
+    return (await shopAdmin<{ discounts: DiscountRow[] }>({ action: 'discounts' })).discounts;
+  },
+  async createDiscount(input) {
+    return (await shopAdmin<{ discount: DiscountRow }>({ action: 'create_discount', ...input })).discount;
+  },
+  async deleteDiscount(id) {
+    await shopAdmin({ action: 'delete_discount', id });
+  },
   async sales(days) {
     return guard(async () => {
       const since = new Date(Date.now() - days * 86_400_000).toISOString();

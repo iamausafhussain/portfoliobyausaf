@@ -25,6 +25,7 @@ export const contentNav: NavItem[] = [
 export const shopNav: NavItem[] = [
   { to: '/admin/products', label: 'Products', icon: 'ticket' },
   { to: '/admin/orders', label: 'Orders', icon: 'receipt' },
+  { to: '/admin/discounts', label: 'Discount codes', icon: 'tag' },
   { to: '/admin/policies', label: 'Shop policies', icon: 'file' },
 ];
 

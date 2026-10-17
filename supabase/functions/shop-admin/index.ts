@@ -4,8 +4,18 @@
  *   status                 → which mode is active and what's configured
  *   sync   { product_id }  → create / update the product on the provider, store its ids
  *   resend { order_id }    → a new download link to the buyer (the old link stops working)
+ *   discounts              → every discount code on Dodo (spec 08 DC-1)
+ *   create_discount { code?, percent, usage_limit?, expires_at?, restricted_to? }
+ *   delete_discount { id }
  */
-import { ProviderError, upsertProduct } from '../_shared/dodo.ts';
+import {
+  createDiscount,
+  deleteDiscount,
+  listDiscounts,
+  parseNewDiscount,
+  ProviderError,
+  upsertProduct,
+} from '../_shared/dodo.ts';
 import {
   adminDb,
   dodoEnv,
@@ -107,6 +117,28 @@ Deno.serve(async (req) => {
       }),
     );
     return json(200, { sent });
+  }
+
+  if (action === 'discounts' || action === 'create_discount' || action === 'delete_discount') {
+    try {
+      if (action === 'discounts') return json(200, { discounts: await listDiscounts(dodoEnv()) });
+      if (action === 'delete_discount') {
+        const id = r.body.id;
+        if (typeof id !== 'string' || !/^[\w-]{1,100}$/.test(id)) return json(400, { error: 'bad_request' });
+        await deleteDiscount(dodoEnv(), id);
+        return json(200, { deleted: true });
+      }
+      const d = parseNewDiscount(r.body);
+      if ('invalid' in d) return json(400, { error: 'invalid', field: d.invalid });
+      return json(200, { discount: await createDiscount(dodoEnv(), d) });
+    } catch (e) {
+      console.error(e);
+      const msg = e instanceof ProviderError ? e.message : 'unavailable';
+      // Dodo refuses a code that already exists
+      if (e instanceof ProviderError && e.status < 500 && /already|exists|duplicate|unique/i.test(msg))
+        return json(409, { error: 'code_taken' });
+      return json(502, { error: 'provider', detail: msg });
+    }
   }
 
   return json(400, { error: 'unknown_action' });

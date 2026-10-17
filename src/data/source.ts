@@ -59,8 +59,10 @@ async function callFunction<T>(name: string, body: Record<string, unknown>): Pro
 }
 
 const supabaseShop: ShopPublicApi = {
-  checkout: (productId, currency) => callFunction('shop-checkout', { product_id: productId, currency }),
-  orderStatus: (ref) => callFunction('shop-order-status', { ref }),
+  checkout: (productId, currency, code) =>
+    callFunction('shop-checkout', { product_id: productId, currency, ...(code ? { code } : {}) }),
+  orderStatus: (ref, paymentId) =>
+    callFunction('shop-order-status', { ref, ...(paymentId ? { payment_id: paymentId } : {}) }),
   downloadInfo: (token) => callFunction('shop-download', { token, action: 'info' }),
   download: (token) => callFunction('shop-download', { token, action: 'download' }),
   refresh: (token) => callFunction('shop-download', { token, action: 'refresh' }),

@@ -25,6 +25,7 @@ export type ShopErrorCode =
   | 'file_missing'
   | 'busy'
   | 'provider_unavailable'
+  | 'code_invalid'
   | 'offline'
   | 'server';
 
@@ -52,6 +53,7 @@ const known: ShopErrorCode[] = [
   'file_missing',
   'busy',
   'provider_unavailable',
+  'code_invalid',
 ];
 
 /** A function's error body (or a network failure) as a ShopError. */
@@ -80,6 +82,7 @@ export const shopErrorText: Record<ShopErrorCode, string> = {
   file_missing: 'The file isn’t available right now. Please get in touch and I’ll sort it out.',
   busy: 'Another download just started. Please try again in a moment.',
   provider_unavailable: 'The payment page couldn’t be opened. Please try again in a minute.',
+  code_invalid: 'This discount code isn’t valid any more, or doesn’t apply to this product.',
   offline: 'Couldn’t reach the server. Check your connection and try again.',
   server: 'Something went wrong on my side. Please try again.',
 };
@@ -87,8 +90,10 @@ export const shopErrorText: Record<ShopErrorCode, string> = {
 export interface OrderStatusReply {
   ready: boolean;
   expired?: boolean;
+  /** the payment didn't go through (spec 08 CO-3a) */
+  failed?: boolean;
   token?: string;
-  product?: { title: string; slug: string | null; cover: ImageRef | null };
+  product?: { title: string; slug: string | null; cover: ImageRef | null } | null;
 }
 
 export interface DownloadInfo {
@@ -112,9 +117,10 @@ export interface DownloadInfo {
 /** The shop's server side, as the site sees it (Supabase Edge Functions, or the demo). */
 export interface ShopPublicApi {
   /** Starts a purchase: where to send the buyer (the provider's checkout). */
-  checkout(productId: string, currency: Currency): Promise<{ url: string }>;
-  /** Thank-you page: has the payment been confirmed yet? */
-  orderStatus(ref: string): Promise<OrderStatusReply>;
+  /** `code`: a discount code from a code link (spec 08 DC-4). */
+  checkout(productId: string, currency: Currency, code?: string | null): Promise<{ url: string }>;
+  /** Thank-you page: has the payment been confirmed yet, or did it fail? */
+  orderStatus(ref: string, paymentId?: string | null): Promise<OrderStatusReply>;
   downloadInfo(token: string): Promise<DownloadInfo>;
   /** Counts a download and returns a short-lived link to the file. */
   download(token: string): Promise<{ url: string; left: number }>;
@@ -143,3 +149,9 @@ export function preferredCurrency(hasInr: boolean, timeZone?: string): Currency 
 }
 
 export const productKindLabels = { pdf: 'PDF', tool: 'Tool', bundle: 'Bundle' } as const;
+
+/** A discount code from a code link (`?code=…`), or null when it isn't a plausible code. */
+export function codeFromSearch(search: string): string | null {
+  const c = new URLSearchParams(search).get('code')?.trim() ?? '';
+  return /^[A-Za-z0-9_-]{3,32}$/.test(c) ? c.toUpperCase() : null;
+}

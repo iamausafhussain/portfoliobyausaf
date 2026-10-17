@@ -10,4 +10,5 @@ export const shopKeys = {
     ['admin', 'shop', 'orders', q.status ?? '', q.productId ?? '', q.search ?? '', q.limit] as const,
   sales: (days: number) => ['admin', 'shop', 'orders', 'sales', days] as const,
   pages: ['admin', 'shop', 'pages'] as const,
+  discounts: ['admin', 'shop', 'discounts'] as const,
 };

@@ -206,13 +206,17 @@ The admin's **Products** and **Orders** pages show which mode is active and list
 1. Admin → **Products → New product**: title, price, cover, then **Save**. Saving creates the matching product in Dodo for you. Then add the file (upload up to 50 MB, or an external link for bigger files), and publish.
 2. Admin → **Shop policies**: read the three templates, change what doesn't fit, remove the "Review before publishing" line and publish them. Dodo asks for these pages when it reviews your shop.
 3. Open the product on your site, **Buy**, and pay with one of Dodo's test cards (listed in Dodo's docs under testing). You land on the thank-you page, the Download button appears within a few seconds, the order shows in Admin → **Orders**, and the email arrives (D2 step 5).
-4. Refund that test payment in Dodo's dashboard: the order turns **Refunded** and its link stops working.
+4. Try a failed payment too: use Dodo's decline test card `4000 0000 0000 0002`. You come back to a **Payment failed** page with **Try again**.
+5. Admin → **Discount codes → New code**, e.g. `TEST50` for 50% off. Open the product with `?code=TEST50` at the end of its address (or use **Copy link** next to the code): the code is applied at checkout.
+6. Refund that test payment in Dodo's dashboard: the order turns **Refunded** and its link stops working.
 
 If the thank-you page keeps saying "Confirming your payment…", check Supabase → **Edge Functions → shop-webhook → Logs** (usually a wrong webhook secret or URL).
 
+**After updating the code** (new shop features), redeploy the shop functions with the command in D3; Netlify rebuilds the site by itself.
+
 ### D5 — Going live
 
-Once Dodo has approved your business: switch the dashboard to **Live mode**, create a live API key and a live webhook (same URL and events), put both in the secrets from D3, set `DODO_MODE` to `live`, and **save each paid product once** in the admin so it's created in your live Dodo account. Then make one real small purchase and refund it.
+Once Dodo has approved your business: switch the dashboard to **Live mode**, create a live API key and a live webhook (same URL and events), put both in the secrets from D3, set `DODO_MODE` to `live`, and **save each paid product once** in the admin so it's created in your live Dodo account. Discount codes live in each mode separately, so create the ones you need again after switching. Then make one real small purchase and refund it.
 
 ## Check that it worked
 

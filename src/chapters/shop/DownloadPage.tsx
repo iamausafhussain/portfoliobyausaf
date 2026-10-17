@@ -1,10 +1,11 @@
 /** /d/:token — a buyer's download page (spec 08 CO-5, CO-6). */
+import { track } from '../../analytics/track';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { getPublicSource } from '../../data/source';
 import { DOWNLOAD_LIMIT, formatSize, ShopError, shopErrorText, type DownloadInfo } from '../../data/shop';
-import { useDocumentTitle } from '../../shell/hooks';
+import { useDocumentTitle, useNoIndex } from '../../shell/hooks';
 import pageStyles from '../pages.module.css';
 import styles from './shop.module.css';
 import { startDownload, Ticket } from './Ticket';
@@ -33,6 +34,7 @@ export function Component() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  useNoIndex();
   useDocumentTitle('Your download');
 
   async function download() {
@@ -40,6 +42,7 @@ export function Component() {
     setError(null);
     try {
       const { url } = await (await getPublicSource()).shop.download(token);
+      track('download');
       startDownload(url);
     } catch (err) {
       setError(shopErrorText[err instanceof ShopError ? err.code : 'server']);

@@ -1,7 +1,11 @@
+import './zodSetup';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import './styles/global.css';
+import { installErrorReporting } from './analytics/errors';
+
+installErrorReporting();
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element in index.html');

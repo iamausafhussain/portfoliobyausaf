@@ -3,6 +3,7 @@
  * supabase/migrations/0002_helpers.sql and 0003_tables.sql, so forms reject exactly
  * what the database would reject.
  */
+import '../../zodSetup';
 import { z } from 'zod';
 import { Constants } from '../database.types';
 

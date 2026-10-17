@@ -4,11 +4,12 @@
  * that didn't go through says so and offers to try again. The ref is the buyer's private
  * reference from their return address; Dodo adds payment_id and status.
  */
+import { track } from '../../analytics/track';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { getPublicSource } from '../../data/source';
 import { ShopError, shopErrorText, type OrderStatusReply } from '../../data/shop';
-import { useDocumentTitle } from '../../shell/hooks';
+import { useDocumentTitle, useNoIndex } from '../../shell/hooks';
 import pageStyles from '../pages.module.css';
 import styles from './shop.module.css';
 import { startDownload, Ticket } from './Ticket';
@@ -31,6 +32,7 @@ export function Component() {
   const [slow, setSlow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useNoIndex();
   useDocumentTitle('Thank you');
 
   useEffect(() => {
@@ -44,11 +46,13 @@ export function Component() {
         const r = await (await getPublicSource()).shop.orderStatus(ref, paymentId);
         if (stopped) return;
         if (r.ready || r.expired) {
+          if (r.ready) track('checkout_return', { detail: 'paid' });
           setReply(r);
           return;
         }
         // a failed payment never turns into a paid one: stop waiting
         if (r.failed || returnedFailed) {
+          track('checkout_return', { detail: 'failed' });
           setFailed(r.product ?? null);
           return;
         }
@@ -77,6 +81,7 @@ export function Component() {
     setError(null);
     try {
       const { url } = await (await getPublicSource()).shop.download(reply.token);
+      track('download');
       startDownload(url);
     } catch (err) {
       setError(shopErrorText[err instanceof ShopError ? err.code : 'server']);

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { usePublishedProducts } from '../../data/queries/public';
 import type { Product } from '../../data/schemas';
 import { productKindLabels } from '../../data/shop';
-import { useDocumentTitle } from '../../shell/hooks';
+import { useDocumentTitle, useMetaDescription } from '../../shell/hooks';
 import pageStyles from '../pages.module.css';
 import { Poster } from './Poster';
 import { PolicyLinks } from './PolicyLinks';
@@ -18,6 +18,7 @@ export function Component() {
   const [kind, setKind] = useState<Kind | null>(null);
   const shown = kind ? all.filter((p) => p.kind === kind) : all;
   useDocumentTitle(q.isPending ? undefined : 'Box Office');
+  useMetaDescription('Presets, LUTs and guides. Instant download after checkout.');
 
   return (
     <article className={pageStyles.wide}>

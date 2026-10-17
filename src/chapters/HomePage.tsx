@@ -7,7 +7,7 @@ import { useSiteSettings } from '../data/queries/public';
 import { StageProvider } from '../scene/stage/StageProvider';
 import { Chapter } from '../shell/Chapter';
 import { useHomeChapters } from '../shell/ChapterRegistry';
-import { useDocumentTitle } from '../shell/hooks';
+import { useDocumentTitle, useMetaDescription } from '../shell/hooks';
 import { HeroChapter } from './hero/HeroChapter';
 import { SystemChapter } from './system/SystemChapter';
 import { AboutChapter } from './about/AboutChapter';
@@ -32,6 +32,7 @@ export function HomePage() {
   const { chapters } = useHomeChapters();
   const settings = useSiteSettings();
   useDocumentTitle(settings.isPending ? undefined : '');
+  useMetaDescription(settings.data?.seo?.description || settings.data?.tagline);
 
   return (
     <StageProvider>

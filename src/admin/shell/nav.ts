@@ -12,6 +12,7 @@ export interface NavItem {
 export const contentNav: NavItem[] = [
   { to: '/admin', label: 'Dashboard', icon: 'grid', end: true },
   { to: '/admin/inbox', label: 'Inbox', icon: 'mail', badge: 'newMessages' },
+  { to: '/admin/traffic', label: 'Traffic', icon: 'chart' },
   { to: '/admin/settings', label: 'Site settings', icon: 'user' },
   { to: '/admin/hero', label: 'Hero media', icon: 'film' },
   { to: '/admin/projects', label: 'Projects', icon: 'image' },
@@ -31,5 +32,6 @@ export const shopNav: NavItem[] = [
 
 export const toolsNav: NavItem[] = [
   { to: '/admin/media', label: 'Media library', icon: 'upload' },
+  { to: '/admin/errors', label: 'Site errors', icon: 'alert' },
   { to: '/admin/account', label: 'Account', icon: 'user' },
 ];

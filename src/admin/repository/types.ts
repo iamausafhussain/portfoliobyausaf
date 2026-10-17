@@ -3,6 +3,7 @@
  *  - SupabaseRepository: production; security enforced by RLS.
  *  - DemoRepository: dev only (VITE_DEMO=1); in-memory, same validation rules.
  */
+import type { ErrorGroup, FunnelRow, TrafficQuery, TrafficReport } from '../traffic/report';
 
 /** Tables the admin lists and edits row by row. */
 export type AdminTable =
@@ -272,6 +273,19 @@ export interface ShopAdminApi {
   ): Promise<ShopPageRow>;
 }
 
+/** Traffic and error reports (spec 09 §2.2, OP-3). */
+export interface AnalyticsAdminApi {
+  report(q: TrafficQuery): Promise<TrafficReport>;
+  /** visitors in the last 5 minutes */
+  now(): Promise<number>;
+  funnel(from: string, to: string): Promise<FunnelRow[]>;
+  /** bytes the analytics tables use */
+  size(): Promise<number>;
+  errors(): Promise<ErrorGroup[]>;
+  resolveError(fingerprint: string, resolved: boolean): Promise<void>;
+  clearResolvedErrors(): Promise<number>;
+}
+
 export interface AdminRepository {
   kind: 'supabase' | 'demo';
   /** Shown on the login screen (demo mode only). */
@@ -281,4 +295,5 @@ export interface AdminRepository {
   files: FilesApi;
   messages: MessagesApi;
   shop: ShopAdminApi;
+  analytics: AnalyticsAdminApi;
 }

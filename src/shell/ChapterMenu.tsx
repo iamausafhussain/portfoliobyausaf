@@ -1,4 +1,5 @@
 /** Full chapter list, as an overlay (spec 03 NV-3). Native <dialog>: focus trap and Esc built in. */
+import { track } from '../analytics/track';
 import { useEffect, useRef, useState } from 'react';
 import { useMagnetic } from '../cursor/magnetic';
 import { Link } from 'react-router';
@@ -118,7 +119,7 @@ export function ChapterMenu() {
 
           <div className={styles.menuFoot}>
             {resume && (
-              <a href={resume} target="_blank" rel="noopener">
+              <a href={resume} target="_blank" rel="noopener" onClick={() => track('resume_open')}>
                 Resume (PDF)
               </a>
             )}

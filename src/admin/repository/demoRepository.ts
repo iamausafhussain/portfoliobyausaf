@@ -34,6 +34,7 @@ import {
   demoSettings,
 } from './demoSeed';
 import { createDemoShop } from './demoShop';
+import { createDemoTraffic } from './demoTraffic';
 import { countTabs, filterMessages } from './messages';
 import { countLinks, MAX_LINKS, SendError, type SendErrorCode } from '../../data/contact';
 import { checkFileForBucket } from './limits';
@@ -189,6 +190,7 @@ export function createDemoRepository(): AdminRepository & {
   failSends(code: SendErrorCode | null): void;
   addMessages(count: number): void;
   shopDemo: ReturnType<typeof createDemoShop>;
+  trafficDemo: ReturnType<typeof createDemoTraffic>;
 } {
   let tables = demoRows();
   let settings = demoSettings();
@@ -581,6 +583,15 @@ export function createDemoRepository(): AdminRepository & {
     },
   );
 
+  /* ---------------- traffic (spec 09) ---------------- */
+  const traffic = createDemoTraffic({
+    products: () => tables.products,
+    projects: () => tables.projects,
+    orders: async () => (await shop.adminApi.orders({ limit: 10_000 })).rows,
+    requireOwner,
+    delay,
+  });
+
   /** Read-only public view: published rows only, like RLS (spec 03 PD-1). */
   const publicSource: PublicSource = {
     kind: 'demo',
@@ -621,10 +632,15 @@ export function createDemoRepository(): AdminRepository & {
       return row ? structuredClone(row) : null;
     },
     shop: shop.publicApi,
+    track: (e) => traffic.publicApi.track(e),
+    reportError: (r) => traffic.publicApi.reportError(r),
   };
 
   return {
     publicSource,
+    analytics: traffic.adminApi,
+    /** Test hook: every recorded event (sample + yours). */
+    trafficDemo: traffic,
     kind: 'demo',
     loginHint: `Demo mode: ${DEMO_EMAIL}, any password, code ${DEMO_CODE} (or scan the QR with a real authenticator app).`,
     auth,

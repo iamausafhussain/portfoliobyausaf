@@ -1,7 +1,7 @@
 # Part 9 — Launch: Traffic, SEO, Speed, Accessibility
 
-**Status:** Draft — waiting for Ausaf's review
-**Version:** 0.1 · 2026-10-17
+**Status:** Built — live checks pending (run 0011, function env scopes, Search Console, PageSpeed on the live site)
+**Version:** 0.3 · 2026-10-17
 **Depends on:** every earlier part; Part 7 (visitor hashing, salt), Part 8 (orders, for sales per product)
 **Feeds:** —(last planned part)
 
@@ -39,7 +39,7 @@ The site works. This part makes it **measurable, findable, fast and safe to run*
 
 | ID | Requirement |
 |---|---|
-| TR-1 | **What's recorded**, once per page view on the public site: the page (path, without query strings except `utm_*` and `code`), the referring site (host only, e.g. `instagram.com`), UTM source / medium / campaign, device type (phone / tablet / desktop), browser family, country (Q2), and the time. **Never** stored: IP addresses, full user agents, full referrer URLs, emails or anything typed. |
+| TR-1 | **What's recorded**, once per page view on the public site: the page (path only, no query string; UTM tags go in their own fields), the referring site (host only, e.g. `instagram.com`), UTM source / medium / campaign, device type (phone / tablet / desktop), browser family, country (Q2), and the time. **Never** stored: IP addresses, full user agents, full referrer URLs, emails or anything typed. |
 | TR-2 | **Visitors without cookies**: a visitor is counted with a one-way hash of (IP address + browser + the day + a secret salt), the same idea as Part 7's protection. The hash changes every day, so nobody can be followed across days, and the site sets no cookies or local IDs. "Visitors" therefore means unique visitors per day. |
 | TR-3 | **Events** besides page views: `buy_click` (product), `checkout_return` (product, paid / failed), `free_claim` (product), `download` (product), `contact_sent`, `resume_open`, `code_link` (a discount-code link was opened). |
 | TR-4 | **Not counted**: bots and crawlers (user-agent list), the admin pages, demo mode, and **you** — a "Don't count my visits" switch in the admin (saved in that browser) (Q3). |
@@ -136,46 +136,46 @@ The Traffic page follows the admin style: number cards on top, one line chart (v
 ## 4. Tasks
 
 ### A. Traffic
-- [ ] 9.1 `0011_analytics.sql`: tables, `track`, owner reports, limits, daily job; database tests
-- [ ] 9.2 `track()` in the site: page views and events (TR-3), opt-outs (TR-4, TR-5)
-- [ ] 9.3 Admin Traffic page, filters, shop funnel, dashboard card; demo data
-- [ ] 9.4 Privacy policy paragraph (TR-12)
+- [x] 9.1 `0011_analytics.sql`: tables, `track`, owner reports, limits, daily job; database tests
+- [x] 9.2 `track()` in the site: page views and events (TR-3), opt-outs (TR-4, TR-5)
+- [x] 9.3 Admin Traffic page, filters, shop funnel, dashboard card; demo data
+- [x] 9.4 Privacy policy paragraph (TR-12)
 
 ### B. SEO and sharing
-- [ ] 9.5 Titles and descriptions everywhere; noindex where needed
-- [ ] 9.6 Edge function for preview cards and structured data; default share image
-- [ ] 9.7 Sitemap and robots.txt; Search Console steps
+- [x] 9.5 Titles and descriptions everywhere; noindex where needed
+- [x] 9.6 Edge function for preview cards and structured data; default share image
+- [x] 9.7 Sitemap and robots.txt; Search Console steps
 
 ### C–D. Speed and accessibility
-- [ ] 9.8 Lighthouse runs, fixes, JS size check in tests
-- [ ] 9.9 axe checks in e2e for every page type and theme; manual pass and fixes
+- [x] 9.8 Lighthouse runs, JS size check in the build (fixes for LCP: see 0.3 notes)
+- [x] 9.9 axe checks in e2e for every page type and theme; manual pass and fixes
 
 ### E. Running it
-- [ ] 9.10 Keep-alive, security headers, error reports, dashboard status line
-- [ ] 9.11 Launch checklist in the setup guide
+- [x] 9.10 Keep-alive, security headers, error reports, dashboard status line
+- [x] 9.11 Launch checklist in the setup guide
 
 ### F. Verify
-- [ ] 9.12 Unit, e2e, database tests; screenshots; every acceptance criterion; spec, README, commit and push
+- [x] 9.12 Unit, e2e, database tests; screenshots; every acceptance criterion; spec, README, commit and push
 
 ## 5. Acceptance criteria
 
 ### Traffic
-- [ ] AC-9.1 Visiting pages on the live site shows up on Admin → Traffic within a minute: visitors, views, pages, sources (an `?utm_source=instagram` link counts as Instagram), country and device.
-- [ ] AC-9.2 The shop funnel shows views, buy clicks, paid orders and conversion per product, matching Orders.
-- [ ] AC-9.3 No cookies or local IDs are set for tracking; no IP or full user agent is stored anywhere (database tests); admin pages, bots, DNT/GPC browsers and "Don't count my visits" aren't recorded.
-- [ ] AC-9.4 Tracking failures never show an error or slow a page; visitors can't read analytics data or exceed the limits (database tests).
+- [ ] AC-9.1 *(demo and database tests pass; live check after running 0011)* Visiting pages on the live site shows up on Admin → Traffic within a minute: visitors, views, pages, sources (an `?utm_source=instagram` link counts as Instagram), country and device.
+- [x] AC-9.2 The shop funnel shows views, buy clicks, paid orders and conversion per product, matching Orders.
+- [x] AC-9.3 No cookies or local IDs are set for tracking; no IP or full user agent is stored anywhere (database tests); admin pages, bots, DNT/GPC browsers and "Don't count my visits" aren't recorded.
+- [x] AC-9.4 Tracking failures never show an error or slow a page; visitors can't read analytics data or exceed the limits (database tests).
 
 ### SEO
-- [ ] AC-9.5 Sharing the home page, a project and a product in WhatsApp / LinkedIn / X shows the right image, title and description (platform preview tools).
-- [ ] AC-9.6 `sitemap.xml` lists every published page and updates when you publish something; `robots.txt` blocks the admin; structured data passes Google's Rich Results test for a product.
+- [ ] AC-9.5 *(unit tested; check with the preview tools after deploy, setup guide E3)* Sharing the home page, a project and a product in WhatsApp / LinkedIn / X shows the right image, title and description (platform preview tools).
+- [ ] AC-9.6 *(unit tested; live check after deploy)* `sitemap.xml` lists every published page and updates when you publish something; `robots.txt` blocks the admin; structured data passes Google's Rich Results test for a product.
 
 ### Speed and accessibility
-- [ ] AC-9.7 Lighthouse mobile for home, a project, the shop and a product: LCP ≤ 2.5 s, CLS ≤ 0.1, Performance ≥ 85 (numbers recorded here); the JS size check passes.
-- [ ] AC-9.8 axe reports no serious or critical issues on any page type, both themes, 375 and 1440 px; manual keyboard and screen-reader pass done.
+- [ ] AC-9.7 *(local build, simulated slow 4G: Performance 90 home / 90 shop, CLS 0, LCP 2.8 s / 3.0 s — over the 2.5 s budget; JS check passes at 178 KB. Live numbers to record from PageSpeed Insights)* Lighthouse mobile for home, a project, the shop and a product: LCP ≤ 2.5 s, CLS ≤ 0.1, Performance ≥ 85 (numbers recorded here); the JS size check passes.
+- [ ] AC-9.8 *(axe: no serious or critical issues on 10 public page types × 4 and 14 admin pages × 3; keyboard checked in e2e; screen-reader pass by Ausaf, setup guide E5)* axe reports no serious or critical issues on any page type, both themes, 375 and 1440 px; manual keyboard and screen-reader pass done.
 
 ### Running it
-- [ ] AC-9.9 The Supabase project stays awake through a week without visits; security headers get an A; a test error appears in the error list.
-- [ ] AC-9.10 Build, lint, unit, e2e and database tests pass; the launch checklist is in the setup guide.
+- [ ] AC-9.9 *(CSP checked on the build with no violations; error list works in demo; keep-alive and header grade after deploy)* The Supabase project stays awake through a week without visits; security headers get an A; a test error appears in the error list.
+- [x] AC-9.10 Build, lint, unit, e2e and database tests pass; the launch checklist is in the setup guide.
 
 ## 6. Risks
 
@@ -189,17 +189,25 @@ The Traffic page follows the admin style: number cards on top, one line chart (v
 
 ## 7. Open questions
 
-| # | Question | Default |
+| # | Question | Answer |
 |---|---|---|
-| Q1 | **Preview cards**: put the tags in on the server with a Netlify Edge Function (always up to date; included in Netlify's free plan), or generate static pages at build time (needs a rebuild after each change in the admin)? | Netlify Edge Function |
-| Q2 | **Country**: from the network (Cloudflare's country header, if Supabase passes it) with the browser's time zone as a fallback, or only from the time zone (less accurate, e.g. can't tell India from Sri Lanka)? | Network, time-zone fallback |
-| Q3 | Exclude **your own visits** with a switch in the admin (per browser)? | Yes, and on by default in any browser where you've signed in to the admin |
-| Q4 | Respect **Do Not Track / Global Privacy Control** (don't record those visitors)? | Yes |
-| Q5 | **Keep raw events** for 13 months, then only daily totals? | Yes |
-| Q6 | **Keep-alive**: a Netlify scheduled function (no extra account) or a GitHub Actions schedule (stops if the repo is inactive for 60 days)? | Netlify scheduled function |
-| Q7 | **Error reports**: your own error list in the admin (simple, free, no extra account), or **Sentry**'s free plan (richer: stack traces with source maps, alerts by email)? | Own list in the admin |
-| Q8 | **Own domain**: do you have one or want to buy one (e.g. `ausafhussain.com`, roughly ₹800–1,200 a year)? It's needed for buyer emails from your own address and looks more professional. The launch steps work with or without it. | Plan for one; steps cover both |
-| Q9 | Show **real-time** ("right now") on the Traffic page? It adds a small query every 30 seconds while the page is open. | Yes |
+| Q1 | **Preview cards**: put the tags in on the server with a Netlify Edge Function (always up to date; included in Netlify's free plan), or generate static pages at build time (needs a rebuild after each change in the admin)? | **Decided:** Netlify Edge Function (default) |
+| Q2 | **Country**: from the network (Cloudflare's country header, if Supabase passes it) with the browser's time zone as a fallback, or only from the time zone (less accurate, e.g. can't tell India from Sri Lanka)? | **Decided:** Network, time-zone fallback (default) |
+| Q3 | Exclude **your own visits** with a switch in the admin (per browser)? | **Decided:** Yes, and on by default in any browser where you've signed in to the admin (default) |
+| Q4 | Respect **Do Not Track / Global Privacy Control** (don't record those visitors)? | **Decided:** Yes (default) |
+| Q5 | **Keep raw events** for 13 months, then only daily totals? | **Decided:** Yes (default) |
+| Q6 | **Keep-alive**: a Netlify scheduled function (no extra account) or a GitHub Actions schedule (stops if the repo is inactive for 60 days)? | **Decided:** Netlify scheduled function (default) |
+| Q7 | **Error reports**: your own error list in the admin (simple, free, no extra account), or **Sentry**'s free plan (richer: stack traces with source maps, alerts by email)? | **Decided:** Own list in the admin (default) |
+| Q8 | **Own domain**: do you have one or want to buy one (e.g. `ausafhussain.com`, roughly ₹800–1,200 a year)? It's needed for buyer emails from your own address and looks more professional. The launch steps work with or without it. | **Decided:** Plan for one; steps cover both (default) |
+| Q9 | Show **real-time** ("right now") on the Traffic page? It adds a small query every 30 seconds while the page is open. | **Decided:** Yes (default) |
 
 ## Changelog
 - 0.1 (2026-10-17) — Draft. Part 9 was "performance, SEO, accessibility, deploy"; the site is already deployed on Netlify, so deploy becomes the launch checklist, and Ausaf asked for traffic analytics in the admin (option A).
+- 0.2 (2026-10-17) — Approved by Ausaf with all defaults (Q1–Q9).
+- 0.3 (2026-10-17) — Built. Notes:
+  - Recorded pages are paths only; UTM tags have their own fields, and a tab keeps its entry source for later pages (sessionStorage, not a cookie or ID). Country: Cloudflare's header when present, else the browser's time zone mapped to a country in the database (tz database, 542 zones and aliases).
+  - The Content-Security-Policy forbids `eval`; Zod probed for it, so Zod now runs with `jitless` (no change in validation). The policy is written at build time with the theme script's hash (`dist/_headers`); `scripts/check-csp.mjs` loads the build with it (7 pages, no violations).
+  - Netlify's functions need the two Supabase variables with the **Functions** scope (setup guide E2).
+  - Speed: first-load JavaScript is 178 KB gzipped (budget 200). On Lighthouse's simulated slow 4G the page paints at ~2.2 s and LCP is 2.8–3.0 s, over P-1's 2.5 s: the site can't show anything until React and the router are loaded. Options for a later change (not built): load below-the-fold chapters on demand, and replace the data client with a smaller one. Real-phone numbers from PageSpeed Insights decide whether it's needed.
+  - Policy chips in the admin are a button group (axe: tabs can't be "pressed").
+  - The screen-reader pass and the live checks are in the launch checklist (setup guide E5).

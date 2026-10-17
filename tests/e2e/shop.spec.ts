@@ -239,7 +239,10 @@ test('admin: orders filters, search, re-send, reset, revoke; sales card', async 
 test('admin: policy pages are editable and published at their address', async ({ page }) => {
   await signIn(page);
   await go(page, 'Shop policies');
-  await page.getByRole('tab', { name: /Privacy/ }).click();
+  await page
+    .getByRole('group', { name: 'Policy page' })
+    .getByRole('button', { name: /Privacy/ })
+    .click();
   const form = page.locator('[data-policy="privacy"]');
   await form.getByRole('textbox', { name: 'Title' }).fill('Privacy notice');
   await form.getByRole('textbox', { name: 'Text' }).fill('We keep your email to send your download.');

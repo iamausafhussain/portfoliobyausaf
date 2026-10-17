@@ -7,6 +7,7 @@ import { useRepository } from '../repository';
 import { formatBytes } from '../repository/errors';
 import { buckets, type Row } from '../repository/types';
 import { SalesCard } from '../shop/SalesCard';
+import { StatusLine, VisitorsCard } from '../traffic/DashboardCards';
 import { PageBody, PageHeader } from '../shell/PageHeader';
 import { Icon } from '../ui/Icon';
 import { ButtonLink, Skeleton } from '../ui/primitives';
@@ -105,6 +106,7 @@ export function DashboardPage() {
         }
       />
       <PageBody wide>
+        <StatusLine />
         <div className={styles.statGrid}>
           {managers.map((m) => {
             const key = m.path as keyof typeof lists;
@@ -137,6 +139,7 @@ export function DashboardPage() {
             </p>
             <span className={styles.drafts}>From the contact form on your site.</span>
           </div>
+          <VisitorsCard />
           <SalesCard />
           <div className={styles.stat}>
             <Link to="/admin/media" className={styles.cardLink}>

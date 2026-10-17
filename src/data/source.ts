@@ -11,6 +11,8 @@ import type { Database } from './database.types';
 import { SendError, sendErrorCode } from './contact';
 import type { MessageInsert } from './schemas';
 import { shopErrorFrom, ShopError, type ShopPublicApi } from './shop';
+import type { TrackPayload } from '../analytics/track';
+import type { ErrorReport } from '../analytics/errors';
 
 export type PublishedTable =
   | 'hero_media'
@@ -38,6 +40,22 @@ export interface PublicSource {
   productBySlug(slug: string): Promise<unknown>;
   /** The shop's server side (spec 08 §3.1). */
   shop: ShopPublicApi;
+  /** One analytics event (spec 09 TR-1); fire-and-forget. */
+  track(event: TrackPayload): Promise<void>;
+  /** One error report (spec 09 OP-3); fire-and-forget. */
+  reportError(report: ErrorReport): Promise<void>;
+}
+
+/** Calls a database function with the public key, without waiting for or reading the answer. */
+async function callRpc(name: string, body: Record<string, unknown>): Promise<void> {
+  const { url, anonKey } = readSupabaseEnv(import.meta.env);
+  await fetch(`${url}/rest/v1/rpc/${name}`, {
+    method: 'POST',
+    // survives the page being closed straight after (TR-5)
+    keepalive: true,
+    headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
 }
 
 /** Calls one of the shop's Edge Functions with the public key; errors become ShopErrors. */
@@ -145,6 +163,27 @@ const supabaseSource: PublicSource = {
     return data;
   },
   shop: supabaseShop,
+  async track(e) {
+    await callRpc('track', {
+      p_name: e.name,
+      p_path: e.path,
+      p_referrer: e.referrer,
+      p_utm_source: e.utmSource,
+      p_utm_medium: e.utmMedium,
+      p_utm_campaign: e.utmCampaign,
+      p_product: e.product,
+      p_detail: e.detail,
+      p_tz: e.tz,
+    });
+  },
+  async reportError(r) {
+    await callRpc('report_error', {
+      p_message: r.message,
+      p_stack: r.stack,
+      p_path: r.path,
+      p_release: r.release,
+    });
+  },
   async sendMessage(message) {
     // visitors can't read messages back, so ask for nothing in return
     let result;

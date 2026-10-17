@@ -1,4 +1,5 @@
 /** Resume · Projects · Contact — always one click away (spec 03 NV-4). */
+import { track } from '../analytics/track';
 import { useRef } from 'react';
 import { useMagnetic } from '../cursor/magnetic';
 import { useSiteSettings } from '../data/queries/public';
@@ -20,7 +21,13 @@ export function FastLane({ variant }: { variant: 'bar' | 'floating' }) {
       data-fast-lane={variant}
     >
       {resume && (
-        <a href={resume} target="_blank" rel="noopener" className={styles.fastItem}>
+        <a
+          href={resume}
+          target="_blank"
+          rel="noopener"
+          onClick={() => track('resume_open')}
+          className={styles.fastItem}
+        >
           Resume
         </a>
       )}

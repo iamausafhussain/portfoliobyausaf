@@ -22,6 +22,7 @@ import {
   type MessagesApi,
   type MessageTab,
   type OrderRow,
+  type AnalyticsAdminApi,
   type DiscountRow,
   type ProductFileRow,
   type Row,
@@ -646,4 +647,57 @@ const shop: ShopAdminApi = {
   },
 };
 
-export const supabaseRepository: AdminRepository = { kind: 'supabase', auth, data, files, messages, shop };
+/* ------------------------------------------------------------------ */
+/* Traffic and error reports (spec 09)                                 */
+/* ------------------------------------------------------------------ */
+
+async function rpc<T>(name: string, args: Record<string, unknown> = {}): Promise<T> {
+  return guard(async () => {
+    // these functions are newer than the generated types
+    const { data: out, error } = await (
+      db() as unknown as {
+        rpc(
+          n: string,
+          a: Record<string, unknown>,
+        ): Promise<{ data: unknown; error: { code?: string; message: string } | null }>;
+      }
+    ).rpc(name, args);
+    if (error) {
+      if (error.code === '42501') throw new RepoError('auth', 'Your session has expired — sign in again.');
+      if (error.code === 'PGRST202' || /could not find the function/i.test(error.message))
+        throw new RepoError(
+          'unknown',
+          'Traffic isn’t set up yet: run migration 0011_analytics.sql (setup guide, step E1).',
+        );
+      throw new RepoError('unknown', error.message);
+    }
+    return out as T;
+  });
+}
+
+const analytics: AnalyticsAdminApi = {
+  report: (q) =>
+    rpc('traffic_report', {
+      p_from: q.from,
+      p_to: q.to,
+      p_tz: q.tz,
+      p_path: q.path ?? null,
+      p_source: q.source ?? null,
+    }),
+  now: () => rpc('traffic_now'),
+  funnel: (from, to) => rpc('shop_funnel', { p_from: from, p_to: to }),
+  size: async () => Number(await rpc('traffic_size')),
+  errors: () => rpc('error_list'),
+  resolveError: (fp, resolved) => rpc('error_resolve', { p_fingerprint: fp, p_resolved: resolved }),
+  clearResolvedErrors: () => rpc('error_clear_resolved'),
+};
+
+export const supabaseRepository: AdminRepository = {
+  kind: 'supabase',
+  auth,
+  data,
+  files,
+  messages,
+  shop,
+  analytics,
+};

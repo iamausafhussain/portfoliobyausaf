@@ -19,6 +19,8 @@ import { ListPage } from './managers/ListPage';
 import type { ManagerConfig } from './managers/types';
 import { InboxPage } from './inbox/InboxPage';
 import { DiscountsPage } from './shop/DiscountsPage';
+import { SiteErrorsPage } from './traffic/SiteErrorsPage';
+import { TrafficPage } from './traffic/TrafficPage';
 import { OrdersPage } from './shop/OrdersPage';
 import { PoliciesPage } from './shop/PoliciesPage';
 import { productsConfig } from './shop/products';
@@ -100,6 +102,8 @@ export function Component() {
                 <Route path="sections/:id/items" element={<SectionItemsPage />} />
                 <Route path="sections/:id/items/new" element={<SectionItemFormPage />} />
                 <Route path="sections/:id/items/:itemId" element={<SectionItemFormPage />} />
+                <Route path="traffic" element={<TrafficPage />} />
+                <Route path="errors" element={<SiteErrorsPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="discounts" element={<DiscountsPage />} />
                 <Route path="policies" element={<PoliciesPage />} />

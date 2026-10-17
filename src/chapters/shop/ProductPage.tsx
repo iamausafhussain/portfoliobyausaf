@@ -1,5 +1,6 @@
 /** /shop/:slug — one product (spec 08 BX-3 – BX-6, CO-1, CO-9). */
-import { useState, type FormEvent } from 'react';
+import { track } from '../../analytics/track';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { NotFoundPage } from '../../app/NotFoundPage';
 import { Img } from '../../components/Img';
@@ -18,7 +19,7 @@ import {
   shopErrorText,
   type Currency,
 } from '../../data/shop';
-import { useDocumentTitle } from '../../shell/hooks';
+import { useDocumentTitle, useMetaDescription, useNoIndex } from '../../shell/hooks';
 import { GalleryViewer } from '../project/GalleryViewer';
 import pageStyles from '../pages.module.css';
 import { PolicyLinks } from './PolicyLinks';
@@ -42,6 +43,7 @@ function FreeClaim({ productId }: { productId: string }) {
     setError(null);
     try {
       await (await getPublicSource()).shop.claimFree(productId, email.trim());
+      track('free_claim', { product: productId });
       setState('sent');
     } catch (err) {
       setError(shopErrorText[err instanceof ShopError ? err.code : 'server']);
@@ -91,6 +93,8 @@ export function Component() {
   const p = q.data;
   const navigate = useNavigate();
   useDocumentTitle(q.isPending ? undefined : (p?.title ?? 'Product not found'));
+  useMetaDescription(p?.tagline);
+  useNoIndex(!q.isPending && !p);
   const hasInr = p?.price_inr != null;
   const [chosen, setChosen] = useState<Currency | null>(null);
   const currency: Currency = chosen ?? preferredCurrency(hasInr);
@@ -103,6 +107,11 @@ export function Component() {
   const [codeRemoved, setCodeRemoved] = useState(false);
   const [codeRejected, setCodeRejected] = useState(false);
   const code = linkCode && !codeRemoved ? linkCode : null;
+  // a discount-code link was opened (spec 09 TR-3)
+  const productId = q.data?.id;
+  useEffect(() => {
+    if (productId && linkCode) track('code_link', { product: productId, detail: linkCode });
+  }, [productId, linkCode]);
 
   if (q.isPending) {
     return (
@@ -122,6 +131,7 @@ export function Component() {
     setBusy(true);
     setError(null);
     setCodeRejected(false);
+    track('buy_click', { product: p.id, detail: shownCurrency });
     try {
       const { url } = await (await getPublicSource()).shop.checkout(p.id, shownCurrency, withCode);
       // the demo's stand-in checkout is a page of this site; the real one is the provider's

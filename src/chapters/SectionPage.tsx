@@ -2,7 +2,7 @@
 import { useParams } from 'react-router';
 import { NotFoundPage } from '../app/NotFoundPage';
 import { usePublishedCustomSections } from '../data/queries/public';
-import { useDocumentTitle } from '../shell/hooks';
+import { useDocumentTitle, useMetaDescription, useNoIndex } from '../shell/hooks';
 import { CustomSectionView } from './custom/CustomSection';
 import styles from './pages.module.css';
 
@@ -11,6 +11,8 @@ export function Component() {
   const q = usePublishedCustomSections();
   const found = q.data?.find((s) => s.section.slug === slug && s.section.has_page);
   useDocumentTitle(q.isPending ? undefined : (found?.section.name ?? 'Scene not found'));
+  useMetaDescription(found?.section.intro);
+  useNoIndex(!q.isPending && !found);
 
   if (q.isPending) {
     return (

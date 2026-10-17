@@ -1,3 +1,4 @@
+import { optOutOnSignIn } from '../../analytics/track';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useRepository } from '../repository';
 import type { AuthState } from '../repository/types';
@@ -29,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await repo.auth.signOut('local');
       return { next: { status: 'signed_out' }, notice: "This account can't access the admin." };
     }
+    if (next.status === 'signed_in') optOutOnSignIn();
     return { next };
   }, [repo]);
 

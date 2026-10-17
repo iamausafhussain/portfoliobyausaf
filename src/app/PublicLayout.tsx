@@ -13,6 +13,13 @@ import { Footer } from '../shell/Footer';
 import { TopBar } from '../shell/TopBar';
 import styles from '../shell/shell.module.css';
 import { RouteEffects } from './RouteEffects';
+import { usePageViews } from '../analytics/usePageViews';
+
+/** Page views for traffic analytics (spec 09 TR-1). */
+function PageViews() {
+  usePageViews();
+  return null;
+}
 
 /** Development only: say why the page shows placeholders (RT-5). */
 function DevNotice() {
@@ -54,6 +61,7 @@ export function PublicLayout() {
           <FilmGrain />
           <DevNotice />
           <RouteEffects />
+          <PageViews />
           <Reveals />
           <ScrollRestoration />
         </ChapterRegistryProvider>

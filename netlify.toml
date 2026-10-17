@@ -18,6 +18,14 @@
     X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=31536000"
+    # Content-Security-Policy is written to dist/_headers at build time (scripts/write-headers.mjs)
+
+# The page itself must never be cached for long, so a new deploy shows at once (spec 09 PF-4)
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 # Fingerprinted build assets and fonts can be cached for a year
 [[headers]]

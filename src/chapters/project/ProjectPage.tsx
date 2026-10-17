@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { NotFoundPage } from '../../app/NotFoundPage';
 import { Img } from '../../components/Img';
 import { usePublishedProjects, useProject } from '../../data/queries/public';
-import { useDocumentTitle } from '../../shell/hooks';
+import { useDocumentTitle, useMetaDescription, useNoIndex } from '../../shell/hooks';
 import { projectAnchor } from '../system/ProjectCard';
 import { GalleryViewer } from './GalleryViewer';
 import styles from './project.module.css';
@@ -25,6 +25,8 @@ export function Component() {
   const [viewing, setViewing] = useState<number | null>(null);
   const p = q.data;
   useDocumentTitle(q.isPending ? undefined : (p?.title ?? 'Scene not found'));
+  useMetaDescription(p?.summary);
+  useNoIndex(!q.isPending && !p);
 
   // prev / next in display order (PP-4)
   const [prev, next] = useMemo(() => {

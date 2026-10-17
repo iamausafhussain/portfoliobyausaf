@@ -155,15 +155,13 @@ export function PoliciesPage() {
         description="Payment providers ask for these before they approve your shop. Buyers see them in the footer and on every product page."
       />
       <PageBody>
-        <div className={listStyles.filters} role="tablist" aria-label="Policy page">
+        <div className={listStyles.filters} role="group" aria-label="Policy page">
           {slugs.map((s) => {
             const p = q.data?.find((x) => x.slug === s);
             return (
               <button
                 key={s}
                 type="button"
-                role="tab"
-                aria-selected={slug === s}
                 aria-pressed={slug === s}
                 className={listStyles.chip}
                 onClick={() => setParams({ page: s }, { replace: true })}

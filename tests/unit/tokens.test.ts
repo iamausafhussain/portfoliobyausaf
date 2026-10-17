@@ -23,6 +23,8 @@ const pairs: [ColourKey, ColourKey, number, string][] = [
   ['accent2', 'bg', AA.ui, 'data trails, UI'],
   ['danger', 'bg', AA.text, 'error messages'],
   ['success', 'bg', AA.text, 'success messages'],
+  ['chart1', 'bgElevated', AA.ui, 'chart lines (Traffic)'],
+  ['chart2', 'bgElevated', AA.ui, 'chart lines (Traffic)'],
 ];
 
 describe('colour contrast (AC-0.3)', () => {

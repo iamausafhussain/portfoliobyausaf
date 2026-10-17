@@ -39,6 +39,9 @@ export interface ThemeTokens {
     success: string;
     /** Globe base material */
     globeBase: string;
+    /** Chart series 1 and 2 (admin Traffic); checked for colour-blind separation on bgElevated */
+    chart1: string;
+    chart2: string;
   };
   effect: {
     /** Film grain overlay opacity */
@@ -65,6 +68,8 @@ export const themes: Record<ThemeName, ThemeTokens> = {
       danger: '#E5534B',
       success: '#3FB27F',
       globeBase: '#121216',
+      chart1: '#E8661C',
+      chart2: '#3E9BDA',
     },
     effect: { grainOpacity: 0.08, globeGlow: true },
   },
@@ -83,6 +88,8 @@ export const themes: Record<ThemeName, ThemeTokens> = {
       danger: '#B42318',
       success: '#1B7849',
       globeBase: '#EFEAE0',
+      chart1: '#C14E0B',
+      chart2: '#1981C8',
     },
     effect: { grainOpacity: 0.04, globeGlow: false },
   },

@@ -1,9 +1,10 @@
 import { Link } from 'react-router';
-import { useDocumentTitle } from '../shell/hooks';
+import { useDocumentTitle, useNoIndex } from '../shell/hooks';
 import styles from './NotFoundPage.module.css';
 
 export function NotFoundPage() {
   useDocumentTitle('Scene not found');
+  useNoIndex();
   return (
     <section className={styles.wrap}>
       <p className="label">Error 404</p>

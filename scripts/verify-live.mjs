@@ -103,6 +103,22 @@ for (const t of contentTables) {
   );
 }
 {
+  // Part 9 (0011): analytics are installed, and visitors can add but never read
+  const { error: unknown } = await anon.rpc('track', { p_name: 'verify', p_path: '/' });
+  ok(
+    unknown?.message === 'bad_event',
+    'analytics are installed and refuse unknown events (0011)',
+    unknown ? unknown.message : 'accepted — run 0011_analytics.sql',
+  );
+  const { error: report } = await anon.rpc('traffic_report', {
+    p_from: new Date(Date.now() - 86_400_000).toISOString(),
+    p_to: new Date().toISOString(),
+  });
+  ok(!!report, 'cannot read traffic reports');
+  const { data: alive, error: aliveError } = await anon.rpc('keep_alive');
+  ok(alive === 'ok', 'keep_alive answers (0011)', aliveError?.message);
+}
+{
   const { error } = await anon.from('app_owner').select('*');
   ok(!!error, 'cannot read app_owner');
 }

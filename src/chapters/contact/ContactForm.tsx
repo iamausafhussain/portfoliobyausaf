@@ -3,6 +3,7 @@
  * choices, the fields, validation that matches the database, a draft kept for the tab, and
  * clear states for sending, sent and failed.
  */
+import { track } from '../../analytics/track';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { looksLikeBot, SendError, sendErrorText, toInsert, type SendErrorCode } from '../../data/contact';
 import { getPublicSource } from '../../data/source';
@@ -134,6 +135,7 @@ export function ContactForm({ scene, publicEmail }: { scene: number; publicEmail
       await source.sendMessage(toInsert(draft));
       setSentAs(who);
       clearDraft();
+      track('contact_sent');
       setTouched({});
       setSubmitted(false);
       setState('sent');

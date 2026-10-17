@@ -15,7 +15,7 @@ The project is built **spec-first**: read [`specs/`](specs/) before changing beh
 | [Part 6 — Content chapters](specs/06-content-chapters.md)                 | Built                                                    |
 | [Part 7 — Contact form and inbox](specs/07-contact-and-inbox.md)          | Built (run 0009; email alert setup pending)              |
 | [Part 8 — Box Office: shop for digital products](specs/08-shop.md)        | Built (run 0010; Dodo account and test purchase pending) |
-| [Part 9 — Launch: traffic, SEO, speed, accessibility](specs/09-launch.md) | Spec in review                                           |
+| [Part 9 — Launch: traffic, SEO, speed, accessibility](specs/09-launch.md) | Built (run 0011; live launch checks pending)             |
 
 ## Requirements
 
@@ -134,7 +134,7 @@ tests/            unit/ (Vitest) and e2e/ (Playwright, runs against demo mode)
 
 ## Deploying
 
-Netlify reads [`netlify.toml`](netlify.toml). In Netlify → Site configuration → Environment variables, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Full steps arrive in Part 9.
+Netlify reads [`netlify.toml`](netlify.toml) and builds on every push to `main`. In Netlify → Project configuration → Environment variables, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` with the **Builds** and **Functions** scopes (the `netlify/` folder holds the preview-card, sitemap and keep-alive functions). The build fails if the first-load JavaScript goes over 200 KB gzipped (`scripts/check-size.mjs`) and writes the Content-Security-Policy (`scripts/write-headers.mjs`); `node scripts/check-csp.mjs` loads the build with that policy and reports anything blocked. Launch steps: [`supabase/README.md`](supabase/README.md), section E.
 
 ## Fonts licence
 

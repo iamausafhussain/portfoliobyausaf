@@ -10,6 +10,37 @@ export function useDocumentTitle(title: string | null | undefined) {
   }, [title]);
 }
 
+/** The page's description for search results while it's shown (spec 09 SEO-1). */
+export function useMetaDescription(text: string | null | undefined) {
+  useEffect(() => {
+    const clean = (text ?? '').replace(/\s+/g, ' ').trim().slice(0, 160);
+    if (!clean) return;
+    let el = document.head.querySelector<HTMLMetaElement>('meta[name="description"]');
+    if (!el) {
+      el = document.createElement('meta');
+      el.name = 'description';
+      document.head.append(el);
+    }
+    const before = el.content;
+    el.content = clean;
+    return () => {
+      if (el) el.content = before;
+    };
+  }, [text]);
+}
+
+/** Keeps a page out of search results (404s, thank-you and download pages) (SEO-1). */
+export function useNoIndex(on = true) {
+  useEffect(() => {
+    if (!on) return;
+    const el = document.createElement('meta');
+    el.name = 'robots';
+    el.content = 'noindex';
+    document.head.append(el);
+    return () => el.remove();
+  }, [on]);
+}
+
 /** Scroll position helpers for the top bar (NV-1) and progress line (NV-2). */
 export function useScrollState(): { scrolled: boolean; hidden: boolean; progress: number } {
   const [state, setState] = useState({ scrolled: false, hidden: false, progress: 0 });

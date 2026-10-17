@@ -218,6 +218,46 @@ If the thank-you page keeps saying "Confirming your payment…", check Supabase 
 
 Once Dodo has approved your business: switch the dashboard to **Live mode**, create a live API key and a live webhook (same URL and events), put both in the secrets from D3, set `DODO_MODE` to `live`, and **save each paid product once** in the admin so it's created in your live Dodo account. Discount codes live in each mode separately, so create the ones you need again after switching. Then make one real small purchase and refund it.
 
+## Launch: traffic, sharing, keep-alive (Part 9)
+
+### E1 — Turn on traffic analytics and error reports
+
+Run **`0011_analytics.sql`** in the SQL Editor. It adds visit counting without cookies (no IP addresses are stored; a visitor is a code that changes every day), the error list, and `keep_alive`. It also adds an "Analytics" paragraph to your Privacy page if you haven't edited that page yet; if you have, add a sentence about it yourself (Admin → Shop policies). `npm run db:verify` checks it's in place.
+
+Then **Admin → Traffic** fills up as people visit. Your own visits aren't counted in any browser where you've signed in to the admin (switch at the bottom of the Traffic page).
+
+**Tip:** add `?utm_source=instagram&utm_campaign=diwali-reel` (any names you like) to links you post, and they show up under Sources and Campaigns.
+
+### E2 — Let Netlify's functions read the Supabase settings
+
+The preview cards, the sitemap and the daily keep-alive run as Netlify functions (they're in the `netlify/` folder and deploy with the site). They use the same two variables as the site:
+
+Netlify → your project → **Project configuration → Environment variables** → for both `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, edit **Scopes** so **Builds** _and_ **Functions** are ticked (or "All scopes"). Then **Deploys → Trigger deploy → Clear cache and deploy site**.
+
+Check: open `https://<your-site>/sitemap.xml` — it lists your pages. Netlify → **Logs → Functions → keep-alive** shows one run a day ("keep-alive: 200 \"ok\"").
+
+### E3 — Check the preview cards and tell Google about the site
+
+1. Paste your site's address, a project and a product into [opengraph.xyz](https://www.opengraph.xyz) (or LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspector/)): each shows its own picture, title and description. WhatsApp caches previews for a while, so test with a link you haven't shared before.
+2. The home page's title, description and share picture can be changed in **Admin → Site settings → Search & sharing**; without a share picture, the built-in card (`public/og-default.png`) is used. To redraw that card after changing your name or role: `node scripts/make-og-image.mjs "Your Name" "Your role"`, then commit.
+3. **Google Search Console**: go to [search.google.com/search-console](https://search.google.com/search-console), add your site as a **URL prefix** property and verify it with the **HTML file** method: download the file Google gives you into the `public/` folder, commit and push, wait for Netlify's deploy, then press Verify. Then **Sitemaps → add `sitemap.xml`**. Google picks pages up over the following days.
+4. Product pages carry price information Google understands; check one in the [Rich Results Test](https://search.google.com/test/rich-results).
+
+### E4 — Security headers
+
+The site sends a strict Content-Security-Policy (only your site and Supabase can run code or be contacted). Check it at [securityheaders.com](https://securityheaders.com): the grade should be **A**. If something on the site stops working after a deploy, open the browser console: a "Content Security Policy" message names what was blocked.
+
+### E5 — Launch checklist
+
+- [ ] **Own domain** (optional, recommended): buy one (for example from Namecheap, GoDaddy or Cloudflare), then Netlify → **Domain management → Add a domain** and follow its DNS steps. Netlify adds HTTPS by itself.
+- [ ] After a domain change: Supabase secret `SITE_URL`, and Supabase **Authentication → URL Configuration** (Site URL and the `/admin/reset-password` redirect), both with the new address.
+- [ ] **Buyer emails from your own address**: verify the domain in Resend (Resend → Domains) and set `SHOP_FROM` (step D2).
+- [ ] **Dodo live mode** (step D5), then one real small purchase and refund.
+- [ ] **Search Console** (E3).
+- [ ] **Speed on a real phone connection**: run your home page and a product in [PageSpeed Insights](https://pagespeed.web.dev) and note the mobile numbers in `specs/09-launch.md`.
+- [ ] **Screen reader pass**: on your phone, turn on VoiceOver (iPhone) or TalkBack (Android) and go through the home page, a product and the contact form; note anything confusing.
+- [ ] `npm run db:verify` passes.
+
 ## Check that it worked
 
 ```bash
@@ -240,7 +280,7 @@ It uploads three tiny test files and deletes them again. It never changes your c
 
 ## Local tests (developers)
 
-`npm run db:test` creates a throwaway Postgres, applies every migration twice, loads the seed twice and runs 310 schema and security checks as an anonymous visitor, a signed-in stranger and the owner. It needs PostgreSQL 15+ installed locally (set `PG_BIN` if `initdb` isn't on your PATH). Nothing touches your Supabase project.
+`npm run db:test` creates a throwaway Postgres, applies every migration twice, loads the seed twice and runs 353 schema and security checks as an anonymous visitor, a signed-in stranger and the owner. It needs PostgreSQL 15+ installed locally (set `PG_BIN` if `initdb` isn't on your PATH). Nothing touches your Supabase project.
 
 ## Regenerate TypeScript types
 
